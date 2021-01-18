@@ -1,25 +1,22 @@
 {
-  "name": "railroad/mobile-endpoints",
+  "name": "railroad/musora-api",
   "prefer-stable": true,
   "require": {
     "php": "~7",
-    "laravel/framework": "5.6.*",
-    "railroad/railcontent": "^0.5",
-    "railroad/ecommerce": "^1.0"
+    "laravel/framework": "5.6.*"
   },
   "require-dev": {
     "phpunit/phpunit": "~7.0",
-    "phpunit/php-code-coverage": "~6.0",
-    "orchestra/testbench": "~3.6"
+    "phpunit/php-code-coverage": "~6.0"
   },
   "autoload": {
     "psr-4": {
-      "Railroad\\MobileEndpoints\\": "src"
+      "Railroad\\MusoraApi\\": "src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Railroad\\MobileEndpoints\\Tests\\": "tests/"
+      "Railroad\\MusoraApi\\Tests\\": "tests/"
     }
   }
 }

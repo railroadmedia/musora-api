@@ -1,6 +1,6 @@
 <?php
 
-use Railroad\MobileEndpoints\Tests\TestCase;
+use Railroad\MusoraApi\Tests\TestCase;
 
 class UnitTest extends TestCase
 {

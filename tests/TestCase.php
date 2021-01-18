@@ -1,6 +1,6 @@
 <?php
 
-namespace Railroad\MobileEndpoints\Tests;
+namespace Railroad\MusoraAPi\Tests;
 
 use Orchestra\Testbench\TestCase as BaseTestCase;
 

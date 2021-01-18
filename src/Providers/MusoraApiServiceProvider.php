@@ -4,7 +4,6 @@ namespace Railroad\MusoraApi\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
-
 class MusoraApiServiceProvider extends ServiceProvider
 {
     /**
