@@ -2,7 +2,6 @@
 
 namespace Railroad\MusoraApi\Decorators;
 
-use App\Decorators\Content\ModeDecoratorBase;
 use Carbon\Carbon;
 use Railroad\Railcontent\Support\Collection;
 use Exception;

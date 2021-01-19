@@ -2,7 +2,6 @@
 
 namespace Railroad\MusoraApi\Decorators;
 
-use App\Decorators\Content\ModeDecoratorBase;
 use Railroad\Railcontent\Entities\CommentEntity;
 use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Support\Collection;
