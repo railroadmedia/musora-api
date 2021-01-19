@@ -11,7 +11,26 @@ Route::group(
 
         Route::get(
             '/content/{id}',
-            ContentController::class . '@getContent'
+            [
+                'as' => 'mobile.content.show',
+                'uses' => ContentController::class . '@getContent',
+            ]
+        );
+
+        Route::get(
+            '/all',
+            [
+                'as' => 'mobile.contents.filter',
+                'uses' => ContentController::class . '@filterContents',
+            ]
+        );
+
+        Route::get(
+            '/packs',
+            [
+                'as' => 'mobile.members.packs.show',
+                'uses' => ContentController::class . '@showAllPacks',
+            ]
         );
     }
 );
