@@ -29,7 +29,7 @@ Route::group(
             '/packs',
             [
                 'as' => 'mobile.members.packs.show',
-                'uses' => ContentController::class . '@showAllPacks',
+                'uses' => \Railroad\MusoraApi\Controllers\PacksController::class . '@showAllPacks',
             ]
         );
     }
