@@ -1,6 +1,7 @@
 <?php
 
 use Railroad\MusoraApi\Controllers\ContentController;
+use Railroad\MusoraApi\Controllers\PacksController;
 
 Route::group(
     [
@@ -28,9 +29,27 @@ Route::group(
         Route::get(
             '/packs',
             [
-                'as' => 'mobile.members.packs.show',
-                'uses' => \Railroad\MusoraApi\Controllers\PacksController::class . '@showAllPacks',
+                'as' => 'mobile.packs.show',
+                'uses' => PacksController::class . '@showAllPacks',
             ]
         );
+
+        Route::get(
+            '/pack/{packId}',
+            [
+                'as' => 'mobile.pack.show',
+                'uses' => PacksController::class . '@showPack',
+            ]
+        );
+
+        Route::get(
+            '/pack/lesson/{lessonId}',
+            [
+                'as' => 'mobile.pack.lesson.show',
+                'uses' => PacksController::class . '@showLesson',
+            ]
+        );
+
+
     }
 );
