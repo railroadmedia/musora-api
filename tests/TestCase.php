@@ -3,10 +3,11 @@
 namespace Railroad\MusoraAPi\Tests;
 
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
 
 class TestCase extends BaseTestCase
 {
-    protected function setUp(): void
+    protected function setUp()
     {
         parent::setUp();
     }
@@ -19,6 +20,6 @@ class TestCase extends BaseTestCase
      */
     protected function getEnvironmentSetUp($app)
     {
-
+        $app->register(MusoraApiServiceProvider::class);
     }
 }
