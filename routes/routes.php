@@ -2,6 +2,7 @@
 
 use Railroad\MusoraApi\Controllers\ContentController;
 use Railroad\MusoraApi\Controllers\PacksController;
+use Railroad\MusoraApi\Controllers\UserProgressController;
 
 Route::group(
     [
@@ -50,6 +51,18 @@ Route::group(
             ]
         );
 
+        Route::put(
+            '/reset',
+            UserProgressController::class . '@resetUserProgressOnContent'
+        );
+
+        Route::put(
+            '/complete',
+            UserProgressController::class . '@completeUserProgressOnContent'
+        );
+
+        Route::put('/media', UserProgressController::class . '@saveVideoProgress');
+        Route::put('/media/{id}', UserProgressController::class . '@saveVideoProgress');
 
     }
 );
