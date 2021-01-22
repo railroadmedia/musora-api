@@ -22,4 +22,10 @@ interface ProductProviderInterface
      * @return mixed
      */
     public function getGoogleProductId($slug);
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function currentUserOwnsPack($id);
 }

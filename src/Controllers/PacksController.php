@@ -113,6 +113,8 @@ class PacksController extends Controller
 
         foreach ($allMyPacks as $slug => $pack) {
             $myPacks[$slug] = $pack;
+            $myPacks[$slug]['is_owned'] = true;
+            $myPacks[$slug]['is_locked'] = false;
             $myPacks[$slug]['thumbnail'] = $pack->fetch('data.header_image_url');
             $myPacks[$slug]['pack_logo'] = $pack->fetch('data.logo_image_url');
 
@@ -235,43 +237,19 @@ class PacksController extends Controller
      * @param int $currentUserId
      * @return mixed
      */
-    private function isOwnedOrLocked($pack, int $currentUserId)
+    private function isOwnedOrLocked(&$pack, int $currentUserId)
     {
         //TODO: Need a provider for user permissions
-        $pack['is_owned'] = true;
-        $pack['is_locked'] = false;
+        $pack['is_owned'] = false;
+        $pack['is_locked'] = true;
 
-        return $pack;
-
-        if (empty($pack['permissions']) || (UserAccessService::isAdministrator(current_user()->getId()))) {
+        $isOwned = $this->productProvider->currentUserOwnsPack($pack['id']);
+        if ($isOwned) {
             $pack['is_owned'] = true;
             $pack['is_locked'] = false;
-
-            return $pack;
         }
 
-        foreach ($pack['permissions'] as $permission) {
-            if ($permission['name'] == 'Independence Made Easy - January 2017 Semester') {
-                $permission['name'] = 'Independence Made Easy';
-            }
-
-            if (isset($permission['name']) && !(UserAccessService::hasAnyAccessLevelProducts(
-                        current_user()->getId(),
-                        $permission['name']
-                    ) || ($this->userPermissionService->userHasPermissionName(
-                        current_user()->getId(),
-                        $permission['name']
-                    )))) {
-                $pack['is_owned'] = false;
-                $pack['is_locked'] = true;
-            } else {
-                $pack['is_owned'] = true;
-                $pack['is_locked'] = false;
-                break;
-            }
-        }
-
-        if (!UserAccessService::isPackOnlyOwner($currentUserId) && $pack['is_new']) {
+        if($pack['is_new']){
             $pack['is_locked'] = false;
         }
 
@@ -309,7 +287,7 @@ class PacksController extends Controller
 
         foreach ($lessons as $bundleIndex => $bundle) {
             foreach ($bundle['lessons'] ?? [] as $lessonIndex => $lesson) {
-                  if ($lesson->fetch('completed') != true && $bundle->fetch('completed') != true && (!$index)) {
+                if ($lesson->fetch('completed') != true && $bundle->fetch('completed') != true && (!$index)) {
                     $pack['current_lesson_index'] = $lessonIndex;
                     $pack['next_lesson'] = $bundle['lessons'][$lessonIndex] ?? null;
                     $index = $lessonIndex;
@@ -359,7 +337,7 @@ class PacksController extends Controller
 
         $thisLesson['total_xp'] = $thisLesson['xp'];
 
-        if(array_key_exists('resources',$thisLesson)){
+        if (array_key_exists('resources', $thisLesson)) {
             $thisLesson['resources'] = array_values($thisLesson['resources']);
         }
 
@@ -380,7 +358,9 @@ class PacksController extends Controller
 
         $parentLessons = $this->contentService->getByParentId($thisPackBundle['id']);
 
-        $thisLesson['related_lessons'] = $parentLessons->whereNotIn('id',[$thisLesson['id']])->values();
+        $thisLesson['related_lessons'] =
+            $parentLessons->whereNotIn('id', [$thisLesson['id']])
+                ->values();
 
         $lessonContent =
             $parentLessons->where('id', $lessonId)
