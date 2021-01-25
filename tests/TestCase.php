@@ -2,35 +2,76 @@
 
 namespace Railroad\MusoraApi\Tests;
 
+use Faker\Generator;
+use Illuminate\Auth\AuthManager;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Railroad\MusoraApi\Middleware\MobileAppTokenAuth;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Http\Middleware\Authenticate;
+use Railroad\MusoraApi\Tests\Resources\Models\User;
+use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
+use Railroad\Railcontent\Providers\RailcontentServiceProvider;
+use Railroad\Response\Providers\ResponseServiceProvider;
 
 class TestCase extends BaseTestCase
 {
+    /**
+     * @var Generator
+     */
+    protected $faker;
+
+    /**
+     * @var DatabaseManager
+     */
+    protected $databaseManager;
+
+    /**
+     * @var AuthManager
+     */
+    protected $authManager;
+
     protected function setUp()
     {
         parent::setUp();
 
         error_reporting(E_ALL);
 
+        $this->artisan('migrate:fresh', []);
         $this->artisan('cache:clear', []);
 
+        $this->databaseManager = $this->app->make(DatabaseManager::class);
+        $this->faker = $this->app->make(Generator::class);
+        $this->authManager = $this->app->make(AuthManager::class);
+
         //call the MobileAppTokenAuth
-//        $middleware = $this->app->make(MobileAppTokenAuth::class);
-//        $middleware->handle(
-//            request(),
-//            function () {
-//            }
-//        );
+        $middleware = $this->app->make(ContentPermissionsMiddleware::class);
+        $middleware->handle(
+            request(),
+            function () {
+            }
+        );
+
+        if (!DB::connection()
+            ->getSchemaBuilder()
+            ->hasTable('users')) {
+            $result =
+                DB::connection()
+                    ->getSchemaBuilder()
+                    ->create(
+                        'users',
+                        function (Blueprint $table) {
+                            $table->increments('id');
+                            $table->string('email');
+                        }
+                    );
+        }
     }
 
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application $app
+     * @param \Illuminate\Foundation\Application $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
@@ -38,7 +79,7 @@ class TestCase extends BaseTestCase
 
         $defaultConfig = require(__DIR__ . '/../config/railcontent.php');
 
-        $app['config']->set('railcontent.database_connection_name','testbench');
+        $app['config']->set('railcontent.database_connection_name', 'testbench');
         $app['config']->set('railcontent.cache_duration', $defaultConfig['cache_duration']);
         $app['config']->set('railcontent.table_prefix', $defaultConfig['table_prefix']);
         $app['config']->set('railcontent.data_mode', $defaultConfig['data_mode']);
@@ -83,22 +124,69 @@ class TestCase extends BaseTestCase
             ]
         );
 
+        $app['config']->set(
+            'database.redis',
+            [
+                'client' => 'predis',
+                'default' => [
+                    'host' => env('REDIS_HOST', 'redis'),
+                    'password' => env('REDIS_PASSWORD', null),
+                    'port' => env('REDIS_PORT', 6379),
+                    'database' => 0,
+                ],
+            ]
+        );
+        $app['config']->set('cache.default', env('CACHE_DRIVER', 'redis'));
+
+        // allows access to built in user auth
+        $app['config']->set('auth.providers.users.model', User::class);
+
+        $app->register(ResponseServiceProvider::class);
+        $app->register(RailcontentServiceProvider::class);
         $app->register(MusoraApiServiceProvider::class);
     }
 
     /**
      * Set the currently logged in user for the application.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable $user
-     * @param  string|null                                $driver
+     * @param \Illuminate\Contracts\Auth\Authenticatable $user
+     * @param string|null $driver
      * @return $this
      */
-    public function actingAs($user, $driver = null)
+    public function actingAs($user = null, $driver = null)
     {
-        $token = JWTAuth::fromUser($user);
-        $this->withHeader('Authorization', "Bearer {$token}");
+        $user = $this->createAndLogInNewUser();
+
         parent::actingAs($user);
 
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function createAndLogInNewUser()
+    {
+        $userId =
+            $this->databaseManager->connection()
+                ->table('users')
+                ->insertGetId(
+                    ['email' => $this->faker->email]
+                );
+
+        $user =
+            User::query()
+                ->where('id', $userId)
+                ->first();
+
+        $this->authManager->guard()
+            ->onceUsingId($userId);
+
+        return $user;
+    }
+
+    protected function tearDown()
+    {
+        parent::tearDown();
     }
 }
