@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -119,9 +120,10 @@ class ContentController extends Controller
         }
 
         $content =
-            $this->vimeoVideoDecorator->decorate(new Collection([$content]));
+            $this->vimeoVideoDecorator->decorate(new Collection([$content]))
+                ->first();
 
-        return response()->json(['data' => $content]);
+        return response()->json($content);
     }
 
     /**
@@ -190,7 +192,6 @@ class ContentController extends Controller
         return $content;
     }
 
-
     /**
      * @param Request $request
      * @return JsonResponse
@@ -224,7 +225,7 @@ class ContentController extends Controller
 
         $sorted = $request->get('sort', $sortedBy);
 
-        $results = [];
+        $results = new ContentFilterResultsEntity(['results' => []]);
 
         if (!empty($types)) {
             $results = $this->contentService->getFiltered(
@@ -240,11 +241,16 @@ class ContentController extends Controller
                 $includedUserState,
                 true
             );
-
-            return $results->toJsonResponse();
         }
 
-        return (new ContentFilterResultsEntity(['results' => $results]))->toJsonResponse();
+        return reply()->json(
+            $results->results(),
+            [
+                'transformer' => ContentTransformer::class,
+                'totalResults' => $results->totalResults(),
+                'filterOptions' => $results->filterOptions(),
+            ]
+        );
     }
 
 }
