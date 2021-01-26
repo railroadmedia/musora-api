@@ -9,7 +9,10 @@ use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
+use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
+use Railroad\Railcontent\Decorators\Entity\ContentEntityDecorator;
+use Railroad\Railcontent\Entities\Content;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
@@ -242,7 +245,8 @@ class ContentController extends Controller
                 true
             );
         }
-
+$transformer = new FilterOptionsTransformer();
+        $filterOptions = $transformer->transform($results->filterOptions());
         return reply()->json(
             $results->results(),
             [

@@ -2,25 +2,23 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
-use Railroad\Railcontent\Entities\Content;
 use Railroad\Railcontent\Helpers\ContentHelper;
 
 class ContentTransformer extends \League\Fractal\TransformerAbstract
 {
     public function transform($content)
     {
-        $response = [
-            'id' => $content['id'],
-            'type' => $content['type'],
-            'status' => $content['status'],
-            'published_on' => $content['published_on'],
-            'parent_id' => $content['parent_id'],
-            'completed' => $content['completed'] ?? false,
-            'progress_percent' => $content['progress_percent'] ?? 0,
-            'is_added_to_primary_playlist' => $content['is_added_to_primary_playlist'] ?? false,
-            'title' => ContentHelper::getFieldValue($content,'title'),
-            'artist'=> ContentHelper::getFieldValue($content,'artist'),
-        ];
+        $response = [];
+
+        $responseStructure = config('musora-api.response-structure.catalogues', []);
+        foreach ($responseStructure as $item) {
+            $fields = explode('.', $item);
+            if (count($fields) == 2) {
+                $response[$fields[1]] = $content->fetch($item);
+            } else {
+                $response[$item] = $content[$item] ?? false;
+            }
+        }
 
         return $response;
     }

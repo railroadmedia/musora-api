@@ -107,6 +107,7 @@ class TestCase extends BaseTestCase
             'railcontent.allowed_types_for_bubble_progress',
             $defaultConfig['allowed_types_for_bubble_progress']
         );
+        $app['config']->set('railcontent.decorators', $defaultConfig['decorators']);
         $app['config']->set('railcontent.all_routes_middleware', $defaultConfig['all_routes_middleware']);
         $app['config']->set('railcontent.user_routes_middleware', $defaultConfig['user_routes_middleware']);
         $app['config']->set(
@@ -140,6 +141,10 @@ class TestCase extends BaseTestCase
 
         // allows access to built in user auth
         $app['config']->set('auth.providers.users.model', User::class);
+
+
+        $musoraApiConfig = require(__DIR__ . '/../config/musora-api.php');
+        $app['config']->set('musora-api.response-structure', $musoraApiConfig['response-structure']);
 
         $app->register(ResponseServiceProvider::class);
         $app->register(RailcontentServiceProvider::class);

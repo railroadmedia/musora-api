@@ -57,7 +57,7 @@ class ContentControllerTest extends TestCase
 
         $this->assertEquals(
             array_merge(
-                $content,
+                $content->getArrayCopy(),
                 [
                     'comments' => [],
                     'total_comments' => 0,

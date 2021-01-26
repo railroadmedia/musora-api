@@ -20,13 +20,13 @@ class SetCustomDecorators
      */
     public function handle($request, Closure $next)
     {
-        $allDecoratorsForContent =
+       $allDecoratorsForContent =
             array_merge(
-                ConfigService::$decorators['content'],
+                config('railcontent.decorators')['content'],
                 [DateFormatDecorator::class, StripTagDecorator::class, MobileAppUrlDecorator::class]
             );
 
-        $allDecoratorsForComment = array_merge(ConfigService::$decorators['comment'], [StripTagDecorator::class]);
+        $allDecoratorsForComment = array_merge(config('railcontent.decorators')['comment'], [StripTagDecorator::class]);
 
         ConfigService::$decorators['content'] = $allDecoratorsForContent;
         ConfigService::$decorators['comment'] = $allDecoratorsForComment;
