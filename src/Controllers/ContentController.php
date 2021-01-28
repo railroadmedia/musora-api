@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Transformers\CatalogueTransformer;
+use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
@@ -103,7 +104,7 @@ class ContentController extends Controller
 
         CommentRepository::$availableContentId = $content['id'];
         $comments = $this->commentService->getComments(1, 10, '-created_on');
-        $content['comments'] = $comments['results'];
+        $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
         if ($isDownload && array_key_exists('lessons', $content)) {
