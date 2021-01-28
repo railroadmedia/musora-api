@@ -16,12 +16,17 @@ class FilterOptionsTransformer extends \League\Fractal\TransformerAbstract
                         $responseStructure = config('musora-api.response-structure.' . $op['type'], []);
                         foreach ($responseStructure as $item) {
                             $fields = explode('fields.', $item);
+                            $data = explode('data.', $item);
                             if (count($fields) == 2) {
-                                $response[$index][$indx][$fields[1]] = ContentHelper::getFieldValue($op,$item);
+                                $response[$index][$indx][$fields[1]] = ContentHelper::getFieldValue($op,$fields[1]);
+                            }elseif (count($data) == 2) {
+                                $response[$index][$indx][$data[1]] = ContentHelper::getDatumValue($op,$data[1]);
                             } else {
                                 $response[$index][$indx][$item] = $op[$item] ?? false;
                             }
                         }
+                    } else {
+                        $response[$index][$indx]= $op;
                     }
                 }
             } else{
