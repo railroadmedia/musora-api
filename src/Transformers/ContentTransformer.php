@@ -2,29 +2,38 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
+use Railroad\Railcontent\Support\Collection;
+
 class ContentTransformer extends \League\Fractal\TransformerAbstract
 {
     public function transform($content, $responseStructure = [])
     {
         $response = [];
+
         if (empty($responseStructure) && array_key_exists('type', $content)) {
             $responseStructure = config('musora-api.response-structure.' . $content['type']);
         }
+
         if (!$responseStructure) {
             return $content;
         }
 
-        foreach ($responseStructure as $index => $item) {
-            if (is_array($item)) {
-                if (is_array($content[$index])) {
+        foreach ($responseStructure as $index => $value) {
+            if (is_array($value)) {
+                if (array_key_exists($index, $content) && (is_array($content[$index])|| $content[$index] instanceof Collection)) {
                     foreach ($content[$index] as $content2) {
-                        $response[$index][] = self::transform($content2, $item);
+
+                        $response[$index][] = self::transform($content2, $value);
                     }
+                } elseif (array_key_exists($index, $content) && ($content[$index])) {
+                    $response[$index] = self::transform($content[$index], $value);
                 } else {
-                    $response[$index] = self::transform($content, $item);
+                    $response[$index] = null;
+                    continue;
                 }
+
             } else {
-                $response = $this->trans($item, $content, $response);
+                $response = $this->trans($value, $content, $response);
             }
         }
 
@@ -39,18 +48,23 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
      */
     private function trans($item, $content, array $response)
     : array {
+
         $fields = explode('.', $item);
-        if (count($fields) == 2) {
-            $response[$fields[1]] = $content->fetch($item);
-            if (is_array($response[$fields[1]])) {
-                foreach ($response[$fields[1]] as $index => $val) {
+
+        if (count($fields) >= 2) {
+            $response[array_last($fields)] = $content->fetch($item);
+
+            if (is_array($response[array_last($fields)])) {
+                foreach ($response[array_last($fields)] as $index => $val) {
                     if (isset($val['id'])) {
-                        $response[$fields[1]][$index] = self::transform($val);
+
+                        $response[array_last($fields)][$index] = self::transform($val);
                     }
                 }
             }
         } else {
             if (is_array($content[$item] ?? false)) {
+                $response[$item] = [];
                 foreach ($content[$item] as $index => $val) {
                     if (isset($val['id'])) {
                         $response[$item][$index] = self::transform($val);

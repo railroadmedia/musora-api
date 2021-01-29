@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
-use Railroad\MusoraApi\Transformers\CatalogueTransformer;
+use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
-use Railroad\MusoraApi\Transformers\ContentTransformer;
-use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -126,9 +124,7 @@ class ContentController extends Controller
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
 
-        $transformer = new ContentTransformer();
-        $newContent = $transformer->transform($content);
-        return response()->json($newContent);
+        return ResponseService::content($content);
     }
 
     /**
@@ -248,14 +244,7 @@ class ContentController extends Controller
             );
         }
 
-        return reply()->json(
-            $results->results(),
-            [
-                'transformer' => CatalogueTransformer::class,
-                'totalResults' => $results->totalResults(),
-                'filterOptions' => (new FilterOptionsTransformer())->transform($results->filterOptions()),
-            ]
-        );
+        return ResponseService::catalogue($results, $request);
     }
 
 }

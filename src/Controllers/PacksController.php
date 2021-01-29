@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Services\ResponseService;
+use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
@@ -136,9 +138,7 @@ class PacksController extends Controller
             'topHeaderPack' => $topPack,
         ];
 
-        return response()->json(
-            $results
-        );
+        return ResponseService::packsArray($results);
     }
 
     /**
@@ -249,7 +249,7 @@ class PacksController extends Controller
             $pack['is_locked'] = false;
         }
 
-        if($pack['is_new']){
+        if ($pack['is_new']) {
             $pack['is_locked'] = false;
         }
 
@@ -280,7 +280,6 @@ class PacksController extends Controller
         $pack['google_product_id'] = $this->productProvider->getGoogleProductId($pack['slug']);
 
         $packPrice = $this->productProvider->getPackPrice($pack['slug']);
-        $pack = array_merge($pack->getArrayCopy(), $packPrice);
 
         $index = null;
         $lessons = $this->contentService->getByParentId($pack['id']);
@@ -298,26 +297,27 @@ class PacksController extends Controller
         if (count($lessons) == 1) {
             $lessons[0]['is_locked'] = $pack['is_locked'];
             $lessons[0]['is_owned'] = $pack['is_owned'];
-            $lessons[0]['full_price'] = $pack['full_price'] ?? 0;
-            $lessons[0]['price'] = $pack['price'] ?? 0;
+            $lessons[0]['full_price'] = $packPrice['full_price'] ?? 0;
+            $lessons[0]['price'] = $packPrice['price'] ?? 0;
             $lessons[0]['pack_logo'] = $pack->fetch('data.logo_image_url');
             $lessons[0]['apple_product_id'] = $pack['apple_product_id'];
             $lessons[0]['google_product_id'] = $pack['google_product_id'];
             $lessons[0]['next_lesson'] = $lessons[0]['current_lesson'] ?? null;
 
-            return response()->json($lessons[0]);
+            return ResponseService::content($lessons[0]);
         }
 
+        $pack['full_price'] = $packPrice['full_price'] ?? 0;
+        $pack['price'] = $packPrice['price'] ?? 0;
+
         if ($pack['type'] == 'pack') {
-            $pack['bundles'] = $lessons;
+            $pack['bundles'] = $lessons->toArray();
             $pack['bundle_number'] = count($lessons);
         } else {
             $pack['lessons'] = $lessons;
         }
 
-        return response()->json(
-            $pack
-        );
+        return ResponseService::content($pack);
     }
 
     /**
@@ -344,19 +344,24 @@ class PacksController extends Controller
         CommentRepository::$availableContentId = $thisLesson['id'];
 
         $comments = $this->commentService->getComments(1, 10, '-created_on');
-        $thisLesson['comments'] = $comments['results'];
-
+        $thisLesson['comments'] = (new CommentTransformer())->transform($comments['results']);
         $thisLesson['total_comments'] = $comments['total_results'];
 
         $thisPackBundle =
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['pack-bundle'])
                 ->first();
 
-        if (empty($thisPackBundle)) {
+        $pack =
+            $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['semester-pack'])
+                ->first();
+
+        if (empty($thisPackBundle) && empty($pack)) {
             return response()->json($thisLesson);
         }
 
-        $parentLessons = $this->contentService->getByParentId($thisPackBundle['id']);
+        $parent = $thisPackBundle ?? $pack;
+
+        $parentLessons = $this->contentService->getByParentId($parent['id']);
 
         $thisLesson['related_lessons'] =
             $parentLessons->whereNotIn('id', [$thisLesson['id']])
@@ -371,9 +376,11 @@ class PacksController extends Controller
 
         $thisLesson['next_content_type'] = 'lesson';
 
-        $pack =
-            $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
-                ->first();
+        if (!$pack) {
+            $pack =
+                $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
+                    ->first();
+        }
         $pack = $this->isOwnedOrLocked($pack, current_user()->getId());
 
         $thisLesson['is_owned'] = $pack['is_owned'];
@@ -418,6 +425,6 @@ class PacksController extends Controller
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;
 
-        return response()->json($thisLesson);
+        return ResponseService::content($thisLesson);
     }
 }
