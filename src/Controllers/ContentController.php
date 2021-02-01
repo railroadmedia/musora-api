@@ -247,4 +247,48 @@ class ContentController extends Controller
         return ResponseService::catalogue($results, $request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function getInProgressContent(Request $request)
+    {
+        ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
+        ContentRepository::$pullFutureContent = false;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        $types = $request->get('included_types', []);
+        $limit = $request->get('limit', 10);
+        $page = $request->get('page', 1);
+        $includedFields = $request->get('included_fields', []);
+        $requiredFields = $request->get('required_fields', []);
+        $sort = $request->get('sort', '-progress');
+
+        if (in_array('shows', $types)) {
+            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+        }
+
+        $results = new ContentFilterResultsEntity(['results' => []]);
+
+        if (!empty($types)) {
+            $results = $this->contentService->getFiltered(
+                $page,
+                $limit,
+                $sort,
+                $types,
+                [],
+                [],
+                $requiredFields,
+                $includedFields,
+                ['started'],
+                [],
+                true
+            );
+        }
+
+        return ResponseService::catalogue($results, $request);
+
+    }
+
 }
