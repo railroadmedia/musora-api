@@ -3,6 +3,8 @@
 namespace Railroad\MusoraApi\Controllers;
 
 use Doctrine\ORM\NonUniqueResultException;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -427,4 +429,77 @@ class PacksController extends Controller
 
         return ResponseService::content($thisLesson);
     }
+
+    /**
+     * @param Request $request
+     * @param $id
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function jumpToNextLesson(Request $request, $id)
+    {
+        $pack = $this->contentService->getById($id);
+
+        $thisPackBundle = null;
+
+        if ($pack['type'] == 'pack') {
+
+            $lessonsProgressRows =
+                $this->contentRepository->connection()
+                    ->table('railcontent_content_hierarchy as ch_1')
+                    ->select(
+                        [
+                            'ch_1.parent_id as pack_id',
+                            'ch_2.parent_id as pack_bundle_id',
+                            'ch_2.child_id as pack_bundle_lesson_id',
+
+                            'up.state as state',
+                            'up.progress_percent as progress_percent',
+                        ]
+                    )
+                    ->join('railcontent_content_hierarchy as ch_2', 'ch_2.parent_id', '=', 'ch_1.child_id')
+                    ->leftJoin(
+                        'railcontent_user_content_progress as up',
+                        function (JoinClause $join) {
+                            $join->on(
+                                'up.content_id',
+                                '=',
+                                'ch_2.child_id'
+                            )
+                                ->where(
+                                    function (Builder $builder) {
+                                        $builder->where('up.user_id', current_user()->getId());
+                                    }
+                                );
+                        }
+                    )
+                    ->where('ch_1.parent_id', $id)
+                    ->get();
+
+            foreach ($lessonsProgressRows as $childProgressRow) {
+                if ($childProgressRow['state'] != 'completed' && $childProgressRow['progress_percent'] != 100) {
+                    return $this->showBundleLesson($childProgressRow['pack_bundle_lesson_id']);
+                }
+            }
+        } else {
+            if ($pack['type'] == 'semester-pack') {
+                $packBundles = $this->contentService->getByParentId($pack['id']);
+                $packBundles = $packBundles->sort(
+                    function ($a, $b) {
+                        return strtotime($a["published_on"]) - strtotime($b["published_on"]);
+                    }
+                );
+
+                foreach ($packBundles as $packBundle) {
+                    if ($packBundle['completed'] == false) {
+                        return $this->showPackLesson($packBundle['id']);
+                    }
+                }
+
+            }
+        }
+
+        return response()->json();
+    }
+
 }
