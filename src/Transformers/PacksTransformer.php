@@ -10,27 +10,67 @@ class PacksTransformer extends TransformerAbstract
 {
     public function transform($packs)
     {
-        $packs['myPacks'] =
-            Fractal::create()
-                ->collection($packs['myPacks'])
-                ->transformWith(ContentTransformer::class)
-                ->serializeWith(DataSerializer::class)
-                ->toArray();
+        $top = null;
+        $myPacks = [];
+        $morePacks = [];
 
-        $packs['morePacks'] =
-            Fractal::create()
-                ->collection($packs['morePacks'])
-                ->transformWith(ContentTransformer::class)
-                ->serializeWith(DataSerializer::class)
-                ->toArray();
+        $topPackResponseStructure = config('musora-api.response-structure.top-header-pack');
+        $myPacksResponseStructure = config('musora-api.response-structure.my-packs');
+        $morePacksResponseStructure = config('musora-api.response-structure.more-packs');
 
-        $packs['topHeaderPack'] =
-            Fractal::create()
-                ->item($packs['topHeaderPack'])
-                ->transformWith(ContentTransformer::class)
-                ->serializeWith(DataSerializer::class)
-                ->toArray();
+        if (empty($topPackResponseStructure)) {
+            $top = $packs['topHeaderPack'];
+        }
 
-        return $packs;
+        if (empty($myPacksResponseStructure)) {
+            $myPacks = $packs['myPacks'];
+        }
+
+        if (empty($morePacksResponseStructure)) {
+            $morePacks = $packs['morePacks'];
+        }
+
+        foreach ($topPackResponseStructure ?? [] as $key => $item) {
+            if (is_array($item)) {
+                foreach ($item as $index2 => $it) {
+
+                    $top[$key][$it] = $packs['topHeaderPack'][$key][$it] ?? false;
+                }
+            } else {
+                $top[$item] = $packs['topHeaderPack'][$item] ?? false;
+            }
+        }
+
+        foreach ($packs['myPacks'] as $index => $pack) {
+            foreach ($myPacksResponseStructure ?? [] as $key => $item) {
+                if (is_array($item)) {
+                    foreach ($item as $index2 => $it) {
+
+                        $myPacks[$index][$key][$it] = $pack[$key][$it] ?? false;
+                    }
+                } else {
+                    $myPacks[$index][$item] = $pack[$item] ?? false;
+                }
+            }
+        }
+
+        foreach ($packs['morePacks'] ?? [] as $index => $pack) {
+            foreach ($morePacksResponseStructure ?? [] as $key => $item) {
+                if (is_array($item)) {
+                    foreach ($item as $index2 => $it) {
+
+                        $morePacks[$index][$key][$it] = $pack[$key][$it] ?? false;
+                    }
+                } else {
+                    $morePacks[$index][$item] = $pack[$item] ?? false;
+                }
+            }
+        }
+
+        return [
+            'myPacks' => $myPacks,
+            'morePacks' => $morePacks,
+            'topHeaderPack' => $top,
+        ];
     }
 }
