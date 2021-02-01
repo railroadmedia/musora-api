@@ -15,7 +15,7 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
         }
 
         if (!$responseStructure) {
-            return $content;
+            return (!is_array($content))?$content->getArrayCopy():$content;
         }
 
         foreach ($responseStructure as $index => $value) {
@@ -68,6 +68,8 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
                 foreach ($content[$item] as $index => $val) {
                     if (isset($val['id'])) {
                         $response[$item][$index] = self::transform($val);
+                    }else{
+                        $response[$item][$index] = $val;
                     }
                 }
             } elseif (isset($content[$item]['id'])) {
