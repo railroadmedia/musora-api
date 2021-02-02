@@ -38,6 +38,11 @@ class PacksController extends Controller
     private $contentHierarchyService;
 
     /**
+     * @var ContentRepository
+     */
+    private $contentRepository;
+
+    /**
      * @var ProductProviderInterface
      */
     private $productProvider;
@@ -49,16 +54,19 @@ class PacksController extends Controller
      * @param CommentService $commentService
      * @param ContentHierarchyService $contentHierarchyService
      * @param ProductProviderInterface $productProvider
+     * @param ContentRepository $contentRepository
      */
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
         ContentHierarchyService $contentHierarchyService,
-        ProductProviderInterface $productProvider
+        ProductProviderInterface $productProvider,
+        ContentRepository $contentRepository
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->contentHierarchyService = $contentHierarchyService;
+        $this->contentRepository = $contentRepository;
         $this->productProvider = $productProvider;
     }
 
@@ -226,7 +234,7 @@ class PacksController extends Controller
         }
 
         if ($topPack) {
-            $topPack['next_lesson_url'] = url()->route('mobile.packs.jump-to-next-lesson', [$topPack['id']]);
+            $topPack['next_lesson_url'] = url()->route('mobile.pack.jump-to-next-lesson', [$topPack['id']]);
             $topPack['apple_product_id'] = $this->productProvider->getAppleProductId($topPack['slug']);
             $topPack['google_product_id'] = $this->productProvider->getGoogleProductId($topPack['slug']);
         }
@@ -478,7 +486,7 @@ class PacksController extends Controller
 
             foreach ($lessonsProgressRows as $childProgressRow) {
                 if ($childProgressRow['state'] != 'completed' && $childProgressRow['progress_percent'] != 100) {
-                    return $this->showBundleLesson($childProgressRow['pack_bundle_lesson_id']);
+                    return $this->showLesson($childProgressRow['pack_bundle_lesson_id']);
                 }
             }
         } else {
@@ -492,10 +500,9 @@ class PacksController extends Controller
 
                 foreach ($packBundles as $packBundle) {
                     if ($packBundle['completed'] == false) {
-                        return $this->showPackLesson($packBundle['id']);
+                        return $this->showLesson($packBundle['id']);
                     }
                 }
-
             }
         }
 

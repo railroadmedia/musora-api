@@ -65,7 +65,7 @@ Route::group(
         Route::get(
             '/packs/jump-to-next-lesson/{packContentId}',
             [
-                'as' => 'mobile.packs.jump-to-next-lesson',
+                'as' => 'mobile.pack.jump-to-next-lesson',
                 'uses' => PacksController::class . '@jumpToNextLesson',
             ]
         );
