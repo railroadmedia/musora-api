@@ -9,7 +9,9 @@ use Railroad\MusoraApi\Serializer\DataSerializer;
 use Railroad\MusoraApi\Transformers\CatalogueTransformer;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
+use Railroad\MusoraApi\Transformers\LiveTransformer;
 use Railroad\MusoraApi\Transformers\PacksTransformer;
+use Railroad\MusoraApi\Transformers\ScheduledContentTransformer;
 use Spatie\Fractal\Fractal;
 
 class ResponseService
@@ -45,6 +47,24 @@ class ResponseService
         return Fractal::create()
             ->item($data)
             ->transformWith(ContentTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
+    }
+
+    public static function scheduleContent($data)
+    {
+        return Fractal::create()
+            ->collection($data)
+            ->transformWith(ScheduledContentTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
+    }
+
+    public static function live($data)
+    {
+        return Fractal::create()
+            ->item($data)
+            ->transformWith(LiveTransformer::class)
             ->serializeWith(DataSerializer::class)
             ->toArray();
     }

@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -288,7 +289,46 @@ class ContentController extends Controller
         }
 
         return ResponseService::catalogue($results, $request);
+    }
 
+    /**
+     * @param Request $request
+     * @return array|mixed|\Railroad\Railcontent\Entities\ContentEntity[]|Collection
+     */
+    public function getLiveSchedule(Request $request)
+    {
+        ContentRepository::$availableContentStatues = [
+            ContentService::STATUS_PUBLISHED,
+            ContentService::STATUS_SCHEDULED,
+        ];
+
+        ContentRepository::$pullFutureContent = true;
+
+        $liveEvents = $this->contentService->getWhereTypeInAndStatusAndPublishedOnOrdered(
+            config('railcontent.liveContentTypes'),
+            ContentService::STATUS_SCHEDULED,
+            Carbon::now()
+                ->subHours(24)
+                ->toDateTimeString(),
+            '>',
+            'published_on',
+            'asc'
+        )
+            ->sortByFieldValue('live_event_start_time')
+            ->toArray();
+
+        return ResponseService::scheduleContent($liveEvents);
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function getAllSchedule(Request $request)
+    {
+        $scheduleEvents = $this->contentService->getContentForCalendar(null, false)->toArray();
+
+        return ResponseService::scheduleContent($scheduleEvents);
     }
 
 }

@@ -120,5 +120,31 @@ Route::group(
             ]
         );
 
+        //route for live schedule
+        Route::get(
+            '/live-schedule',
+            [
+                'as' => 'mobile.live-schedule',
+                'uses' => ContentController::class . '@getLiveSchedule',
+            ]
+        );
+
+        Route::get(
+            '/schedule',
+            [
+                'as' => 'mobile.content-schedule',
+                'uses' => ContentController::class . '@getAllSchedule',
+            ]
+        );
+
+        //live event
+        Route::get(
+            '/live-event',
+            [
+                'as' => 'mobile.live-event',
+                'uses' => \Railroad\MusoraApi\Controllers\LiveController::class . '@getLiveEvent',
+            ]
+        );
+
     }
 );
