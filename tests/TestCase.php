@@ -8,7 +8,9 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\MusoraApi\Contracts\ChatProviderInterface;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
+use Railroad\MusoraApi\Tests\Fixtures\ChatProvider;
 use Railroad\MusoraApi\Tests\Resources\Models\User;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
@@ -66,6 +68,10 @@ class TestCase extends BaseTestCase
                         }
                     );
         }
+
+        $chatProvider = new ChatProvider();
+        $this->app->instance(ChatProviderInterface::class, $chatProvider);
+
     }
 
     /**
@@ -95,6 +101,9 @@ class TestCase extends BaseTestCase
         $app['config']->set('railcontent.userListContentTypes', $defaultConfig['userListContentTypes']);
         $app['config']->set('railcontent.appUserListContentTypes', $defaultConfig['appUserListContentTypes']);
         $app['config']->set('railcontent.onboardingContentIds', $defaultConfig['onboardingContentIds']);
+        $app['config']->set('railcontent.liveContentTypes', $defaultConfig['liveContentTypes']);
+        $app['config']->set('railcontent.appUpcomingEventPriorMinutes', $defaultConfig['appUpcomingEventPriorMinutes']);
+
         $app['config']->set('railcontent.validation', $defaultConfig['validation']);
         $app['config']->set(
             'railcontent.comment_assignation_owner_ids',
