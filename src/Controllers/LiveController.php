@@ -2,16 +2,14 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
-use App\Services\LiveStreamEventService;
-use App\Services\User\UserAccessService;
-use ChatRoll;
 use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Railroad\MusoraApi\Contracts\ChatProviderInterface;
+use Railroad\MusoraApi\Services\LiveStreamEventService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\Railcontent\Services\ContentService;
-use Services\CalendarService;
 
 class LiveController extends Controller
 {
@@ -21,14 +19,9 @@ class LiveController extends Controller
     private $contentService;
 
     /**
-     * @var ChatRoll
+     * @var ChatProviderInterface
      */
-    private $chatRoll;
-
-    /**
-     * @var CalendarService
-     */
-    private $calendarService;
+    private $chatProvider;
 
     /**
      * @var LiveStreamEventService
@@ -39,19 +32,16 @@ class LiveController extends Controller
      * LiveController constructor.
      *
      * @param ContentService $contentService
-     * @param ChatRoll $chatRoll
-     * @param CalendarService $calendarService
+     * @param ChatProviderInterface $chatProvider
      * @param LiveStreamEventService $liveStreamEventService
      */
     public function __construct(
         ContentService $contentService,
-        ChatRoll $chatRoll,
-        CalendarService $calendarService,
+        ChatProviderInterface $chatProvider,
         LiveStreamEventService $liveStreamEventService
     ) {
         $this->contentService = $contentService;
-        $this->chatRoll = $chatRoll;
-        $this->calendarService = $calendarService;
+        $this->chatProvider = $chatProvider;
         $this->liveStreamEventService = $liveStreamEventService;
     }
 
@@ -62,16 +52,9 @@ class LiveController extends Controller
      */
     public function getLiveEvent(Request $request)
     {
-        $member = current_user();
-        $this->calendarService->getTimezone($request);
+       // $this->calendarService->getTimezone($request);
 
-        $chatrollEmbedUrl = $this->chatRoll->getEmbedUrl(
-            $member->getId(),
-            $member->getDisplayName(),
-            $member->getProfilePictureUrl(),
-            url()->route('user.dashboard', [$member->getId()]),
-            UserAccessService::isAdministrator($member->getId())
-        );
+        $chatrollEmbedUrl = $this->chatProvider->getEmbedUrl();
 
         if ($request->has('forced-content-id')) {
             // this is for previewing any upcoming event
@@ -93,7 +76,7 @@ class LiveController extends Controller
         $currentEvent['youtubeId'] = $youtubeId ?? $this->liveStreamEventService->getCurrentOrNextYoutubeEventId();
         $currentEvent['chatRollEmbedUrl'] =$chatrollEmbedUrl;
         $currentEvent['chatRollViewersNumberClass'] =  '.chat-online-count';
-        $currentEvent['chatRollStyle'] = $this->chatRoll->getCustomStyle();
+        $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
         return ResponseService::live($currentEvent);
     }

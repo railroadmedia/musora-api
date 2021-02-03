@@ -641,4 +641,5 @@ return [
         'play-along',
         'song',
     ],
+    'appUpcomingEventPriorMinutes' => 240
 ];
