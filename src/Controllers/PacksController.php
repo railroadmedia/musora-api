@@ -210,7 +210,7 @@ class PacksController extends Controller
         }
 
         if ($topPack) {
-            $topPack = $this->isOwnedOrLocked($topPack, current_user()->getId());
+            $topPack = $this->isOwnedOrLocked($topPack, auth()->id());
         }
 
         if (!$topPack) {
@@ -281,7 +281,7 @@ class PacksController extends Controller
             return response()->json($pack);
         }
 
-        $pack = $this->isOwnedOrLocked($pack, current_user()->getId());
+        $pack = $this->isOwnedOrLocked($pack, auth()->id());
 
         $pack['thumbnail'] = $pack->fetch('data.header_image_url');
         $pack['pack_logo'] = $pack->fetch('data.logo_image_url');
@@ -391,7 +391,7 @@ class PacksController extends Controller
                 $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
                     ->first();
         }
-        $pack = $this->isOwnedOrLocked($pack, current_user()->getId());
+        $pack = $this->isOwnedOrLocked($pack, auth()->id());
 
         $thisLesson['is_owned'] = $pack['is_owned'];
 
@@ -476,7 +476,7 @@ class PacksController extends Controller
                             )
                                 ->where(
                                     function (Builder $builder) {
-                                        $builder->where('up.user_id', current_user()->getId());
+                                        $builder->where('up.user_id', auth()->id());
                                     }
                                 );
                         }
