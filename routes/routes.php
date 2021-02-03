@@ -3,11 +3,12 @@
 use Railroad\MusoraApi\Controllers\ContentController;
 use Railroad\MusoraApi\Controllers\PacksController;
 use Railroad\MusoraApi\Controllers\UserProgressController;
+use Railroad\MusoraApi\Controllers\AppleController;
 
 Route::group(
     [
         'prefix' => 'musora-api',
-        'middleware' => config('musora-api.middleware'),
+        'middleware' => config('musora-api.auth-middleware'),
     ],
     function () {
         //content
@@ -146,5 +147,38 @@ Route::group(
             ]
         );
 
+        Route::post(
+            '/submit-question',
+            ContentController::class . '@submitQuestion'
+        );
+
+        Route::post(
+            '/submit-video',
+            ContentController::class . '@submitVideo'
+        );
+
+        Route::post(
+            '/submit-student-focus-form',
+            ContentController::class . '@submitStudentFocusForm'
+        );
+
+    }
+);
+
+Route::group(
+    [
+        'prefix' => 'musora-api',
+        'middleware' => config('musora-api.auth-middleware'),
+    ],
+    function () {
+        Route::post(
+            '/apple/verify-receipt-and-process-payment',
+            AppleController::class . '@verifyReceiptAndProcessPayment'
+        );
+        Route::post(
+            '/apple/signup',
+            AppleController::class . '@signup'
+        );
+        Route::post('/apple/restore', AppleController::class . '@restorePurchase');
     }
 );

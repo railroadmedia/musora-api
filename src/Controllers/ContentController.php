@@ -7,8 +7,14 @@ use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Railroad\Mailora\Providers\MailoraServiceProvider;
+use Railroad\Mailora\Services\MailService;
+use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
+use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
+use Railroad\MusoraApi\Requests\SubmitVideoRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
@@ -38,20 +44,35 @@ class ContentController extends Controller
     private $vimeoVideoDecorator;
 
     /**
+     * @var UserProviderInterface
+     */
+    private $userProvider;
+
+    /**
+     * @var MailService
+     */
+    private $mailoraMailService;
+
+    /**
      * ContentController constructor.
      *
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
+     * @param UserProviderInterface $userProvider
      */
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
-        VimeoVideoSourcesDecorator $vimeoVideoDecorator
+        VimeoVideoSourcesDecorator $vimeoVideoDecorator,
+        UserProviderInterface $userProvider,
+        MailService $mailoraMailService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
+        $this->userProvider = $userProvider;
+        $this->mailoraMailService = $mailoraMailService;
     }
 
     /**
@@ -326,9 +347,139 @@ class ContentController extends Controller
      */
     public function getAllSchedule(Request $request)
     {
-        $scheduleEvents = $this->contentService->getContentForCalendar(null, false)->toArray();
+        $scheduleEvents =
+            $this->contentService->getContentForCalendar(null, false)
+                ->toArray();
 
         return ResponseService::scheduleContent($scheduleEvents);
+    }
+
+    /**
+     * @param SubmitQuestionRequest $request
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function submitQuestion(SubmitQuestionRequest $request)
+    {
+        $input = $request->all();
+        $currentUser = $this->userProvider->getCurrentUser();
+        $brand = config('railcontent.brand','');
+
+        $input['subject'] = config('musora-api.submit_question_subject.'.$brand,'')
+            . $currentUser->getDisplayName() . " (" . $currentUser->getEmail() . ")";
+        $input['sender-address'] = $currentUser->getEmail();
+        $input['sender-name'] = $currentUser->getDisplayName();
+        $input['lines'] = [$input['question']];
+        $input['unsubscribeLink'] = '';
+        $input['alert'] =
+            config('musora-api.submit_question_subject.'.$brand,''). $currentUser->getDisplayName() . " (" . $currentUser->getEmail() . ")";
+
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['type'] = 'layouts/inline/alert';
+        $input['recipient'] = config('musora-api.submit_question_recipient.'.$brand);
+        $input['success'] =config('musora-api.submit_question_success_message.'.$brand);
+
+        return $this->sendSecure($input);
+    }
+
+    /**
+     * @param SubmitVideoRequest $request
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function submitVideo(SubmitVideoRequest $request)
+    {
+        $input = $request->all();
+        $currentUser = $this->userProvider->getCurrentUser();
+        $brand = config('railcontent.brand','');
+
+        $input['subject'] =
+            "Monthly Collaboration submission from: " .
+            $currentUser->getDisplayName() .
+            " (" .
+            $currentUser->getEmail() .
+            ")";
+        $input['sender-address'] = $currentUser->getEmail();
+        $input['sender-name'] = $currentUser->getDisplayName();
+        $input['lines'] = [$input['video']];
+
+        $input['alert'] =
+            "Monthly Collaboration submission from: " .
+            $currentUser->getDisplayName() .
+            " (" .
+            $currentUser->getEmail() .
+            ")";
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['type'] = 'layouts/inline/alert';
+        $input['success'] =
+            "Our team will combine your video with the other student videos to create next months episode. Collaborations are typically released on the first of each month.";
+
+        return $this->sendSecure($input);
+    }
+
+    /**
+     * @param SubmitStudentFocusFormRequest $request
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function submitStudentFocusForm(SubmitStudentFocusFormRequest $request)
+    {
+        $currentUser = $this->userProvider->getCurrentUser();
+        $brand = config('railcontent.brand','');
+        $lines = [
+            '<strong>student progress info:</strong> ' .
+            'https://' .
+            'www.musora.com/admin/user-progress-info/' .
+            $currentUser->getId(),
+        ];
+        $inputLines = $request->all();
+        foreach ($inputLines as $key => $inputLine) {
+            $lines[] = '<strong>' . $key . ':</strong> ' . $inputLine;
+        }
+
+        $input['subject'] =
+        $input['alert'] =
+            'Student Review Application from:' .
+            $currentUser->getDisplayName() .
+            '(' .
+            $currentUser->getEmail() .
+            ')';
+
+        $input['lines'] = $lines;
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['type'] = 'layouts/inline/alert';
+        $input['recipient'] = config('musora_api.submit_student_focus_recipient.'.$brand);
+        $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
+
+        return $this->sendSecure($input);
+    }
+
+    /**
+     * @param $input
+     * @return JsonResponse
+     * @throws \Exception
+     */
+    public function sendSecure($input)
+    {
+        try {
+            $this->mailoraMailService->sendSecure($input);
+        } catch (\Exception $exception) {
+            return response()->json(
+                [
+                    'title' => 'Submission Failed',
+                    'message' => $exception->getMessage(),
+                ],
+                500
+            );
+        }
+
+        return response()->json(
+            [
+                'success' => true,
+                'title' => 'Thanks for your submission!',
+                'message' => $input['success'],
+            ]
+        );
     }
 
 }
