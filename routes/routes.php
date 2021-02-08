@@ -162,6 +162,15 @@ Route::group(
             ContentController::class . '@submitStudentFocusForm'
         );
 
+        //upload avatar
+        Route::post(
+            '/avatar/upload',
+            \Railroad\MusoraApi\Controllers\AvatarController::class . '@put'
+        );
+
+        //update user profile
+        Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class . '@updateUser');
+
     }
 );
 
