@@ -17,17 +17,27 @@ class User
     private $displayName;
 
     /**
+     * @var string
+     */
+    private $profilePictureUrl;
+
+    private $phoneNumber;
+
+    /**
      * User constructor.
      *
      * @param $id
      * @param string $email
      * @param string $displayName
      */
-    public function __construct($id, string $email, string $displayName)
+    public function __construct($id, string $email, string $displayName, string $profilePictureUrl, string $phoneNumber)
     {
         $this->id = $id;
         $this->email = $email;
         $this->displayName = $displayName;
+        $this->profilePictureUrl = $profilePictureUrl;
+        $this->phoneNumber = $phoneNumber;
+
     }
 
     /**
@@ -79,6 +89,39 @@ class User
     public function setDisplayName($displayName)
     {
         $this->displayName = $displayName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProfilePictureUrl()
+    : string
+    {
+        return $this->profilePictureUrl;
+    }
+
+    /**
+     * @param $profilePictureUrl
+     */
+    public function setProfilePictureUrl($profilePictureUrl)
+    {
+        $this->profilePictureUrl = $profilePictureUrl;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPhoneNumber()
+    {
+        return $this->phoneNumber;
+    }
+
+    /**
+     * @param int $phoneNumber
+     */
+    public function setPhoneNumber($phoneNumber)
+    {
+        $this->phoneNumber = !empty($phoneNumber) ? preg_replace('/[^0-9]/', '', $phoneNumber) : $phoneNumber;
     }
 
 

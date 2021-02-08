@@ -28,4 +28,6 @@ interface ProductProviderInterface
      * @return mixed
      */
     public function currentUserOwnsPack($id);
+
+    public function getMembershipProductIds();
 }
