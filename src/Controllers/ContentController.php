@@ -127,24 +127,32 @@ class ContentController extends Controller
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
-        if ($isDownload && array_key_exists('lessons', $content)) {
+        if(!array_key_exists('lessons', $content)) {
+
+            $lessons = $this->contentService->getByParentId($content['id']);
+            if(!empty($lessons)){$content['lessons'] = $lessons;}
+        }
+
+        $content =
+            $this->vimeoVideoDecorator->decorate(new Collection([$content]))
+                ->first();
+
+        if ($isDownload && !empty($content['lessons'])) {
             //for download feature we need lessons assignments, vimeo urls, comments
             $this->vimeoVideoDecorator->decorate(new Collection($content['lessons']));
 
             $this->commentService->attachCommentsToContents($content['lessons']);
 
-            $parentChildren = $this->contentService->getByParentId($content['id']);
+            $parentChildren = $lessons ?? $this->contentService->getByParentId($content['id']);
 
             foreach ($content['lessons'] as $lessonIndex => $lesson) {
                 $content['lessons'][$lessonIndex]['related_lessons'] = $parentChildren;
                 $content['lessons'][$lessonIndex]['previous_lesson'] = $parentChildren[$lessonIndex - 1] ?? null;
                 $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
             }
-        }
 
-        $content =
-            $this->vimeoVideoDecorator->decorate(new Collection([$content]))
-                ->first();
+            return ResponseService::contentForDownload($content);
+        }
 
         return ResponseService::content($content);
     }

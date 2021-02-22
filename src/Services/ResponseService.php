@@ -7,6 +7,7 @@ use League\Fractal\Serializer\ArraySerializer;
 use League\Fractal\TransformerAbstract;
 use Railroad\MusoraApi\Serializer\DataSerializer;
 use Railroad\MusoraApi\Transformers\CatalogueTransformer;
+use Railroad\MusoraApi\Transformers\ContentForDownloadTransformer;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
 use Railroad\MusoraApi\Transformers\LiveTransformer;
@@ -65,6 +66,15 @@ class ResponseService
         return Fractal::create()
             ->item($data)
             ->transformWith(LiveTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
+    }
+
+    public static function contentForDownload($data)
+    {
+        return Fractal::create()
+            ->item($data)
+            ->transformWith(ContentForDownloadTransformer::class)
             ->serializeWith(DataSerializer::class)
             ->toArray();
     }
