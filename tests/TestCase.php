@@ -8,12 +8,16 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Railroad\Ecommerce\Faker\Faker;
+use Railroad\Ecommerce\Gateways\AppleStoreKitGateway;
 use Railroad\MusoraApi\Contracts\ChatProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
 use Railroad\MusoraApi\Tests\Fixtures\ChatProvider;
 use Railroad\MusoraApi\Tests\Fixtures\UserProvider;
 use Railroad\MusoraApi\Tests\Resources\Models\User;
+use Railroad\Railcontent\Factories\CommentFactory;
+use Railroad\Railcontent\Factories\UserContentProgressFactory;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
 use Railroad\Response\Providers\ResponseServiceProvider;
@@ -34,6 +38,20 @@ class TestCase extends BaseTestCase
      * @var AuthManager
      */
     protected $authManager;
+    /**
+     * @var CommentFactory
+     */
+    protected $commentFactory;
+    /**
+     * @var UserContentProgressFactory
+     */
+    protected $userProgressFactory;
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject
+     */
+    protected $appleStoreKitGatewayMock;
+
+    protected $ecommerceFaker;
 
     protected function setUp()
     {
@@ -46,6 +64,9 @@ class TestCase extends BaseTestCase
 
         $this->databaseManager = $this->app->make(DatabaseManager::class);
         $this->faker = $this->app->make(Generator::class);
+        $this->commentFactory = $this->app->make(CommentFactory::class);
+        $this->userProgressFactory = $this->app->make(UserContentProgressFactory::class);
+       // $this->ecommerceFaker = $this->app->make(Faker::class);
         $this->authManager = $this->app->make(AuthManager::class);
 
         //call the MobileAppTokenAuth
@@ -70,6 +91,11 @@ class TestCase extends BaseTestCase
                         }
                     );
         }
+
+        $this->appleStoreKitGatewayMock = $this->getMockBuilder(AppleStoreKitGateway::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->app->instance(AppleStoreKitGateway::class, $this->appleStoreKitGatewayMock);
 
         $chatProvider = new ChatProvider();
         $this->app->instance(ChatProviderInterface::class, $chatProvider);

@@ -50,7 +50,7 @@ return [
     'comment_likes_amount_of_users' => 3,
     'commentable_content_types' => [
         'course',
-        'course lesson',
+        'course-part',
     ],
     'comment_assignation_owner_ids' => [
         102905,

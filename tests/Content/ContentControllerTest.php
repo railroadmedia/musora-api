@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Railroad\MusoraApi\Tests\TestCase;
 use Railroad\Railcontent\Factories\ContentContentFieldFactory;
 use Railroad\Railcontent\Factories\ContentFactory;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Railroad\Railcontent\Services\ContentService;
 
 class ContentControllerTest extends TestCase
 {
@@ -48,6 +48,19 @@ class ContentControllerTest extends TestCase
     {
         $content = $this->contentFactory->create(null, 'course');
 
+        $this->contentFactory->create(
+            null,
+            'course-part',
+            ContentService::STATUS_PUBLISHED,
+            null,
+            config('railcontent.brand'),
+            null,
+            Carbon::now()
+                ->subDays(3)
+                ->toDateTimeString(),
+            $content['id']
+        );
+
         $response =
             $this->actingAs()
                 ->get(
@@ -55,6 +68,62 @@ class ContentControllerTest extends TestCase
                 );
 
         $response->assertStatus(200);
+
+        $responseStructure = (config('musora-api.response-structure')[$content['type']]);
+        $this->assertEquals(count($responseStructure), count($response->decodeResponseJson()));
+
+        foreach ($responseStructure as $key => $value) {
+            if (is_string($key) && (!str_contains($key, '.'))) {
+                $this->assertTrue(array_key_exists($key, $response->decodeResponseJson()));
+            }
+        }
+
+        $this->assertEquals(
+            $content['id'],
+            $response->decodeResponseJson()['id']
+        );
+    }
+
+    public function test_pull_content_for_download_endpoint()
+    {
+        $content = $this->contentFactory->create(null, 'course');
+
+        for ($i = 0; $i < 5; $i++) {
+            $lessons[] = $this->contentFactory->create(
+                $this->faker->text,
+                'course-part',
+                ContentService::STATUS_PUBLISHED,
+                null,
+                config('railcontent.brand'),
+                null,
+                Carbon::now()
+                    ->subDays(3)
+                    ->toDateTimeString(),
+                $content['id']
+            );
+        }
+
+        $comment = $this->commentFactory->create($this->faker->text, $lessons[0]['id']);
+
+        $response =
+            $this->actingAs()
+                ->get(
+                    '/musora-api/content/' . $content['id'] . '?download=true'
+                );
+
+        $response->assertStatus(200);
+        $responseStructure = (config('musora-api.response-structure')[$content['type'] . '_download']);
+        $this->assertEquals(count($responseStructure), count($response->decodeResponseJson()));
+
+        foreach ($responseStructure as $key) {
+            if (is_string($key) && (!str_contains($key, '.'))) {
+                $this->assertTrue(array_key_exists($key, $response->decodeResponseJson()));
+            }
+        }
+
+        foreach ($response->decodeResponseJson()['lessons'] as $lesson) {
+            $this->assertTrue(array_key_exists('comments', $lesson));
+        }
 
         $this->assertEquals(
             $content['id'],
@@ -136,6 +205,44 @@ class ContentControllerTest extends TestCase
         foreach ($response->decodeResponseJson('data') as $content) {
             $this->assertTrue(in_array($content['id'], array_pluck(array_slice($contents, 0, 7), 'id')));
         }
+    }
+
+    public function test_in_progress_endpoint()
+    {
+        $includedType = $this->faker->word;
+
+        for ($i = 0; $i < 50; $i++) {
+            $contents[] = $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED);
+        }
+
+        $response =
+            $this->actingAs()
+                ->call(
+                    'GET',
+                    '/musora-api/in-progress',
+                    [
+                        'included_types' => [$includedType],
+                    ]
+                );
+
+        $response->assertStatus(200);
+
+        //assert we have empty data if not exists content in progress
+        $this->assertTrue(empty($response->decodeResponseJson('data')));
+
+        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12,  auth()->id());
+
+        $response = $this->call(
+            'GET',
+            '/musora-api/in-progress',
+            [
+                'included_types' => [$includedType],
+            ]
+        );
+
+        $response->assertStatus(200);
+
+        $this->assertEquals($contents[0]['id'], $response->decodeResponseJson('data')[0]['id']);
     }
 
     public function test_get_live_event()
