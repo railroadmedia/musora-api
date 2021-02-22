@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\Ecommerce\Entities\Subscription;
+use Railroad\Ecommerce\Events\AppSignupStartedEvent;
 use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
@@ -224,6 +225,48 @@ class AuthController extends Controller
         ];
 
         return response()->json($profileData);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createIntercomUser(Request $request)
+    {
+        $email = $request->get('email');
+
+        if (!$email) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => 'Email is required.',
+                ],
+                422
+            );
+        }
+
+        try {
+            event(
+                new AppSignupStartedEvent(
+                    [
+                        'email' => $email,
+                    ]
+                )
+            );
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => 'Intercom exception when create intercom user. Message:' . $e->getMessage(),
+                ]
+            );
+        }
+
+        return response()->json(
+            [
+                'success' => true,
+            ]
+        );
     }
 
 }

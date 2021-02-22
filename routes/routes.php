@@ -189,5 +189,7 @@ Route::group(
             AppleController::class . '@signup'
         );
         Route::post('/apple/restore', AppleController::class . '@restorePurchase');
+
+        Route::put('/intercom-user', \Railroad\MusoraApi\Controllers\AuthController::class . '@createIntercomUser');
     }
 );
