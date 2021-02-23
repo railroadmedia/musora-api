@@ -168,6 +168,8 @@ Route::group(
             \Railroad\MusoraApi\Controllers\AvatarController::class . '@put'
         );
 
+        Route::get('/profile', \Railroad\MusoraApi\Controllers\AuthController::class . '@getAuthUser');
+
         //update user profile
         Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class . '@updateUser');
 
@@ -177,19 +179,9 @@ Route::group(
 Route::group(
     [
         'prefix' => 'musora-api',
-        'middleware' => config('musora-api.auth-middleware'),
+        'middleware' => config('musora-api.user-middleware'),
     ],
     function () {
-        Route::post(
-            '/apple/verify-receipt-and-process-payment',
-            AppleController::class . '@verifyReceiptAndProcessPayment'
-        );
-        Route::post(
-            '/apple/signup',
-            AppleController::class . '@signup'
-        );
-        Route::post('/apple/restore', AppleController::class . '@restorePurchase');
-
         Route::put('/intercom-user', \Railroad\MusoraApi\Controllers\AuthController::class . '@createIntercomUser');
     }
 );

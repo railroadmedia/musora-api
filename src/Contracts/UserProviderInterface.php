@@ -18,4 +18,10 @@ interface UserProviderInterface
      * @return mixed
      */
     public function getUserXp($userId);
+
+    /**
+     * @param $userId
+     * @return mixed
+     */
+    public function getMembershipInfo($userId);
 }

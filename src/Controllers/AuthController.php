@@ -269,4 +269,48 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * @param Request $request
+     * @return Fractal
+     * @throws JWTException
+     */
+    public function getAuthUser(Request $request)
+    {
+        $user = $this->userRepository->findOneBy(['id' => auth()->id()]);
+
+        $userXP = $this->userProvider->getUserXp($user->getId());
+        $xpRank = $this->userProvider->getExperienceRank($userXP);
+
+        $membershipInfo = $this->userProvider->getMembershipInfo($user->getId());
+
+        $profileData = [
+            'id' => $user->getId(),
+            'wordpressId' => $user->getLegacyDrumeoWordpressId(),
+            'ipbId' => $user->getLegacyDrumeoIpbId(),
+            'email' => $user->getEmail(),
+            'permission_level' => $user->getPermissionLevel(),
+            'login_username' => $user->getEmail(),
+            'display_name' => $user->getDisplayName(),
+            'first_name' => $user->getFirstName(),
+            'last_name' => $user->getLastName(),
+            'gender' => $user->getGender(),
+            'country' => $user->getCountry(),
+            'region' => $user->getRegion(),
+            'city' => $user->getCity(),
+            'birthday' => ($user->getBirthday()) ?
+                $user->getBirthday()
+                    ->toDateTimeString() : '',
+            'phone_number' => $user->getPhoneNumber(),
+            'bio' => $user->getBiography(),
+            'created_at' => $user->getCreatedAt()
+                ->toDateTimeString(),
+            'updated_at' => $user->getUpdatedAt()
+                ->toDateTimeString(),
+            'avatarUrl' => $user->getProfilePictureUrl(),
+            'totalXp' => $userXP,
+            'xpRank' => $xpRank,
+        ];
+
+        return response()->json(array_merge($profileData, $membershipInfo));
+    }
 }
