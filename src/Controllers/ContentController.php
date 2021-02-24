@@ -20,6 +20,7 @@ use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
+use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentService;
@@ -54,6 +55,11 @@ class ContentController extends Controller
     private $mailoraMailService;
 
     /**
+     * @var ContentHierarchyRepository
+     */
+    private $contentHierarchyRepository;
+
+    /**
      * ContentController constructor.
      *
      * @param ContentService $contentService
@@ -66,13 +72,15 @@ class ContentController extends Controller
         CommentService $commentService,
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
-        MailService $mailoraMailService
+        MailService $mailoraMailService,
+        ContentHierarchyRepository $contentHierarchyRepository
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
         $this->userProvider = $userProvider;
         $this->mailoraMailService = $mailoraMailService;
+        $this->contentHierarchyRepository = $contentHierarchyRepository;
     }
 
     /**
@@ -489,5 +497,78 @@ class ContentController extends Controller
             ]
         );
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws DBALException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws ReflectionException
+     */
+    public function addLessonsToUserList(Request $request)
+    {
+        $input = json_decode($request->getContent(), true);
+
+        $skill = $input['skill'];
+        $topics = $input['topics'] ?? ['noTopic'];
+
+        if (!$skill) {
+            $skill = ($topics != ['noTopic']) ? 'beginner' : 'noDifficulty';
+        }
+
+        $userId = auth()->id();
+
+        $lessons = [];
+        foreach ($topics as $topic) {
+            $lessons = array_merge(
+                $lessons,
+                config('lessonsSkillsAndTopicMapping.topicDifficultyMapping')[$topic][$skill] ?? []
+            );
+        }
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        $userPrimaryPlaylist =
+            $this->contentService->getByUserIdTypeSlug($userId, 'user-playlist', 'primary-playlist')
+                ->first();
+
+        if (!$userPrimaryPlaylist) {
+            $userPrimaryPlaylist = $this->contentService->create(
+                'primary-playlist',
+                'user-playlist',
+                ContentService::STATUS_PUBLISHED,
+                null,
+                config('railcontent.brand'),
+                $userId,
+                Carbon::now()
+                    ->toDateTimeString()
+            );
+        }
+
+        foreach ($lessons as $lesson) {
+            $this->contentHierarchyRepository->updateOrCreateChildToParentLink(
+                $userPrimaryPlaylist['id'],
+                $lesson,
+                null
+            );
+        }
+
+        return $this->contentService->getFiltered(
+            1,
+            10,
+            '-published_on',
+            [],
+            [],
+            [$userPrimaryPlaylist['id']],
+            [],
+            [],
+            [],
+            [],
+            false
+        )
+            ->toJsonResponse();
+    }
+
 
 }

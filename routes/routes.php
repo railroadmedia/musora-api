@@ -173,6 +173,8 @@ Route::group(
         //update user profile
         Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class . '@updateUser');
 
+        Route::put('/add-lessons', ContentController::class . '@addLessonsToUserList');
+
     }
 );
 
