@@ -98,68 +98,17 @@ class AuthController extends Controller
      */
     public function updateUser(Request $request)
     {
-        $user = $this->userProvider->getCurrentUser();
-
         if ($request->has('file')) {
-            $user->setProfilePictureUrl($request->get('file'));
+            $this->userProvider->setCurrentUserProfilePictureUrl($request->get('file'));
         }
 
         if ($request->has('phone_number')) {
-            $user->setPhoneNumber($request->get('phone_number'));
+            $this->userProvider->setCurrentUserPhoneNumber($request->get('phone_number'));
         }
 
-        if ($request->has('firebase_token_ios')) {
-
-            $userFirebaseTokens = $this->userFirebaseTokensRepository->findOneBy(
-                [
-                    'user' => $user,
-                    'type' => UserFirebaseTokens::TYPE_IOS,
-                    'token' => $request->get('firebase_token_ios'),
-                ]
-            );
-
-            if (!$userFirebaseTokens) {
-
-                $userFirebaseToken = new UserFirebaseTokens();
-                $userFirebaseToken->setUser($user);
-                $userFirebaseToken->setBrand(config('railcontent.brand'));
-                $userFirebaseToken->setToken($request->get('firebase_token_ios'));
-                $userFirebaseToken->setType(UserFirebaseTokens::TYPE_IOS);
-                $userFirebaseToken->setCreatedAt(Carbon::now());
-
-                $this->entityManager->persist($userFirebaseToken);
-                $this->entityManager->flush();
-            }
-        }
-
-        if ($request->has('firebase_token_android')) {
-
-            $userFirebaseTokens = $this->userFirebaseTokensRepository->findOneBy(
-                [
-                    'user' => $user,
-                    'type' => UserFirebaseTokens::TYPE_ANDROID,
-                    'token' => $request->get('firebase_token_android'),
-                ]
-            );
-
-            if (!$userFirebaseTokens) {
-
-                $userFirebaseToken = new UserFirebaseTokens();
-                $userFirebaseToken->setUser($user);
-                $userFirebaseToken->setBrand('drumeo');
-                $userFirebaseToken->setToken($request->get('firebase_token_android'));
-                $userFirebaseToken->setType(UserFirebaseTokens::TYPE_ANDROID);
-                $userFirebaseToken->setCreatedAt(Carbon::now());
-                $this->entityManager->persist($userFirebaseToken);
-                $this->entityManager->flush();
-
-            }
-        }
-
-        $displayName = $request->get('display_name');
-        if ($displayName) {
-            $inUseDisplayName = $this->userRepository->findBy(['displayName' => $displayName]);
-            if ($inUseDisplayName && ($displayName != $user->getDisplayName())) {
+        if ($request->has('display_name')) {
+            $updatedUser = $this->userProvider->setCurrentUserDisplayName($request->get('display_name'));
+            if (!$updatedUser) {
                 return response()->json(
                     [
                         'success' => false,
@@ -169,62 +118,18 @@ class AuthController extends Controller
                     500
                 );
             }
-
-            $user->setDisplayName($displayName);
         }
 
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        $membershipSubscription = $this->subscriptionRepository->getUserSubscriptionForProducts(
-            $user->getId(),
-            $this->productProvider->getMembershipProductIds(),
-            true
-        );
-
-        $isAppleAppSubscriber = false;
-        $isGoogleAppSubscriber = false;
-
-        if ($membershipSubscription) {
-            $isAppleAppSubscriber = $membershipSubscription->getType() == Subscription::TYPE_APPLE_SUBSCRIPTION;
-            $isGoogleAppSubscriber = $membershipSubscription->getType() == Subscription::TYPE_GOOGLE_SUBSCRIPTION;
+        if ($request->has('firebase_token_ios') || $request->has('firebase_token_android')) {
+            $this->userProvider->setCurrentUserFirebaseTokens($request->get('firebase_token_ios'), $request->get('firebase_token_android'));
         }
 
-        $userXP = $this->userProvider->getUserXp($user->getId());
-        $xpRank = $this->userProvider->getExperienceRank($userXP);
+        $membershipData = $this->userProvider->getCurrentUserMembershipData();
+        $profileData = $this->userProvider->getCurrentUserProfileData();
+        $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
-        // the \Railroad\Usora\Services\ResponseService::userArray($user)->toArray() differs greatly from currently used response format
-        $profileData = [
-            'id' => $user->getId(),
-            'wordpressId' => $user->getLegacyDrumeoWordpressId(),
-            'ipbId' => $user->getLegacyDrumeoIpbId(),
-            'email' => $user->getEmail(),
-            'permission_level' => $user->getPermissionLevel(),
-            'login_username' => $user->getEmail(),
-            'display_name' => $user->getDisplayName(),
-            'first_name' => $user->getFirstName(),
-            'last_name' => $user->getLastName(),
-            'gender' => $user->getGender(),
-            'country' => $user->getCountry(),
-            'region' => $user->getRegion(),
-            'city' => $user->getCity(),
-            'birthday' => ($user->getBirthday()) ?
-                $user->getBirthday()
-                    ->toDateTimeString() : '',
-            'phone_number' => $user->getPhoneNumber(),
-            'bio' => $user->getBiography(),
-            'created_at' => $user->getCreatedAt()
-                ->toDateTimeString(),
-            'updated_at' => $user->getUpdatedAt()
-                ->toDateTimeString(),
-            'avatarUrl' => $user->getProfilePictureUrl(),
-            'totalXp' => $userXP,
-            'xpRank' => $xpRank,
-            'isAppleAppSubscriber' => $isAppleAppSubscriber,
-            'isGoogleAppSubscriber' => $isGoogleAppSubscriber,
-        ];
+        return response()->json(array_merge($profileData, $experienceData, $membershipData));
 
-        return response()->json($profileData);
     }
 
     /**
@@ -274,43 +179,24 @@ class AuthController extends Controller
      * @return Fractal
      * @throws JWTException
      */
-    public function getAuthUser(Request $request)
+    public function getAuthUser()
     {
-        $user = $this->userRepository->findOneBy(['id' => auth()->id()]);
+        $user = $this->userProvider->getCurrentUser();
 
-        $userXP = $this->userProvider->getUserXp($user->getId());
-        $xpRank = $this->userProvider->getExperienceRank($userXP);
+        if (!$user) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => 'Login Required.',
+                ],
+                401
+            );
+        }
 
-        $membershipInfo = $this->userProvider->getMembershipInfo($user->getId());
+        $membershipData = $this->userProvider->getCurrentUserMembershipData();
+        $profileData = $this->userProvider->getCurrentUserProfileData();
+        $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
-        $profileData = [
-            'id' => $user->getId(),
-            'wordpressId' => $user->getLegacyDrumeoWordpressId(),
-            'ipbId' => $user->getLegacyDrumeoIpbId(),
-            'email' => $user->getEmail(),
-            'permission_level' => $user->getPermissionLevel(),
-            'login_username' => $user->getEmail(),
-            'display_name' => $user->getDisplayName(),
-            'first_name' => $user->getFirstName(),
-            'last_name' => $user->getLastName(),
-            'gender' => $user->getGender(),
-            'country' => $user->getCountry(),
-            'region' => $user->getRegion(),
-            'city' => $user->getCity(),
-            'birthday' => ($user->getBirthday()) ?
-                $user->getBirthday()
-                    ->toDateTimeString() : '',
-            'phone_number' => $user->getPhoneNumber(),
-            'bio' => $user->getBiography(),
-            'created_at' => $user->getCreatedAt()
-                ->toDateTimeString(),
-            'updated_at' => $user->getUpdatedAt()
-                ->toDateTimeString(),
-            'avatarUrl' => $user->getProfilePictureUrl(),
-            'totalXp' => $userXP,
-            'xpRank' => $xpRank,
-        ];
-
-        return response()->json(array_merge($profileData, $membershipInfo));
+        return response()->json(array_merge($profileData, $experienceData, $membershipData));
     }
 }

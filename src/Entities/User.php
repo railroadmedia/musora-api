@@ -30,7 +30,7 @@ class User
      * @param string $email
      * @param string $displayName
      */
-    public function __construct($id, string $email, string $displayName, string $profilePictureUrl, string $phoneNumber)
+    public function __construct($id, string $email, string $displayName, string $profilePictureUrl='', $phoneNumber = null)
     {
         $this->id = $id;
         $this->email = $email;

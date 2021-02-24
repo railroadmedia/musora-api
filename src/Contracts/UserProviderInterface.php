@@ -2,26 +2,59 @@
 
 namespace Railroad\MusoraApi\Contracts;
 
+use Railroad\MusoraApi\Entities\User;
 
 interface UserProviderInterface
 {
-    public function getCurrentUser();
+    /**
+     * @return User|null
+     */
+    public function getCurrentUser()
+    : ?User;
 
     /**
-     * @param $xp
-     * @return mixed
+     * @return array
      */
-    public  function getExperienceRank($xp);
+    public function getCurrentUserMembershipData()
+    : array;
 
     /**
-     * @param $userId
-     * @return mixed
+     * @return array
      */
-    public function getUserXp($userId);
+    public function getCurrentUserProfileData()
+    : array;
 
     /**
-     * @param $userId
+     * @return array
+     */
+    public function getCurrentUserExperienceData()
+    : array;
+
+    /**
+     * @param string $profilePictureUrl
+     * @return User
+     */
+    public function setCurrentUserProfilePictureUrl(string $profilePictureUrl)
+    : User;
+
+    /**
+     * @param string $phoneNumber
+     * @return User
+     */
+    public function setCurrentUserPhoneNumber(string $phoneNumber)
+    : User;
+
+    /**
+     * @param string $displayName
+     * @return User|null
+     */
+    public function setCurrentUserDisplayName(string $displayName)
+    : ?User;
+
+    /**
+     * @param string|null $iosToken
+     * @param string|null $androidToken
      * @return mixed
      */
-    public function getMembershipInfo($userId);
+    public function setCurrentUserFirebaseTokens(?string $iosToken, ?string $androidToken);
 }
