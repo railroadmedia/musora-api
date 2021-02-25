@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Tests;
 
+use Carbon\Carbon;
 use Faker\Generator;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Database\DatabaseManager;
@@ -11,12 +12,17 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Ecommerce\Faker\Faker;
 use Railroad\Ecommerce\Gateways\AppleStoreKitGateway;
 use Railroad\MusoraApi\Contracts\ChatProviderInterface;
+use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
 use Railroad\MusoraApi\Tests\Fixtures\ChatProvider;
+use Railroad\MusoraApi\Tests\Fixtures\ProductProvider;
 use Railroad\MusoraApi\Tests\Fixtures\UserProvider;
 use Railroad\MusoraApi\Tests\Resources\Models\User;
 use Railroad\Railcontent\Factories\CommentFactory;
+use Railroad\Railcontent\Factories\ContentFactory;
+use Railroad\Railcontent\Factories\ContentPermissionsFactory;
+use Railroad\Railcontent\Factories\PermissionsFactory;
 use Railroad\Railcontent\Factories\UserContentProgressFactory;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
@@ -53,6 +59,20 @@ class TestCase extends BaseTestCase
 
     protected $ecommerceFaker;
 
+    /**
+     * @var ContentFactory
+     */
+    protected $contentFactory;
+    /**
+     * @var PermissionsFactory
+     */
+    protected $permissionFactory;
+
+    /**
+     * @var ContentPermissionsFactory
+     */
+    protected $contentPermissionFactory;
+
     protected function setUp()
     {
         parent::setUp();
@@ -64,9 +84,13 @@ class TestCase extends BaseTestCase
 
         $this->databaseManager = $this->app->make(DatabaseManager::class);
         $this->faker = $this->app->make(Generator::class);
+        $this->contentFactory = $this->app->make(ContentFactory::class);
         $this->commentFactory = $this->app->make(CommentFactory::class);
         $this->userProgressFactory = $this->app->make(UserContentProgressFactory::class);
-       // $this->ecommerceFaker = $this->app->make(Faker::class);
+        $this->permissionFactory = $this->app->make(PermissionsFactory::class);
+        $this->contentPermissionFactory = $this->app->make(ContentPermissionsFactory::class);
+
+        // $this->ecommerceFaker = $this->app->make(Faker::class);
         $this->authManager = $this->app->make(AuthManager::class);
 
         //call the MobileAppTokenAuth
@@ -92,9 +116,10 @@ class TestCase extends BaseTestCase
                     );
         }
 
-        $this->appleStoreKitGatewayMock = $this->getMockBuilder(AppleStoreKitGateway::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->appleStoreKitGatewayMock =
+            $this->getMockBuilder(AppleStoreKitGateway::class)
+                ->disableOriginalConstructor()
+                ->getMock();
         $this->app->instance(AppleStoreKitGateway::class, $this->appleStoreKitGatewayMock);
 
         $chatProvider = new ChatProvider();
@@ -102,6 +127,9 @@ class TestCase extends BaseTestCase
 
         $userProvider = new UserProvider();
         $this->app->instance(UserProviderInterface::class, $userProvider);
+
+        $productProvider = new ProductProvider();
+        $this->app->instance(ProductProviderInterface::class, $productProvider);
 
     }
 
@@ -182,7 +210,6 @@ class TestCase extends BaseTestCase
         // allows access to built in user auth
         $app['config']->set('auth.providers.users.model', User::class);
 
-
         $musoraApiConfig = require(__DIR__ . '/../config/musora-api.php');
         $app['config']->set('musora-api.response-structure', $musoraApiConfig['response-structure']);
 
@@ -200,7 +227,9 @@ class TestCase extends BaseTestCase
      */
     public function actingAs($user = null, $driver = null)
     {
-        $user = $this->createAndLogInNewUser();
+        if (!$user) {
+            $user = $this->createAndLogInNewUser();
+        }
 
         parent::actingAs($user);
 
@@ -224,11 +253,82 @@ class TestCase extends BaseTestCase
                 ->where('id', $userId)
                 ->first();
 
-        $this->authManager->guard()
-            ->onceUsingId($userId);
+        //        $this->authManager->guard()
+        //            ->onceUsingId($userId);
 
         return $user;
     }
+
+    /**
+     * Helper method to seed a test content
+     *      *
+     * @return array
+     */
+    public function fakeContent($contentData = [])
+    {
+        $contentData += [
+            'slug' => $this->faker->slug,
+            'type' => $this->faker->text,
+            'brand' => config('railcontent.brand'),
+            'language' => $this>$this->faker->text,
+            'status' => 'published',
+            'published_on' => Carbon::now()
+                ->toDateTimeString(),
+            'created_on' => Carbon::now()
+                ->toDateTimeString(),
+        ];
+
+        $contentId =
+            $this->databaseManager->table('railcontent_content')
+                ->insertGetId($contentData);
+
+        $contentData['id'] = $contentId;
+
+        return $contentData;
+    }
+
+    /**
+     * Helper method to seed a test permission
+     *
+     * @return array
+     */
+    public function fakePermission($permissionData = [])
+    {
+        $permissionData += [
+            'name' => $this->faker->slug,
+            'brand' => config('railcontent.brand'),
+        ];
+
+        $permissionId =
+            $this->databaseManager->table('railcontent_permissions')
+                ->insertGetId($permissionData);
+
+        $permissionData['id'] = $permissionId;
+
+        return $permissionData;
+    }
+
+    /**
+     * Helper method to seed a test permission
+     *
+     * @return array
+     */
+//    public function fakeContentPermission($contentPermissionData = [])
+//    {
+//        $contentPermissionData += [
+//            'permission_id' => rand(1,10),
+//            'brand' => config('railcontent.brand')
+//        ];
+//
+//        $permissionId =
+//            $this->databaseManager->table('railcontent_content_permissions')
+//                ->insertGetId($contentPermissionData);
+//
+//        $contentPermissionData['id'] = $permissionId;
+//
+//        return $contentPermissionData;
+//    }
+
 
     protected function tearDown()
     {

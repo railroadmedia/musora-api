@@ -341,7 +341,7 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') as $result) {
+        foreach ($response->decodeResponseJson('data')??[] as $result) {
             $this->assertEquals($content['id'], $result['id']);
             $this->assertTrue($content['isLive']);
         }
@@ -547,10 +547,12 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') as $result) {
+        foreach ($response->decodeResponseJson('data')??[] as $result) {
             $this->assertEquals($forcedContent['id'], $result['id']);
             $this->assertFalse($forcedContent['isLive']);
         }
     }
+
+
 
 }
