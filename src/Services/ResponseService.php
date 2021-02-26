@@ -30,9 +30,6 @@ class ResponseService
 
     public static function catalogue($data, $request)
     {
-        $transformer = new CatalogueTransformer();
-        $transformedData = $transformer->transform($data->results());
-
         $filters = $data->filterOptions();
         $filters['showSkillLevel'] = true;
 
@@ -49,9 +46,17 @@ class ResponseService
             }
         }
 
+        if($request->has('old_style')){
+            $result = $data->results();
+        } else {
+            $result = (new CatalogueTransformer())->transform($data->results());
+
+            $filters = (new FilterOptionsTransformer())->transform($data->filterOptions());
+        }
+
         return (new ContentFilterResultsEntity(
             [
-                'results' => $transformedData,
+                'results' => $result,
                 'filter_options' => $filters,
                 'total_results' => $data->totalResults(),
             ]
