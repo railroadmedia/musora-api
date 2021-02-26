@@ -23,6 +23,7 @@ use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
+use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
 
@@ -271,6 +272,13 @@ class ContentController extends Controller
         $results = new ContentFilterResultsEntity(['results' => []]);
 
         if (!empty($types)) {
+
+            ConfigService::$fieldOptionList=[
+                'instructor',
+                'topic',
+                'difficulty',
+                'style'];
+
             $results = $this->contentService->getFiltered(
                 $page,
                 $limit,
