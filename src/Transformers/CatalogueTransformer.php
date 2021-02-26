@@ -18,7 +18,11 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
         foreach ($responseStructure as $item) {
             $fields = explode('.', $item);
             if (count($fields) == 2) {
-                $response[$fields[1]] = $content->fetch($item);
+                if($fields[0] == 'data') {
+                    $response[$fields[1]] = (ContentHelper::getDatumValue($fields[1]));
+                }elseif($fields[0] == 'fields'){
+                    $response[$fields[1]] = (ContentHelper::getFieldValue($fields[1]));
+                }
             } else {
                 $response[$item] = $content[$item] ?? false;
             }
