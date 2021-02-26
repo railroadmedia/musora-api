@@ -243,6 +243,10 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
+        if (in_array('shows', $types)) {
+            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+        }
+
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 10);
 
