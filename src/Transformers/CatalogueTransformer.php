@@ -8,9 +8,13 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
 {
     public function transform($content)
     {
+        if(!is_array($content)){
+            $content = $content->getArrayCopy();
+        }
+
         $responseStructure = config('musora-api.response-structure.catalogues', []);
         if(!$responseStructure){
-           return $content->getArrayCopy();
+           return $content;
         }
 
         $response = [];
@@ -19,9 +23,9 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
             $fields = explode('.', $item);
             if (count($fields) == 2) {
                 if($fields[0] == 'data') {
-                    $response[$fields[1]] = (ContentHelper::getDatumValue($fields[1]));
+                    $response[$fields[1]] = (ContentHelper::getDatumValue($content, $fields[1]));
                 }elseif($fields[0] == 'fields'){
-                    $response[$fields[1]] = (ContentHelper::getFieldValue($fields[1]));
+                    $response[$fields[1]] = (ContentHelper::getFieldValue($content, $fields[1]));
                 }
             } else {
                 $response[$item] = $content[$item] ?? false;
