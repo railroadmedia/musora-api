@@ -8,6 +8,7 @@ use Illuminate\Auth\AuthManager;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use Railroad\Ecommerce\Faker\Faker;
 use Railroad\Ecommerce\Gateways\AppleStoreKitGateway;
@@ -26,6 +27,7 @@ use Railroad\Railcontent\Factories\PermissionsFactory;
 use Railroad\Railcontent\Factories\UserContentProgressFactory;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
+use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Response\Providers\ResponseServiceProvider;
 
 class TestCase extends BaseTestCase
@@ -146,6 +148,8 @@ class TestCase extends BaseTestCase
 
         $app['config']->set('railcontent.database_connection_name', 'testbench');
         $app['config']->set('railcontent.cache_duration', $defaultConfig['cache_duration']);
+        $app['config']->set('railcontent.cache_driver', $defaultConfig['cache_driver']);
+        $app['config']->set('railcontent.cache_prefix', $defaultConfig['cache_prefix']);
         $app['config']->set('railcontent.table_prefix', $defaultConfig['table_prefix']);
         $app['config']->set('railcontent.data_mode', $defaultConfig['data_mode']);
         $app['config']->set('railcontent.brand', $defaultConfig['brand']);
@@ -205,7 +209,29 @@ class TestCase extends BaseTestCase
                 ],
             ]
         );
-        $app['config']->set('cache.default', env('CACHE_DRIVER', 'redis'));
+        $app['config']->set('railcontent.database.default', 'testbench');
+        $app['config']->set(
+            'railcontent.database.connections.testbench',
+            [
+                'driver' => 'sqlite',
+                'database' => ':memory:',
+                'prefix' => '',
+            ]
+        );
+
+        $app['config']->set(
+            'railcontent.database.redis',
+            [
+                'client' => 'predis',
+                'default' => [
+                    'host' => env('REDIS_HOST', 'redis'),
+                    'password' => env('REDIS_PASSWORD', null),
+                    'port' => env('REDIS_PORT', 6379),
+                    'database' => 0,
+                ],
+            ]
+        );
+        $app['config']->set('railcontent.cache.default', 'redis');
 
         // allows access to built in user auth
         $app['config']->set('auth.providers.users.model', User::class);
@@ -272,7 +298,7 @@ class TestCase extends BaseTestCase
             'brand' => config('railcontent.brand'),
             'language' => $this>$this->faker->text,
             'status' => 'published',
-            'published_on' => Carbon::now()
+            'published_on' => Carbon::now()->subDays(1)
                 ->toDateTimeString(),
             'created_on' => Carbon::now()
                 ->toDateTimeString(),
@@ -332,6 +358,8 @@ class TestCase extends BaseTestCase
 
     protected function tearDown()
     {
+        Redis::flushDB();
+
         parent::tearDown();
     }
 }

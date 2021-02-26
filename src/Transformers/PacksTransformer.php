@@ -18,28 +18,29 @@ class PacksTransformer extends TransformerAbstract
         $myPacksResponseStructure = config('musora-api.response-structure.my-packs');
         $morePacksResponseStructure = config('musora-api.response-structure.more-packs');
 
-        if (empty($topPackResponseStructure)) {
+        if (!empty($topPackResponseStructure)) {
             $top = $packs['topHeaderPack'];
         }
 
-        if (empty($myPacksResponseStructure)) {
+        if (!empty($myPacksResponseStructure)) {
             $myPacks = $packs['myPacks'];
         }
 
-        if (empty($morePacksResponseStructure)) {
+        if (!empty($morePacksResponseStructure)) {
             $morePacks = $packs['morePacks'];
         }
+if($packs['topHeaderPack']) {
+    foreach ($topPackResponseStructure ?? [] as $key => $item) {
+        if (is_array($item)) {
+            foreach ($item as $index2 => $it) {
 
-        foreach ($topPackResponseStructure ?? [] as $key => $item) {
-            if (is_array($item)) {
-                foreach ($item as $index2 => $it) {
-
-                    $top[$key][$it] = $packs['topHeaderPack'][$key][$it] ?? false;
-                }
-            } else {
-                $top[$item] = $packs['topHeaderPack'][$item] ?? false;
+                $top[$key][$it] = $packs['topHeaderPack'][$key][$it] ?? false;
             }
+        } else {
+            $top[$item] = $packs['topHeaderPack'][$item] ?? false;
         }
+    }
+}
 
         foreach ($packs['myPacks'] as $index => $pack) {
             foreach ($myPacksResponseStructure ?? [] as $key => $item) {
