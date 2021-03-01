@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
@@ -48,6 +49,11 @@ class PacksController extends Controller
     private $productProvider;
 
     /**
+     * @var VimeoVideoSourcesDecorator
+     */
+    private $vimeoVideoDecorator;
+
+    /**
      * PacksController constructor.
      *
      * @param ContentService $contentService
@@ -61,13 +67,15 @@ class PacksController extends Controller
         CommentService $commentService,
         ContentHierarchyService $contentHierarchyService,
         ProductProviderInterface $productProvider,
-        ContentRepository $contentRepository
+        ContentRepository $contentRepository,
+        VimeoVideoSourcesDecorator $videoSourcesDecorator
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->contentHierarchyService = $contentHierarchyService;
         $this->contentRepository = $contentRepository;
         $this->productProvider = $productProvider;
+        $this->vimeoVideoDecorator = $videoSourcesDecorator;
     }
 
     /**
@@ -434,6 +442,8 @@ class PacksController extends Controller
 
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;
+
+        $this->vimeoVideoDecorator->decorate(new Collection([$thisLesson]));
 
         return ResponseService::content($thisLesson);
     }
