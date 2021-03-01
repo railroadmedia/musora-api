@@ -27,6 +27,8 @@ return [
             'parent_id',
             'fields.name',
             'data.head_shot_picture_url',
+            'isLive'
+
         ],
         'instructor' => [
             'id',

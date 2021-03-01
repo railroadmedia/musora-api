@@ -98,5 +98,45 @@ class ResponseService
             ->serializeWith(DataSerializer::class)
             ->toArray();
     }
+
+    /**
+     * @param $data
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function list($data, $request)
+    {
+        $filters = $data->filterOptions();
+        $filters['showSkillLevel'] = true;
+
+        if ($request->get('included_types', []) == ['coach-stream']) {
+            $filters = ['content_type' => ['coach-stream']];
+        }
+
+        foreach ($filters as $key => $filterOptions) {
+            if (is_array($filterOptions)) {
+                if (($key != 'content_type') && ($key != 'instructor')) {
+                    $filters[$key] = array_diff($filterOptions, ['All']);
+                    array_unshift($filters[$key], 'All');
+                }
+            }
+        }
+
+        if($request->has('old_style')){
+            $result = $data->results();
+        } else {
+            $result = (new CatalogueTransformer())->transform($data->results());
+
+            $filters = (new FilterOptionsTransformer())->transform($data->filterOptions());
+        }
+
+        return (new ContentFilterResultsEntity(
+            [
+                'results' => $result,
+                'filter_options' => $filters,
+                'total_results' => $data->totalResults(),
+            ]
+        ))->toJsonResponse();
+    }
 }
 

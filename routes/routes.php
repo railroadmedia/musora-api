@@ -175,6 +175,8 @@ Route::group(
 
         Route::put('/add-lessons', ContentController::class . '@addLessonsToUserList');
 
+        Route::get('/my-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@getMyLists');
+
     }
 );
 

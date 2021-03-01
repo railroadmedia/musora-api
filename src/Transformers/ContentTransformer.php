@@ -52,13 +52,14 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
         $fields = explode('.', $item);
 
         if (count($fields) >= 2) {
-            $response[array_last($fields)] = $content->fetch($item);
+            $key = array_last($fields)!='value'?array_last($fields):$fields[1];
+            $response[$key] = $content->fetch($item);
 
-            if (is_array($response[array_last($fields)])) {
-                foreach ($response[array_last($fields)] as $index => $val) {
+            if (is_array($response[$key])) {
+                foreach ($response[$key] as $index => $val) {
                     if (isset($val['id'])) {
 
-                        $response[array_last($fields)][$index] = self::transform($val);
+                        $response[$key][$index] = self::transform($val);
                     }
                 }
             }
