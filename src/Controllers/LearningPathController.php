@@ -423,8 +423,6 @@ class LearningPathController extends Controller
             }
         }
 
-        $thisLesson['instructors'] = $level->fetch('*fields.instructor');
-
         $this->vimeoVideoDecorator->decorate(new Collection([$thisLesson]));
 
         CommentRepository::$availableContentId = $thisLesson['id'];
