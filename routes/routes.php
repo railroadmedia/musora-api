@@ -177,6 +177,11 @@ Route::group(
 
         Route::get('/my-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@getMyLists');
 
+        Route::get(
+            '/search',
+            ContentController::class . '@search'
+        );
+
     }
 );
 

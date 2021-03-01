@@ -25,6 +25,7 @@ use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentService;
+use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Support\Collection;
 
 class ContentController extends Controller
@@ -59,6 +60,10 @@ class ContentController extends Controller
      * @var ContentHierarchyRepository
      */
     private $contentHierarchyRepository;
+    /**
+     * @var FullTextSearchService
+     */
+    private $fullTextSearchService;
 
     /**
      * ContentController constructor.
@@ -67,6 +72,9 @@ class ContentController extends Controller
      * @param CommentService $commentService
      * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
      * @param UserProviderInterface $userProvider
+     * @param MailService $mailoraMailService
+     * @param ContentHierarchyRepository $contentHierarchyRepository
+     * @param FullTextSearchService $fullTextSearchService
      */
     public function __construct(
         ContentService $contentService,
@@ -74,7 +82,8 @@ class ContentController extends Controller
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
         MailService $mailoraMailService,
-        ContentHierarchyRepository $contentHierarchyRepository
+        ContentHierarchyRepository $contentHierarchyRepository,
+        FullTextSearchService $fullTextSearchService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -82,6 +91,7 @@ class ContentController extends Controller
         $this->userProvider = $userProvider;
         $this->mailoraMailService = $mailoraMailService;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
+        $this->fullTextSearchService = $fullTextSearchService;
     }
 
     /**
@@ -136,10 +146,12 @@ class ContentController extends Controller
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
-        if(!array_key_exists('lessons', $content)) {
+        if (!array_key_exists('lessons', $content)) {
 
             $lessons = $this->contentService->getByParentId($content['id']);
-            if(!empty($lessons)){$content['lessons'] = $lessons;}
+            if (!empty($lessons)) {
+                $content['lessons'] = $lessons;
+            }
         }
 
         $content =
@@ -273,11 +285,12 @@ class ContentController extends Controller
 
         if (!empty($types)) {
 
-            ConfigService::$fieldOptionList=[
+            ConfigService::$fieldOptionList = [
                 'instructor',
                 'topic',
                 'difficulty',
-                'style'];
+                'style',
+            ];
 
             $results = $this->contentService->getFiltered(
                 $page,
@@ -391,21 +404,29 @@ class ContentController extends Controller
     {
         $input = $request->all();
         $currentUser = $this->userProvider->getCurrentUser();
-        $brand = config('railcontent.brand','');
+        $brand = config('railcontent.brand', '');
 
-        $input['subject'] = config('musora-api.submit_question_subject.'.$brand,'')
-            . $currentUser->getDisplayName() . " (" . $currentUser->getEmail() . ")";
+        $input['subject'] =
+            config('musora-api.submit_question_subject.' . $brand, '') .
+            $currentUser->getDisplayName() .
+            " (" .
+            $currentUser->getEmail() .
+            ")";
         $input['sender-address'] = $currentUser->getEmail();
         $input['sender-name'] = $currentUser->getDisplayName();
         $input['lines'] = [$input['question']];
         $input['unsubscribeLink'] = '';
         $input['alert'] =
-            config('musora-api.submit_question_subject.'.$brand,''). $currentUser->getDisplayName() . " (" . $currentUser->getEmail() . ")";
+            config('musora-api.submit_question_subject.' . $brand, '') .
+            $currentUser->getDisplayName() .
+            " (" .
+            $currentUser->getEmail() .
+            ")";
 
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('musora-api.submit_question_recipient.'.$brand);
-        $input['success'] =config('musora-api.submit_question_success_message.'.$brand);
+        $input['recipient'] = config('musora-api.submit_question_recipient.' . $brand);
+        $input['success'] = config('musora-api.submit_question_success_message.' . $brand);
 
         return $this->sendSecure($input);
     }
@@ -419,7 +440,7 @@ class ContentController extends Controller
     {
         $input = $request->all();
         $currentUser = $this->userProvider->getCurrentUser();
-        $brand = config('railcontent.brand','');
+        $brand = config('railcontent.brand', '');
 
         $input['subject'] =
             "Monthly Collaboration submission from: " .
@@ -437,7 +458,7 @@ class ContentController extends Controller
             " (" .
             $currentUser->getEmail() .
             ")";
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
         $input['type'] = 'layouts/inline/alert';
         $input['success'] =
             "Our team will combine your video with the other student videos to create next months episode. Collaborations are typically released on the first of each month.";
@@ -453,7 +474,7 @@ class ContentController extends Controller
     public function submitStudentFocusForm(SubmitStudentFocusFormRequest $request)
     {
         $currentUser = $this->userProvider->getCurrentUser();
-        $brand = config('railcontent.brand','');
+        $brand = config('railcontent.brand', '');
         $lines = [
             '<strong>student progress info:</strong> ' .
             'https://' .
@@ -467,17 +488,13 @@ class ContentController extends Controller
 
         $input['subject'] =
         $input['alert'] =
-            'Student Review Application from:' .
-            $currentUser->getDisplayName() .
-            '(' .
-            $currentUser->getEmail() .
-            ')';
+            'Student Review Application from:' . $currentUser->getDisplayName() . '(' . $currentUser->getEmail() . ')';
 
         $input['lines'] = $lines;
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('musora_api.submit_student_focus_recipient.'.$brand);
-        $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
+        $input['recipient'] = config('musora_api.submit_student_focus_recipient.' . $brand);
+        $input['success'] = config('musora-api.submit_student_focus_success_message.' . $brand);
 
         return $this->sendSecure($input);
     }
@@ -582,5 +599,36 @@ class ContentController extends Controller
             ->toJsonResponse();
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function search(Request $request)
+    {
+        ContentRepository::$availableContentStatues =
+            $request->get('statuses', ContentRepository::$availableContentStatues);
+
+        $contentsData = $this->fullTextSearchService->search(
+            $request->get('term', null),
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            $request->get('included_types', []),
+            $request->get('statuses', []),
+            $request->get('sort', '-score'),
+            $request->get('date_time_cutoff', null),
+            $request->get('brands', null)
+        );
+
+        return ResponseService::catalogue(
+            new ContentFilterResultsEntity(
+                [
+                    'results' => $contentsData['results'],
+                    'total_results' => $contentsData['total_results']
+                ]
+            ),
+            $request
+        );
+    }
 
 }
