@@ -11,7 +11,12 @@ class ContentForDownloadTransformer extends \League\Fractal\TransformerAbstract
         $response = [];
 
         if (empty($responseStructure) && array_key_exists('type', $content)) {
-            $responseStructure = config('musora-api.response-structure.' . $content['type'].'_download');
+            $type = (in_array($content['type'], config('railcontent.showTypes'))) ? 'show-lesson' : $content['type'];
+
+            $responseStructure = array_merge(
+                config('musora-api.response-structure.' . $type,[]),
+                config('musora-api.response-structure.download',[])
+            );
         }
 
         if (!$responseStructure) {

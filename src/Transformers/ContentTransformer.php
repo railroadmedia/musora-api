@@ -11,16 +11,21 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
         $response = [];
 
         if (empty($responseStructure) && array_key_exists('type', $content)) {
-            $responseStructure = config('musora-api.response-structure.' . $content['type']);
+
+            $type = (in_array($content['type'], config('railcontent.showTypes'))) ? 'show-lesson' : $content['type'];
+
+            $responseStructure = config('musora-api.response-structure.' . $type);
+
         }
 
         if (!$responseStructure) {
-            return (!is_array($content))?$content->getArrayCopy():$content;
+            return (!is_array($content)) ? $content->getArrayCopy() : $content;
         }
 
         foreach ($responseStructure as $index => $value) {
             if (is_array($value)) {
-                if (array_key_exists($index, $content) && (is_array($content[$index])|| $content[$index] instanceof Collection)) {
+                if (array_key_exists($index, $content) &&
+                    (is_array($content[$index]) || $content[$index] instanceof Collection)) {
                     foreach ($content[$index] as $content2) {
 
                         $response[$index][] = self::transform($content2, $value);
@@ -52,7 +57,7 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
         $fields = explode('.', $item);
 
         if (count($fields) >= 2) {
-            $key = array_last($fields)!='value'?array_last($fields):$fields[1];
+            $key = array_last($fields) != 'value' ? array_last($fields) : $fields[1];
             $response[$key] = $content->fetch($item);
 
             if (is_array($response[$key])) {
@@ -69,7 +74,7 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
                 foreach ($content[$item] as $index => $val) {
                     if (isset($val['id'])) {
                         $response[$item][$index] = self::transform($val);
-                    }else{
+                    } else {
                         $response[$item][$index] = $val;
                     }
                 }
