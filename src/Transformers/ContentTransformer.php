@@ -32,10 +32,9 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
                     }
                 } elseif (array_key_exists($index, $content) && ($content[$index])) {
                     $response[$index] = self::transform($content[$index], $value);
-                } else {
-                    $response[$index] = null;
-                    continue;
-                }
+                } elseif (array_key_exists($index, $content)) {
+                    $response[$index] = $content[$index];
+                 }
 
             } else {
                 $response = $this->trans($value, $content, $response);
