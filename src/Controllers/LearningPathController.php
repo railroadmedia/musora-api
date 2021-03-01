@@ -105,7 +105,9 @@ class LearningPathController extends Controller
         $learningPathNextLesson = $learningPath->fetch('next_lesson', []);
 
         if (!empty($learningPathNextLesson)) {
-            $learningPath['next_lesson_url'] = $learningPathNextLesson->fetch('mobile_app_url', null);
+            $learningPath['next_lesson_url'] = url()->route('mobile.learning-path.lesson.show',[
+                $learningPathNextLesson['id']
+            ]);
             $learningPath['next_lesson_id'] = $learningPathNextLesson['id'];
             $learningPath['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $learningPath['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
@@ -197,7 +199,9 @@ class LearningPathController extends Controller
 
         $level['next_lesson_id'] = null;
         if (!empty($learningPathNextLesson)) {
-            $level['next_lesson_url'] = $learningPathNextLesson->fetch('mobile_app_url', null);
+            $level['next_lesson_url'] = url()->route('mobile.learning-path.lesson.show',[
+                $learningPathNextLesson['id']
+            ]);
             $level['next_lesson_id'] = $learningPathNextLesson['id'];
             $level['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $level['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
@@ -282,7 +286,9 @@ class LearningPathController extends Controller
 
         $course['next_lesson_id'] = null;
         if (!empty($learningPathNextLesson) && ($learningPathNextLesson['sort'] != 0)) {
-            $course['next_lesson_url'] = $learningPathNextLesson->fetch('mobile_app_url', null);
+            $course['next_lesson_url'] =  url()->route('mobile.learning-path.lesson.show',[
+                $learningPathNextLesson['id']
+            ]);
             $course['next_lesson_id'] = $learningPathNextLesson['id'];
             $course['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $course['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
