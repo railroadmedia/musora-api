@@ -364,11 +364,11 @@ class LearningPathController extends Controller
             return response()->json($thisLesson);
         }
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
-
         $course =
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['learning-path-course'])
                 ->first();
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         if (empty($course)) {
             return response()->json($course);
@@ -485,7 +485,9 @@ class LearningPathController extends Controller
         $thisLesson['comments'] = (new CommentTransformer())->transform($comments['results']);
         $thisLesson['total_comments'] = $comments['total_results'];
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
+        if (!empty($thisLesson['resources']) || !empty($course['resources'])) {
+            $thisLesson['resources'] = array_merge($thisLesson['resources'] ?? [], $course['resources'] ?? []);
+        }
 
         return ResponseService::content($thisLesson);
     }
