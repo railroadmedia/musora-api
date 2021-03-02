@@ -121,7 +121,9 @@ class LearningPathController extends Controller
             if ($learningPathNextLesson->fetch('status') == ContentService::STATUS_PUBLISHED &&
                 Carbon::parse($learningPathNextLesson->fetch('published_on'))
                     ->lessThanOrEqualTo(Carbon::now())) {
-                $learningPath['banner_button_url'] = $learningPathNextLesson->fetch('mobile_app_url');
+                $learningPath['banner_button_url'] = url()->route('mobile.learning-path.lesson.show',[
+                    $learningPathNextLesson['id']
+                ]);
             }
         }
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
@@ -189,7 +191,9 @@ class LearningPathController extends Controller
         //  $this->addedToPrimaryPlaylistDecorator->decorate($courses);
         $this->vimeoVideoDecorator->decorate(new Collection([$level]));
 
-        $level['banner_button_url'] = $level->fetch('current_lesson', [])['mobile_app_url'] ?? '';
+        $level['banner_button_url'] = $level->fetch('current_lesson')?url()->route('mobile.learning-path.lesson.show',[
+            $level->fetch('current_lesson')['id']
+        ]): '';
 
         $level['courses'] = $courses;
 
