@@ -302,36 +302,46 @@ class PacksController extends Controller
         $index = null;
         $lessons = $this->contentService->getByParentId($pack['id']);
 
-        foreach ($lessons as $bundleIndex => $bundle) {
-            foreach ($bundle['lessons'] ?? [] as $lessonIndex => $lesson) {
-                if ($lesson->fetch('completed') != true && $bundle->fetch('completed') != true && (!$index)) {
-                    $pack['current_lesson_index'] = $lessonIndex;
-                    $pack['next_lesson'] = $bundle['lessons'][$lessonIndex] ?? null;
-                    $index = $lessonIndex;
-                }
-            }
-        }
-
-        if (count($lessons) == 1) {
-            $lessons[0]['is_locked'] = $pack['is_locked'];
-            $lessons[0]['is_owned'] = $pack['is_owned'];
-            $lessons[0]['full_price'] = $packPrice['full_price'] ?? 0;
-            $lessons[0]['price'] = $packPrice['price'] ?? 0;
-            $lessons[0]['pack_logo'] = $pack->fetch('data.logo_image_url');
-            $lessons[0]['apple_product_id'] = $pack['apple_product_id'];
-            $lessons[0]['google_product_id'] = $pack['google_product_id'];
-            $lessons[0]['next_lesson'] = $lessons[0]['current_lesson'] ?? null;
-
-            return ResponseService::content($lessons[0]);
-        }
-
         $pack['full_price'] = $packPrice['full_price'] ?? 0;
         $pack['price'] = $packPrice['price'] ?? 0;
 
         if ($pack['type'] == 'pack') {
             $pack['bundles'] = $lessons->toArray();
             $pack['bundle_number'] = count($lessons);
+
+            if ($pack['bundle_number'] == 1) {
+                $lessons[0]['is_locked'] = $pack['is_locked'];
+                $lessons[0]['is_owned'] = $pack['is_owned'];
+                $lessons[0]['full_price'] = $packPrice['full_price'] ?? 0;
+                $lessons[0]['price'] = $packPrice['price'] ?? 0;
+                $lessons[0]['pack_logo'] = $pack->fetch('data.logo_image_url');
+                $lessons[0]['apple_product_id'] = $pack['apple_product_id'];
+                $lessons[0]['google_product_id'] = $pack['google_product_id'];
+                $lessons[0]['next_lesson'] = $lessons[0]['current_lesson'] ?? null;
+
+                return ResponseService::content($lessons[0]);
+            }
+
+            $isSet = false;
+            foreach ($lessons as $bundleIndex => $bundle) {
+                foreach ($bundle['lessons'] ?? [] as $lessonIndex => $lesson) {
+                    if ($lesson->fetch('completed') != true && $bundle->fetch('completed') != true && (!$isSet)) {
+                        $pack['current_lesson_index'] = $lessonIndex;
+                        $pack['next_lesson'] = $bundle['lessons'][$lessonIndex] ?? null;
+                        $isSet = true;
+                    }
+                }
+            }
+
         } else {
+            $isSet = false;
+            foreach ($lessons as $lessonIndex => $lesson) {
+                    if ($lesson->fetch('completed') != true && (!$isSet)) {
+                        $pack['current_lesson_index'] = $lessonIndex;
+                        $pack['next_lesson'] = $lesson;
+                        $isSet = true;
+                    }
+            }
             $pack['lessons'] = $lessons;
         }
 
