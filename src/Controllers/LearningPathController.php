@@ -61,8 +61,8 @@ class LearningPathController extends Controller
         ContentService $contentService,
         CommentService $commentService,
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
-        ContentHierarchyRepository  $contentHierarchyRepository,
-        MethodService  $methodService
+        ContentHierarchyRepository $contentHierarchyRepository,
+        MethodService $methodService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -105,9 +105,12 @@ class LearningPathController extends Controller
         $learningPathNextLesson = $learningPath->fetch('next_lesson', []);
 
         if (!empty($learningPathNextLesson)) {
-            $learningPath['next_lesson_url'] = url()->route('mobile.learning-path.lesson.show',[
-                $learningPathNextLesson['id']
-            ]);
+            $learningPath['next_lesson_url'] = url()->route(
+                'mobile.learning-path.lesson.show',
+                [
+                    $learningPathNextLesson['id'],
+                ]
+            );
             $learningPath['next_lesson_id'] = $learningPathNextLesson['id'];
             $learningPath['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $learningPath['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
@@ -121,9 +124,12 @@ class LearningPathController extends Controller
             if ($learningPathNextLesson->fetch('status') == ContentService::STATUS_PUBLISHED &&
                 Carbon::parse($learningPathNextLesson->fetch('published_on'))
                     ->lessThanOrEqualTo(Carbon::now())) {
-                $learningPath['banner_button_url'] = url()->route('mobile.learning-path.lesson.show',[
-                    $learningPathNextLesson['id']
-                ]);
+                $learningPath['banner_button_url'] = url()->route(
+                    'mobile.learning-path.lesson.show',
+                    [
+                        $learningPathNextLesson['id'],
+                    ]
+                );
             }
         }
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
@@ -183,17 +189,23 @@ class LearningPathController extends Controller
 
         foreach ($courses as $course) {
             $course['level_rank'] = $level['level_number'] . '.' . ($course['position'] - 1);
-            $course['mobile_app_url'] = url()->route('mobile.learning-path.course.show',[
-                $course['id']
-            ]);
+            $course['mobile_app_url'] = url()->route(
+                'mobile.learning-path.course.show',
+                [
+                    $course['id'],
+                ]
+            );
         }
 
         //  $this->addedToPrimaryPlaylistDecorator->decorate($courses);
         $this->vimeoVideoDecorator->decorate(new Collection([$level]));
 
-        $level['banner_button_url'] = $level->fetch('current_lesson')?url()->route('mobile.learning-path.lesson.show',[
-            $level->fetch('current_lesson')['id']
-        ]): '';
+        $level['banner_button_url'] = $level->fetch('current_lesson') ? url()->route(
+            'mobile.learning-path.lesson.show',
+            [
+                $level->fetch('current_lesson')['id'],
+            ]
+        ) : '';
 
         $level['courses'] = $courses;
 
@@ -203,9 +215,12 @@ class LearningPathController extends Controller
 
         $level['next_lesson_id'] = null;
         if (!empty($learningPathNextLesson)) {
-            $level['next_lesson_url'] = url()->route('mobile.learning-path.lesson.show',[
-                $learningPathNextLesson['id']
-            ]);
+            $level['next_lesson_url'] = url()->route(
+                'mobile.learning-path.lesson.show',
+                [
+                    $learningPathNextLesson['id'],
+                ]
+            );
             $level['next_lesson_id'] = $learningPathNextLesson['id'];
             $level['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $level['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
@@ -275,14 +290,23 @@ class LearningPathController extends Controller
         }
 
         $lessons = $this->contentService->getByParentId($courseId);
-        foreach ($lessons as $index=>$lesson) {
-            $lessons[$index]['mobile_app_url'] = url()->route('mobile.learning-path.lesson.show',[
-                $lesson['id']
-            ]);
+        foreach ($lessons as $index => $lesson) {
+            $lessons[$index]['mobile_app_url'] = url()->route(
+                'mobile.learning-path.lesson.show',
+                [
+                    $lesson['id'],
+                ]
+            );
         }
         $course['lessons'] = $lessons;
 
-        $course['banner_button_url'] = $course->fetch('current_lesson', [])['mobile_app_url'] ?? '';
+        $course['banner_button_url'] = $course->fetch('current_lesson') ? url()->route(
+            'mobile.learning-path.lesson.show',
+            [
+                $course->fetch('current_lesson')['id'],
+            ]
+        ) : '';
+
         $course['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
         $learningPathNextLesson =
@@ -290,9 +314,12 @@ class LearningPathController extends Controller
 
         $course['next_lesson_id'] = null;
         if (!empty($learningPathNextLesson) && ($learningPathNextLesson['sort'] != 0)) {
-            $course['next_lesson_url'] =  url()->route('mobile.learning-path.lesson.show',[
-                $learningPathNextLesson['id']
-            ]);
+            $course['next_lesson_url'] = url()->route(
+                'mobile.learning-path.lesson.show',
+                [
+                    $learningPathNextLesson['id'],
+                ]
+            );
             $course['next_lesson_id'] = $learningPathNextLesson['id'];
             $course['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
             $course['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
@@ -312,6 +339,7 @@ class LearningPathController extends Controller
 
         return ResponseService::content($course);
     }
+
     /**
      * @param $lessonId
      * @return JsonResponse
