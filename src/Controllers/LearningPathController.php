@@ -337,6 +337,13 @@ class LearningPathController extends Controller
         $course['xp'] = $course->fetch('total_xp');
         $course['course_position'] = $levelCourses[$course['id']]['position'] - 1;
 
+        $course['mobile_app_url'] = url()->route(
+            'mobile.learning-path.course.show',
+            [
+                $course['id'],
+            ]
+        );
+
         return ResponseService::content($course);
     }
 
@@ -389,6 +396,12 @@ class LearningPathController extends Controller
         $thisLesson['level_position'] = $level['sort'] + 1;
         $thisLesson['course_position'] = $courseHierarchy['child_position'] - 1;
         $thisLesson['xp'] = $thisLesson->fetch('total_xp');
+        $thisLesson['mobile_app_url'] = url()->route(
+            'mobile.learning-path.lesson.show',
+            [
+                $thisLesson['id'],
+            ]
+        );
 
         $nextPrevLessons = $this->methodService->getNextAndPreviousLessons($lessonId, $learningPath['id']);
 
