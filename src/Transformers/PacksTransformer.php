@@ -29,18 +29,18 @@ class PacksTransformer extends TransformerAbstract
         if (!empty($morePacksResponseStructure)) {
             $morePacks = $packs['morePacks'];
         }
-if($packs['topHeaderPack']) {
-    foreach ($topPackResponseStructure ?? [] as $key => $item) {
-        if (is_array($item)) {
-            foreach ($item as $index2 => $it) {
+        if ($packs['topHeaderPack']) {
+            foreach ($topPackResponseStructure ?? [] as $key => $item) {
+                if (is_array($item)) {
+                    foreach ($item as $index2 => $it) {
 
-                $top[$key][$it] = $packs['topHeaderPack'][$key][$it] ?? false;
+                        $top[$key][$it] = $packs['topHeaderPack'][$key][$it] ?? false;
+                    }
+                } else {
+                    $top[$item] = $packs['topHeaderPack'][$item] ?? false;
+                }
             }
-        } else {
-            $top[$item] = $packs['topHeaderPack'][$item] ?? false;
         }
-    }
-}
 
         foreach ($packs['myPacks'] as $index => $pack) {
             foreach ($myPacksResponseStructure ?? [] as $key => $item) {

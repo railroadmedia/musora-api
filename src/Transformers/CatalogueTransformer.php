@@ -28,8 +28,8 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
                     } elseif ($fields[0] == 'fields') {
                         $response[$index][$fields[1]] = (ContentHelper::getFieldValue($content, $fields[1]));
                     }
-                } else {
-                    $response[$index][$item] = $content[$item] ?? false;
+                } elseif(array_key_exists($item, $content)){
+                    $response[$index][$item] = $content[$item];
                 }
             }
         }

@@ -78,8 +78,8 @@ class ContentForDownloadTransformer extends \League\Fractal\TransformerAbstract
                 }
             } elseif (isset($content[$item]['id'])) {
                 $response[$item] = self::transform($content[$item]);
-            } else {
-                $response[$item] = $content[$item] ?? false;
+            } elseif(array_key_exists($item, $content)){
+                $response[$item] = $content[$item];
             }
         }
         return $response;
