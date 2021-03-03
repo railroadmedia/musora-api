@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
+use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Support\Collection;
 
 class ContentTransformer extends \League\Fractal\TransformerAbstract
@@ -57,7 +58,23 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
 
         if (count($fields) >= 2) {
             $key = array_last($fields) != 'value' ? array_last($fields) : $fields[1];
-            $response[$key] = $content->fetch($item);
+            if(array_key_exists($key, $content)){
+                $response[$key] =$content[$key];
+            }elseif($fields[0] == '*fields'){
+                $response[$key] = ContentHelper::getFieldValues($content->getArrayCopy(), $fields[1]);
+                //dd($response[$key]);
+            }elseif ($fields[0] == 'fields'){
+                $response[$key] = ContentHelper::getFieldValue($content->getArrayCopy(), $fields[1]);
+            }elseif ($fields[0] == '*data')
+            {
+                $response[$key] = ContentHelper::getDatumValues($content->getArrayCopy(), $fields[1]);
+            }elseif ($fields[0] == 'data')
+            {
+                $response[$key] = ContentHelper::getDatumValue($content->getArrayCopy(), $fields[1]);
+            }
+            else{
+                $response[$key] = $content->fetch($item);
+            }
 
             if (is_array($response[$key])) {
                 foreach ($response[$key] as $index => $val) {
