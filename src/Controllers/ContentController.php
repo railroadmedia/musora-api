@@ -170,7 +170,7 @@ class ContentController extends Controller
 
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
-        $content['instructor'] = $content->fetch('*fields.instructor');
+        $content['instructor'] = $content->fetch('*fields.instructor',[]);
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
         if ($isDownload && !empty($content['lessons'])) {
