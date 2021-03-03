@@ -146,8 +146,7 @@ class ContentController extends Controller
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
-        if (!array_key_exists('lessons', $content)) {
-
+        if (!array_key_exists('lessons', $content) && !in_array($content['type'], config('railcontent.singularContentTypes',[]))) {
             $lessons = $this->contentService->getByParentId($content['id']);
             if (!empty($lessons)) {
                 $content['lessons'] = $lessons;
