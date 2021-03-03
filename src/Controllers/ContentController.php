@@ -4,13 +4,14 @@ namespace Railroad\MusoraApi\Controllers;
 
 use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Railroad\Mailora\Providers\MailoraServiceProvider;
 use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
@@ -18,6 +19,7 @@ use Railroad\MusoraApi\Requests\SubmitVideoRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
+use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
@@ -30,7 +32,6 @@ use Railroad\Railcontent\Support\Collection;
 
 class ContentController extends Controller
 {
-
     /**
      * @var ContentService
      */
@@ -60,10 +61,16 @@ class ContentController extends Controller
      * @var ContentHierarchyRepository
      */
     private $contentHierarchyRepository;
+
     /**
      * @var FullTextSearchService
      */
     private $fullTextSearchService;
+
+    /**
+     * @var StripTagDecorator
+     */
+    private $stripTagDecorator;
 
     /**
      * ContentController constructor.
@@ -75,6 +82,7 @@ class ContentController extends Controller
      * @param MailService $mailoraMailService
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
+     * @param StripTagDecorator $stripTagDecorator
      */
     public function __construct(
         ContentService $contentService,
@@ -83,7 +91,8 @@ class ContentController extends Controller
         UserProviderInterface $userProvider,
         MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
-        FullTextSearchService $fullTextSearchService
+        FullTextSearchService $fullTextSearchService,
+        StripTagDecorator $stripTagDecorator
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -92,6 +101,7 @@ class ContentController extends Controller
         $this->mailoraMailService = $mailoraMailService;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->fullTextSearchService = $fullTextSearchService;
+        $this->stripTagDecorator = $stripTagDecorator;
     }
 
     /**
@@ -158,9 +168,10 @@ class ContentController extends Controller
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
 
-        if (!empty($parent['resources'] ?? [])) {
-            $content['resources'] = array_merge($content['resources']??[], $parent['resources']);
-        }
+        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+
+        $content['instructor'] = $content->fetch('*fields.instructor');
+        $this->stripTagDecorator->decorate(new Collection([$content]));
 
         if ($isDownload && !empty($content['lessons'])) {
             //for download feature we need lessons assignments, vimeo urls, comments
@@ -359,7 +370,7 @@ class ContentController extends Controller
 
     /**
      * @param Request $request
-     * @return array|mixed|\Railroad\Railcontent\Entities\ContentEntity[]|Collection
+     * @return array|mixed|ContentEntity[]|Collection
      */
     public function getLiveSchedule(Request $request)
     {
@@ -402,7 +413,7 @@ class ContentController extends Controller
     /**
      * @param SubmitQuestionRequest $request
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function submitQuestion(SubmitQuestionRequest $request)
     {
@@ -438,7 +449,7 @@ class ContentController extends Controller
     /**
      * @param SubmitVideoRequest $request
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function submitVideo(SubmitVideoRequest $request)
     {
@@ -473,7 +484,7 @@ class ContentController extends Controller
     /**
      * @param SubmitStudentFocusFormRequest $request
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function submitStudentFocusForm(SubmitStudentFocusFormRequest $request)
     {
@@ -506,13 +517,13 @@ class ContentController extends Controller
     /**
      * @param $input
      * @return JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     public function sendSecure($input)
     {
         try {
             $this->mailoraMailService->sendSecure($input);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return response()->json(
                 [
                     'title' => 'Submission Failed',

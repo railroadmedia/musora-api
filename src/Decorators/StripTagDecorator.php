@@ -31,13 +31,15 @@ class StripTagDecorator extends ModeDecoratorBase
                     }
                 }
 
-                $instructors = $entity['instructors'] ?? [];
+                $instructors = $entity['instructor'] ?? [];
 
                 foreach ($instructors as $index => $item) {
+
                     if ($item instanceof ContentEntity) {
+
                         foreach ($item['data'] as $indexData => $data) {
                             if ($data['key'] == 'biography') {
-                                $entities[$entityIndex]['instructors'][$index]['data'][$indexData]['value'] =
+                                $entities[$entityIndex]['instructor'][$index]['data'][$indexData]['value'] =
                                     strip_tags(html_entity_decode($data['value']));
                             }
                         }
