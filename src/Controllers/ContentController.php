@@ -146,7 +146,8 @@ class ContentController extends Controller
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
-        if (!array_key_exists('lessons', $content) && !in_array($content['type'], config('railcontent.singularContentTypes',[]))) {
+        if (!array_key_exists('lessons', $content) &&
+            !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
             $lessons = $this->contentService->getByParentId($content['id']);
             if (!empty($lessons)) {
                 $content['lessons'] = $lessons;
@@ -156,6 +157,10 @@ class ContentController extends Controller
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
+
+        if (!empty($parent['resources'] ?? [])) {
+            $content['resources'] = array_merge($content['resources']??[], $parent['resources']);
+        }
 
         if ($isDownload && !empty($content['lessons'])) {
             //for download feature we need lessons assignments, vimeo urls, comments
@@ -623,7 +628,7 @@ class ContentController extends Controller
             new ContentFilterResultsEntity(
                 [
                     'results' => $contentsData['results'],
-                    'total_results' => $contentsData['total_results']
+                    'total_results' => $contentsData['total_results'],
                 ]
             ),
             $request
