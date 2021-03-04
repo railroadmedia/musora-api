@@ -391,7 +391,16 @@ class LearningPathController extends Controller
 
         $courseHierarchy = $this->contentHierarchyRepository->getByChildIdParentId($level['id'], $course['id']);
 
-        $thisLesson['related_lessons'] = $this->contentService->getByParentId($course['id']);
+        $relatedLessons = $this->contentService->getByParentId($course['id']);
+        foreach ($relatedLessons as $relatedLesson) {
+            $relatedLesson['mobile_app_url'] = url()->route(
+                'mobile.learning-path.lesson.show',
+                [
+                    $relatedLesson['id'],
+                ]
+            );
+        }
+        $thisLesson['related_lessons'] = $relatedLessons;
         $thisLesson['level_rank'] = $learningPath->fetch('level_rank');
         $thisLesson['level_position'] = $level['sort'] + 1;
         $thisLesson['course_position'] = $courseHierarchy['child_position'];
@@ -405,24 +414,30 @@ class LearningPathController extends Controller
 
         $nextPrevLessons = $this->methodService->getNextAndPreviousLessons($lessonId, $learningPath['id']);
 
-        $thisLesson['prev_lesson_url'] = $nextPrevLessons->getPreviousLesson()['mobile_app_url'] ?? null;
-        $thisLesson['prev_lesson_id'] = $nextPrevLessons->getPreviousLesson()['id'] ?? null;
-        $thisLesson['next_lesson_url'] = $nextPrevLessons->getNextLesson()['mobile_app_url'] ?? null;
-        $thisLesson['next_lesson_id'] = $nextPrevLessons->getNextLesson()['id'] ?? null;
+        $prevLesson = $nextPrevLessons->getPreviousLesson();
+        $nextLesson = $nextPrevLessons->getNextLesson();
+        $thisLesson['prev_lesson_url'] = ($prevLesson) ? url()->route(
+            'mobile.learning-path.lesson.show',
+            [
+                $prevLesson['id'],
+            ]
+        ) : null;
+        $thisLesson['prev_lesson_id'] = $prevLesson['id'] ?? null;
+        $thisLesson['next_lesson_url'] = ($nextLesson) ? url()->route(
+            'mobile.learning-path.lesson.show',
+            [
+                $nextLesson['id'],
+            ]
+        ) : null;;
+        $thisLesson['next_lesson_id'] = $nextLesson['id'] ?? null;
 
-        if ($nextPrevLessons->getNextLesson()) {
-            $thisLesson['next_lesson_title'] =
-                $nextPrevLessons->getNextLesson()
-                    ->fetch('fields.title') ?? '';
-            $thisLesson['next_lesson_thumbnail_url'] =
-                $nextPrevLessons->getNextLesson()
-                    ->fetch('data.thumbnail_url') ?? '';
+        if ($nextLesson) {
+            $thisLesson['next_lesson_title'] = $nextLesson->fetch('fields.title') ?? '';
+            $thisLesson['next_lesson_thumbnail_url'] = $nextLesson->fetch('data.thumbnail_url') ?? '';
             $thisLesson['next_lesson_length_in_seconds'] =
-                $nextPrevLessons->getNextLesson()
-                    ->fetch('fields.video.fields.length_in_seconds') ?? '';
+                $nextLesson->fetch('fields.video.fields.length_in_seconds') ?? '';
             $thisLesson['next_lesson_is_added_to_primary_playlist'] =
-                $nextPrevLessons->getNextLesson()
-                    ->fetch('is_added_to_primary_playlist', false);
+                $nextLesson->fetch('is_added_to_primary_playlist', false);
         }
 
         //check if is last incomplete lesson from course or last incomplete course from level
