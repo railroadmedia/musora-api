@@ -64,7 +64,11 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
                 $response[$key] = ContentHelper::getFieldValues($content->getArrayCopy(), $fields[1]);
                 //dd($response[$key]);
             }elseif ($fields[0] == 'fields'){
-                $response[$key] = ContentHelper::getFieldValue($content->getArrayCopy(), $fields[1]);
+                if(count($fields)> 2){
+                    $response[$key] = $content->fetch($item, null);
+                }else {
+                    $response[$key] = ContentHelper::getFieldValue($content->getArrayCopy(), $fields[1]);
+                }
             }elseif ($fields[0] == '*data')
             {
                 $response[$key] = ContentHelper::getDatumValues($content->getArrayCopy(), $fields[1]);
