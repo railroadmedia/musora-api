@@ -185,6 +185,8 @@ class ContentController extends Controller
                 $content['lessons'][$lessonIndex]['related_lessons'] = $parentChildren;
                 $content['lessons'][$lessonIndex]['previous_lesson'] = $parentChildren[$lessonIndex - 1] ?? null;
                 $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
+
+                $content['lessons'][$lessonIndex]['resources'] = array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
             }
 
             return ResponseService::contentForDownload($content);
