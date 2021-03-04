@@ -2,10 +2,11 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
+use League\Fractal\TransformerAbstract;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Support\Collection;
 
-class ContentTransformer extends \League\Fractal\TransformerAbstract
+class ContentTransformer extends TransformerAbstract
 {
     public function transform($content, $responseStructure = [])
     {
@@ -84,11 +85,11 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
             {
                 $response[$key] = ContentHelper::getDatumValue($content->getArrayCopy(), $fields[1]);
             }
-            else{
+            else {
                 $response[$key] = $content->fetch($item);
             }
 
-            if (is_array($response[$key])) {
+            if ($key!= 'sheet_music_image_url' && is_array($response[$key])) {
                 foreach ($response[$key] as $index => $val) {
                     if (isset($val['id'])) {
 
