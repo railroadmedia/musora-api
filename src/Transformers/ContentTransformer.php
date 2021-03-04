@@ -71,7 +71,15 @@ class ContentTransformer extends \League\Fractal\TransformerAbstract
                 }
             }elseif ($fields[0] == '*data')
             {
-                $response[$key] = ContentHelper::getDatumValues($content->getArrayCopy(), $fields[1]);
+                if($fields[1] == 'sheet_music_image_url'){
+                    foreach($content['data'] as $data) {
+                        if($data['key'] == 'sheet_music_image_url') {
+                            $response[$key][] = $data;
+                        }
+                    }
+                }else {
+                    $response[$key] = ContentHelper::getDatumValues($content->getArrayCopy(), $fields[1]);
+                }
             }elseif ($fields[0] == 'data')
             {
                 $response[$key] = ContentHelper::getDatumValue($content->getArrayCopy(), $fields[1]);
