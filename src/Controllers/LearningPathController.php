@@ -9,73 +9,74 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\MethodService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
-use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
-use Railroad\Railcontent\Services\ContentHierarchyService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
 
 class LearningPathController extends Controller
 {
-
     /**
      * @var ContentService
      */
     private $contentService;
-
     /**
      * @var CommentService
      */
     private $commentService;
-
     /**
      * @var VimeoVideoSourcesDecorator
      */
     private $vimeoVideoDecorator;
-
     /**
      * @var ContentHierarchyRepository
      */
     private $contentHierarchyRepository;
-
     /**
      * @var MethodService
      */
     private $methodService;
+    /**
+     * @var DownloadService
+     */
+    private $downloadService;
 
     /**
-     * ContentController constructor.
+     * LearningPathController constructor.
      *
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
+     * @param ContentHierarchyRepository $contentHierarchyRepository
+     * @param MethodService $methodService
+     * @param DownloadService $downloadService
      */
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
         ContentHierarchyRepository $contentHierarchyRepository,
-        MethodService $methodService
+        MethodService $methodService,
+        DownloadService $downloadService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->methodService = $methodService;
+        $this->downloadService = $downloadService;
     }
 
     /**
-     * @param $contentId
-     * @param Request $request
-     * @return JsonResponse
-     * @throws NonUniqueResultException
+     * @param $learningPathSlug
+     * @return array|JsonResponse
      */
     public function showLearningPath($learningPathSlug)
     {
@@ -246,10 +247,11 @@ class LearningPathController extends Controller
 
     /**
      * @param $courseId
-     * @return JsonResponse
+     * @param Request $request
+     * @return array|JsonResponse
      * @throws NonUniqueResultException
      */
-    public function showCourse($courseId)
+    public function showCourse($courseId, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
         ContentRepository::$availableContentStatues = false;
@@ -344,12 +346,18 @@ class LearningPathController extends Controller
             ]
         );
 
+        if ($request->has('download')) {
+            $this->downloadService->attachLessonsDataForDownload($course);
+
+            return ResponseService::contentForDownload($course);
+        }
+
         return ResponseService::content($course);
     }
 
     /**
      * @param $lessonId
-     * @return JsonResponse
+     * @return array|JsonResponse
      * @throws NonUniqueResultException
      */
     public function showLesson($lessonId)
@@ -428,7 +436,7 @@ class LearningPathController extends Controller
             [
                 $nextLesson['id'],
             ]
-        ) : null;;
+        ) : null;
         $thisLesson['next_lesson_id'] = $nextLesson['id'] ?? null;
 
         if ($nextLesson) {
