@@ -71,7 +71,6 @@ Route::group(
             ]
         );
 
-
         //save user progress
         Route::put(
             '/reset',
@@ -192,5 +191,14 @@ Route::group(
     ],
     function () {
         Route::put('/intercom-user', \Railroad\MusoraApi\Controllers\AuthController::class . '@createIntercomUser');
+
+        Route::put('/forgot', \Railroad\Usora\Controllers\ApiController::class . '@forgotPassword');
+        Route::put(
+            '/change-password',
+            [
+                'middleware' => \Railroad\MusoraApi\Middleware\AddMemberData::class,
+                'uses' => \Railroad\Usora\Controllers\ApiController::class . '@resetPassword'
+            ]
+        );
     }
 );
