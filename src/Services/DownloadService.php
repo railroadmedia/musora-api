@@ -3,6 +3,8 @@
 namespace Railroad\MusoraApi\Services;
 
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Transformers\CommentTransformer;
+use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
@@ -49,9 +51,6 @@ class DownloadService{
         //add video_playback_endpoints for each lesson
         $this->vimeoVideoDecorator->decorate(new Collection($content['lessons']));
 
-        //attach comments for each lesson
-        $this->commentService->attachCommentsToContents($content['lessons']);
-
         //add related lessons, next/prev lesson, resources on each lesson
         foreach ($content['lessons'] as $lessonIndex => $lesson) {
             $parentChildren = $this->getParentChildTrimmed($content['lessons'], $lesson);
@@ -61,6 +60,13 @@ class DownloadService{
             $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
 
             $content['lessons'][$lessonIndex]['resources'] = array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
+
+            //attach comments for each lesson
+            CommentRepository::$availableContentId = $lesson['id'];
+
+            $comments = $this->commentService->getComments(1, 'null', '-created_on');
+            $content['lessons'][$lessonIndex]['comments'] = (new CommentTransformer())->transform($comments['results']);
+            $content['lessons'][$lessonIndex]['total_comments'] = $comments['total_results'];
         }
 
         return $content;
