@@ -57,4 +57,16 @@ interface UserProviderInterface
      * @return mixed
      */
     public function setCurrentUserFirebaseTokens(?string $iosToken, ?string $androidToken);
+
+    /**
+     * @param string $deviceType
+     * @param int $reviewCount
+     * @return mixed
+     */
+    public function setReviewDataForCurrentUser(string $deviceType, int $reviewCount);
+
+    /**
+     * @return mixed
+     */
+    public function getUsoraCurrentUser();
 }

@@ -2,26 +2,27 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
+use Railroad\Ecommerce\Repositories\SubscriptionRepository;
+use Railroad\MusoraApi\Contracts\ProductProviderInterface;
+use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
-use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Services\ResponseService;
+use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
-use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
-use Railroad\Railcontent\Repositories\CommentRepository;
-use Railroad\Railcontent\Repositories\ContentRepository;
-use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\UserContentProgressService;
-use Railroad\Railcontent\Support\Collection;
 use Railroad\Railtracker\Trackers\MediaPlaybackTracker;
 
 class UserProgressController extends Controller
 {
-
     /**
      * @var ContentService
      */
@@ -38,20 +39,43 @@ class UserProgressController extends Controller
     private $mediaPlaybackTracker;
 
     /**
+     * @var UserProviderInterface
+     */
+    private $userProvider;
+
+    /**
+     * @var SubscriptionRepository
+     */
+    private $subscriptionRepository;
+    /**
+     * @var ProductProviderInterface
+     */
+    private $productProvider;
+
+    /**
      * UserProgressController constructor.
      *
      * @param ContentService $contentService
      * @param UserContentProgressService $userContentProgressService
      * @param MediaPlaybackTracker $mediaPlaybackTracker
+     * @param UserProviderInterface $userProvider
+     * @param SubscriptionRepository $subscriptionRepository
+     * @param ProductProviderInterface $productProvider
      */
     public function __construct(
         ContentService $contentService,
         UserContentProgressService $userContentProgressService,
-        MediaPlaybackTracker $mediaPlaybackTracker
+        MediaPlaybackTracker $mediaPlaybackTracker,
+        UserProviderInterface $userProvider,
+        SubscriptionRepository $subscriptionRepository,
+        ProductProviderInterface $productProvider
     ) {
         $this->contentService = $contentService;
         $this->userContentProgressService = $userContentProgressService;
         $this->mediaPlaybackTracker = $mediaPlaybackTracker;
+        $this->userProvider = $userProvider;
+        $this->subscriptionRepository = $subscriptionRepository;
+        $this->productProvider = $productProvider;
     }
 
     /**
@@ -94,7 +118,6 @@ class UserProgressController extends Controller
             return response()->json($content);
         }
 
-
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
             auth()->id()
@@ -110,13 +133,18 @@ class UserProgressController extends Controller
             $parent = $this->contentService->getByChildId($request->get('content_id'));
         }
 
-        $response =  [
+        if ($parent->isNotEmpty()) {
+            $parentTransformed = new ContentTransformer();
+            $parent = $parentTransformed->transform(array_first($parent));
+        }
+
+        $response = [
             'success' => true,
             'parent' => $parent,
         ];
 
-        if(config('musora-api.shouldDisplayReview', false)) {
-            $user = $this->userRepository->findOneBy(['id' => auth()->id()]);
+        if (config('musora-api.shouldDisplayReview', false)) {
+            $user = $this->userProvider->getUsoraCurrentUser();
 
             $userSessions = $this->userContentProgressService->countUserProgress(
                 $user->getId(),
@@ -126,12 +154,14 @@ class UserProgressController extends Controller
             );
 
             $isPaidSubscription = false;
-            $userActiveSubscriptions =
-                $this->subscriptionRepository->getUserActiveSubscription(
-                    $this->ecommerceUserProvider->getCurrentUser()
-                );
+            $userActiveSubscription = $this->subscriptionRepository->getUserSubscriptionForProducts(
+                $this->userProvider->getCurrentUser()
+                    ->getId(),
+                $this->productProvider->getMembershipProductIds(),
+                1
+            );
 
-            foreach ($userActiveSubscriptions as $userActiveSubscription) {
+            if ($userActiveSubscription) {
                 foreach ($userActiveSubscription->getPayments() as $payment) {
                     if ($payment->getStatus() == 'paid' && $payment->getTotalPaid() > 0) {
                         $isPaidSubscription = true;
@@ -173,11 +203,7 @@ class UserProgressController extends Controller
                         Carbon::now()
                             ->subYear(1)) ? 1 : ($count + 1);
 
-                $user->setIosLatestReviewDisplayDate(Carbon::now());
-                $user->setIosCountReviewDisplay($newCountValue);
-
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
+                $this->userProvider->setReviewDataForCurrentUser($request->get('device_type'), $newCountValue);
             }
 
             if ($request->get('device_type') == 'android' && $displayGoogleReviewModal) {
@@ -188,22 +214,20 @@ class UserProgressController extends Controller
                         Carbon::now()
                             ->subYear(1)) ? 1 : ($count + 1);
 
-                $user->setGoogleLatestReviewDisplayDate(Carbon::now());
-                $user->setGoogleCountReviewDisplay($newCountValue);
-
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
+                $this->userProvider->setReviewDataForCurrentUser($request->get('device_type'), $newCountValue);
             }
 
-            $response = array_merge($response, [
-                'displayIosReviewModal' => $displayIosReviewModal,
-                'displayGoogleReviewModal' => $displayGoogleReviewModal
-            ]);
+            $response = array_merge(
+                $response,
+                [
+                    'displayIosReviewModal' => $displayIosReviewModal,
+                    'displayGoogleReviewModal' => $displayGoogleReviewModal,
+                ]
+            );
         }
 
         return response()->json($response);
     }
-
 
     /**
      * @param $childLessonType
@@ -223,8 +247,8 @@ class UserProgressController extends Controller
      * @param Request $request
      * @return JsonResponse
      * @throws NonUniqueResultException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function resetUserProgressOnContent(Request $request)
     {
@@ -238,7 +262,8 @@ class UserProgressController extends Controller
 
         $this->userContentProgressService->resetContent(
             $request->get('content_id'),
-            auth()->id()
+            $this->userProvider->getCurrentUser()
+                ->getId()
         );
 
         if ($content['type'] != 'assignment') {
@@ -249,11 +274,12 @@ class UserProgressController extends Controller
             $parent = $this->contentService->getByChildId($request->get('content_id'));
         }
 
-        return response()->json(
-            $parent
-        );
-    }
+        if ($parent->isEmpty()) {
+            return response()->json();
+        }
 
+        return ResponseService::content($parent->first());
+    }
 
     /**
      * @param Request $request
