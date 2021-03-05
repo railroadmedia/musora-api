@@ -16,6 +16,7 @@ use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
 use Railroad\MusoraApi\Requests\SubmitVideoRequest;
+use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
@@ -73,6 +74,11 @@ class ContentController extends Controller
     private $stripTagDecorator;
 
     /**
+     * @var DownloadService
+     */
+    private $downloadService;
+
+    /**
      * ContentController constructor.
      *
      * @param ContentService $contentService
@@ -83,6 +89,7 @@ class ContentController extends Controller
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
      * @param StripTagDecorator $stripTagDecorator
+     * @param DownloadService $downloadService
      */
     public function __construct(
         ContentService $contentService,
@@ -92,7 +99,8 @@ class ContentController extends Controller
         MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
         FullTextSearchService $fullTextSearchService,
-        StripTagDecorator $stripTagDecorator
+        StripTagDecorator $stripTagDecorator,
+        DownloadService $downloadService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -102,6 +110,7 @@ class ContentController extends Controller
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->fullTextSearchService = $fullTextSearchService;
         $this->stripTagDecorator = $stripTagDecorator;
+        $this->downloadService = $downloadService;
     }
 
     /**
@@ -170,24 +179,12 @@ class ContentController extends Controller
 
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
-        $content['instructor'] = $content->fetch('*fields.instructor',[]);
+        $content['instructor'] = $content->fetch('*fields.instructor', []);
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
         if ($isDownload && !empty($content['lessons'])) {
-            //for download feature we need lessons assignments, vimeo urls, comments
-            $this->vimeoVideoDecorator->decorate(new Collection($content['lessons']));
 
-            $this->commentService->attachCommentsToContents($content['lessons']);
-
-            $parentChildren = $lessons ?? $this->contentService->getByParentId($content['id']);
-
-            foreach ($content['lessons'] as $lessonIndex => $lesson) {
-                $content['lessons'][$lessonIndex]['related_lessons'] = $parentChildren;
-                $content['lessons'][$lessonIndex]['previous_lesson'] = $parentChildren[$lessonIndex - 1] ?? null;
-                $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
-
-                $content['lessons'][$lessonIndex]['resources'] = array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
-            }
+            $this->downloadService->attachLessonsDataForDownload($content);
 
             return ResponseService::contentForDownload($content);
         }
