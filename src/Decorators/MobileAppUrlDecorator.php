@@ -17,8 +17,22 @@ class MobileAppUrlDecorator extends ModeDecoratorBase
                 $content['mobile_app_url'] = url()->route('mobile.pack.show', [$content['id']]);
             } elseif ($content['type'] == 'pack-bundle-lesson') {
                 $content['mobile_app_url'] = url()->route('mobile.pack.lesson.show', [$content['id']]);
-            }  elseif ($content['type'] == 'semester-pack-lesson') {
+            } elseif ($content['type'] == 'semester-pack-lesson') {
                 $content['mobile_app_url'] = url()->route('mobile.pack.lesson.show', [$content['id']]);
+            } elseif ($content['type'] == 'learning-path-course') {
+                $content['mobile_app_url'] = url()->route(
+                    'mobile.learning-path.course.show',
+                    [
+                        $content['id'],
+                    ]
+                );
+            } elseif($content['type'] == 'learning-path-lesson'){
+                $content['mobile_app_url'] =url()->route(
+                    'mobile.learning-path.lesson.show',
+                    [
+                        $content['id'],
+                    ]
+                );
             }
         }
 

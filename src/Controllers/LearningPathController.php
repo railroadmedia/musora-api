@@ -190,12 +190,6 @@ class LearningPathController extends Controller
 
         foreach ($courses as $course) {
             $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
-            $course['mobile_app_url'] = url()->route(
-                'mobile.learning-path.course.show',
-                [
-                    $course['id'],
-                ]
-            );
         }
 
         //  $this->addedToPrimaryPlaylistDecorator->decorate($courses);
@@ -292,14 +286,7 @@ class LearningPathController extends Controller
         }
 
         $lessons = $this->contentService->getByParentId($courseId);
-        foreach ($lessons as $index => $lesson) {
-            $lessons[$index]['mobile_app_url'] = url()->route(
-                'mobile.learning-path.lesson.show',
-                [
-                    $lesson['id'],
-                ]
-            );
-        }
+
         $course['lessons'] = $lessons;
 
         $course['banner_button_url'] = $course->fetch('current_lesson') ? url()->route(
@@ -338,13 +325,6 @@ class LearningPathController extends Controller
         $course['lesson_rank'] = ($course->fetch('current_lesson', [])['sort'] ?? 0) + 1;
         $course['xp'] = $course->fetch('total_xp');
         $course['course_position'] = $levelCourses[$course['id']]['position'];
-
-        $course['mobile_app_url'] = url()->route(
-            'mobile.learning-path.course.show',
-            [
-                $course['id'],
-            ]
-        );
 
         if ($request->has('download')) {
             $this->downloadService->attachLessonsDataForDownload($course);
@@ -400,30 +380,18 @@ class LearningPathController extends Controller
         $courseHierarchy = $this->contentHierarchyRepository->getByChildIdParentId($level['id'], $course['id']);
 
         $relatedLessons = $this->contentService->getByParentId($course['id']);
-        foreach ($relatedLessons as $relatedLesson) {
-            $relatedLesson['mobile_app_url'] = url()->route(
-                'mobile.learning-path.lesson.show',
-                [
-                    $relatedLesson['id'],
-                ]
-            );
-        }
+
         $thisLesson['related_lessons'] = $relatedLessons;
         $thisLesson['level_rank'] = $learningPath->fetch('level_rank');
         $thisLesson['level_position'] = $level['sort'] + 1;
         $thisLesson['course_position'] = $courseHierarchy['child_position'];
         $thisLesson['xp'] = $thisLesson->fetch('total_xp');
-        $thisLesson['mobile_app_url'] = url()->route(
-            'mobile.learning-path.lesson.show',
-            [
-                $thisLesson['id'],
-            ]
-        );
 
         $nextPrevLessons = $this->methodService->getNextAndPreviousLessons($lessonId, $learningPath['id']);
 
         $prevLesson = $nextPrevLessons->getPreviousLesson();
         $nextLesson = $nextPrevLessons->getNextLesson();
+
         $thisLesson['prev_lesson_url'] = ($prevLesson) ? url()->route(
             'mobile.learning-path.lesson.show',
             [
@@ -437,6 +405,7 @@ class LearningPathController extends Controller
                 $nextLesson['id'],
             ]
         ) : null;
+
         $thisLesson['next_lesson_id'] = $nextLesson['id'] ?? null;
 
         if ($nextLesson) {
