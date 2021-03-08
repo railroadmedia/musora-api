@@ -2,18 +2,16 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
-use Carbon\Carbon;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Railroad\Ecommerce\Entities\Subscription;
 use Railroad\Ecommerce\Events\AppSignupStartedEvent;
 use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
-use Railroad\Usora\Entities\UserFirebaseTokens;
 use Railroad\Usora\Managers\UsoraEntityManager;
 use Railroad\Usora\Repositories\UserFirebaseTokensRepository;
 use Railroad\Usora\Repositories\UserRepository;
@@ -78,7 +76,6 @@ class AuthController extends Controller
         SubscriptionRepository $subscriptionRepository,
         UserRepository $userRepository,
         UserFirebaseTokensRepository $userFirebaseTokensRepository,
-        ProductProviderInterface $productProvider,
         UserProviderInterface $userProvider
     ) {
         $this->entityManager = $entityManager;
@@ -86,7 +83,6 @@ class AuthController extends Controller
         $this->subscriptionRepository = $subscriptionRepository;
         $this->userRepository = $userRepository;
         $this->userFirebaseTokensRepository = $userFirebaseTokensRepository;
-        $this->productProvider = $productProvider;
         $this->userProvider = $userProvider;
     }
 
@@ -158,7 +154,7 @@ class AuthController extends Controller
                     ]
                 )
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'success' => false,
