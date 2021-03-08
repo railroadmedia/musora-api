@@ -127,8 +127,7 @@ class ContentController extends Controller
             return response()->json();
         }
 
-        $isDownload = $request->get('download', false);
-
+        //get content's parent for related lessons and resources
         $parent = array_first(
             $this->contentService->getByChildIdWhereParentTypeIn(
                 $contentId,
@@ -152,14 +151,13 @@ class ContentController extends Controller
                 false
             )['results'];
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
-
         $parentChildrenTrimmed = $this->getParentChildTrimmed($parentChildren, $content);
-
         $content['related_lessons'] = $parentChildrenTrimmed;
 
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         $content = $this->attachNextPrevLesson($parent, $content, $parentChildren);
 
+        //attached comments on the content
         CommentRepository::$availableContentId = $content['id'];
         $comments = $this->commentService->getComments(1, 10, '-created_on');
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
@@ -167,10 +165,46 @@ class ContentController extends Controller
 
         if (!array_key_exists('lessons', $content) &&
             !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
-            $lessons = $this->contentService->getByParentId($content['id']);
-            if (!empty($lessons)) {
-                $content['lessons'] = $lessons;
+                $content['lessons'] = $this->contentService->getByParentId($content['id']);
+        }
+
+        if ($content['type'] == 'coach') {
+            $requestRequiredFields = $request->get('required_fields', []);
+            $requiredFields = array_merge($requestRequiredFields, ['instructor,' . $content['id']]);
+            $includedFields = $request->get('included_fields', []);
+            $requiredUserState = $request->get('required_user_states', []);
+            $includedUserState = $request->get('included_user_states', []);
+
+            ContentRepository::$availableContentStatues =
+                $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
+            ContentRepository::$pullFutureContent = $request->has('future');
+
+            $lessons = $this->contentService->getFiltered(
+                $request->get('page', 1),
+                $request->get('limit', 'null'),
+                '-published_on',
+                ['coach-stream'],
+                [],
+                [],
+                $requiredFields,
+                $includedFields,
+                $requiredUserState,
+                $includedUserState,
+                false
+            );
+
+            $content['lessons'] = $lessons->results();
+            $content['lessons_filter_options'] = ['content_type' => ['coach-stream']];
+
+            $duration = 0;
+            $totalXp = 0;
+            foreach ($content['lessons'] as $courseLesson) {
+                $duration += $courseLesson->fetch('fields.video.fields.length_in_seconds', 0);
+                $totalXp += $courseLesson->fetch('fields.xp', 0);
             }
+
+            $content['duration_in_seconds'] = $duration;
+            $content['total_xp'] = $totalXp;
         }
 
         $content =
@@ -179,9 +213,9 @@ class ContentController extends Controller
 
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
-        $content['instructor'] = $content->fetch('*fields.instructor', []);
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
+        $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'])) {
 
             $this->downloadService->attachLessonsDataForDownload($content);
