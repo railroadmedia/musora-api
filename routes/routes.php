@@ -192,12 +192,23 @@ Route::group(
     function () {
         Route::put('/intercom-user', \Railroad\MusoraApi\Controllers\AuthController::class . '@createIntercomUser');
 
+        Route::put(
+            '/login',
+            [
+                'middleware' => [
+                    \Railroad\Ecommerce\Middleware\SyncInAppPurchasedItems::class,
+                    \Railroad\MusoraApi\Middleware\AddMemberData::class,
+                ],
+                'uses' => \Railroad\Usora\Controllers\ApiController::class . '@login',
+            ]
+        );
+
         Route::put('/forgot', \Railroad\Usora\Controllers\ApiController::class . '@forgotPassword');
         Route::put(
             '/change-password',
             [
                 'middleware' => \Railroad\MusoraApi\Middleware\AddMemberData::class,
-                'uses' => \Railroad\Usora\Controllers\ApiController::class . '@resetPassword'
+                'uses' => \Railroad\Usora\Controllers\ApiController::class . '@resetPassword',
             ]
         );
     }
