@@ -10,11 +10,12 @@ class FilterOptionsTransformer extends TransformerAbstract
     public function transform($filterOptions)
     {
         $response = [];
+
         foreach ($filterOptions as $index => $option) {
             if (is_array($option)) {
                 foreach ($option as $indx => $op) {
                     if (isset($op['id'])) {
-                        $responseStructure = config('musora-api.response-structure.' . $op['type'], []);
+                        $responseStructure = config('musora-api.response-structure.' . $op['type'].'-filter', []);
                         foreach ($responseStructure as $item) {
                             $fields = explode('fields.', $item);
                             $data = explode('data.', $item);
