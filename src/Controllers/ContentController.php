@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
-use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
@@ -20,6 +19,7 @@ use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
+use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -165,7 +165,7 @@ class ContentController extends Controller
 
         if (!array_key_exists('lessons', $content) &&
             !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
-                $content['lessons'] = $this->contentService->getByParentId($content['id']);
+            $content['lessons'] = $this->contentService->getByParentId($content['id']);
         }
 
         if ($content['type'] == 'coach') {
@@ -351,7 +351,7 @@ class ContentController extends Controller
                 $includedFields,
                 $requiredUserState,
                 $includedUserState,
-                true
+                ($types == ['coach-stream']) ? false : true
             );
         }
 

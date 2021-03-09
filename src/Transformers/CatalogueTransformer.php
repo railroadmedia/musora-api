@@ -2,9 +2,10 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
+use League\Fractal\TransformerAbstract;
 use Railroad\Railcontent\Helpers\ContentHelper;
 
-class CatalogueTransformer extends \League\Fractal\TransformerAbstract
+class CatalogueTransformer extends TransformerAbstract
 {
     public function transform($contents)
     {
@@ -15,12 +16,12 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
             return $contents;
         }
 
-        foreach($contents as $index=>$content) {
+        foreach ($contents as $index => $content) {
             if (!is_array($content)) {
                 $content = $content->getArrayCopy();
             }
 
-           foreach ($responseStructure as $item) {
+            foreach ($responseStructure as $item) {
                 $fields = explode('.', $item);
                 if (count($fields) == 2) {
                     if ($fields[0] == 'data') {
@@ -28,7 +29,7 @@ class CatalogueTransformer extends \League\Fractal\TransformerAbstract
                     } elseif ($fields[0] == 'fields') {
                         $response[$index][$fields[1]] = (ContentHelper::getFieldValue($content, $fields[1]));
                     }
-                } elseif(array_key_exists($item, $content)){
+                } elseif (array_key_exists($item, $content)) {
                     $response[$index][$item] = $content[$item];
                 }
             }

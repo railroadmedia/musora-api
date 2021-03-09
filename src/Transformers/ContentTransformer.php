@@ -36,10 +36,10 @@ class ContentTransformer extends TransformerAbstract
                     $response[$index] = self::transform($content[$index], $value);
                 } elseif (array_key_exists($index, $content)) {
                     $response[$index] = $content[$index];
-                 }
+                }
 
             } else {
-                $response = $this->trans($value, $content, $response);
+                $response = $this->transformItem($value, $content, $response);
             }
         }
 
@@ -52,44 +52,42 @@ class ContentTransformer extends TransformerAbstract
      * @param array $response
      * @return array
      */
-    private function trans($item, $content, array $response)
+    private function transformItem($item, $content, array $response)
     : array {
-
+        //check if we have fields or data in response structure
         $fields = explode('.', $item);
 
         if (count($fields) >= 2) {
-            $key = array_last($fields) != 'value' ? array_last($fields) : $fields[1];
-            if(array_key_exists($key, $content)){
-                $response[$key] =$content[$key];
-            }elseif($fields[0] == '*fields'){
-                $response[$key] = ContentHelper::getFieldValues($content->getArrayCopy(), $fields[1]);
-                //dd($response[$key]);
-            }elseif ($fields[0] == 'fields'){
-                if(count($fields)> 2){
+            $key = array_last($fields);
+            if ($fields[0] == '*fields') {
+                $content = (!is_array($content)) ? $content->getArrayCopy() : $content;
+                $response[$key] = ContentHelper::getFieldValues($content, $fields[1]);
+            } elseif ($fields[0] == 'fields') {
+                if (count($fields) > 2) {
                     $response[$key] = $content->fetch($item, null);
-                }else {
-                    $response[$key] = ContentHelper::getFieldValue($content->getArrayCopy(), $fields[1]);
+                } else {
+                    $content = (!is_array($content)) ? $content->getArrayCopy() : $content;
+                    $response[$key] = ContentHelper::getFieldValue($content, $fields[1]);
                 }
-            }elseif ($fields[0] == '*data')
-            {
-                if($fields[1] == 'sheet_music_image_url'){
-                    foreach($content['data'] as $data) {
-                        if($data['key'] == 'sheet_music_image_url') {
+            } elseif ($fields[0] == '*data') {
+                if ($fields[1] == 'sheet_music_image_url') {
+                    foreach ($content['data'] as $data) {
+                        if ($data['key'] == 'sheet_music_image_url') {
                             $response[$key][] = $data;
                         }
                     }
-                }else {
-                    $response[$key] = ContentHelper::getDatumValues($content->getArrayCopy(), $fields[1]);
+                } else {
+                    $content = (!is_array($content)) ? $content->getArrayCopy() : $content;
+                    $response[$key] = ContentHelper::getDatumValues($content, $fields[1]);
                 }
-            }elseif ($fields[0] == 'data')
-            {
-                $response[$key] = ContentHelper::getDatumValue($content->getArrayCopy(), $fields[1]);
-            }
-            else {
+            } elseif ($fields[0] == 'data') {
+                $content = (!is_array($content)) ? $content->getArrayCopy() : $content;
+                $response[$key] = ContentHelper::getDatumValue($content, $fields[1]);
+            } else {
                 $response[$key] = $content->fetch($item);
             }
 
-            if ($key!= 'sheet_music_image_url' && is_array($response[$key])) {
+            if ($key != 'sheet_music_image_url' && is_array($response[$key])) {
                 foreach ($response[$key] as $index => $val) {
                     if (isset($val['id'])) {
 
@@ -109,7 +107,7 @@ class ContentTransformer extends TransformerAbstract
                 }
             } elseif (isset($content[$item]['id'])) {
                 $response[$item] = self::transform($content[$item]);
-            } elseif(array_key_exists($item, $content)){
+            } elseif (array_key_exists($item, $content)) {
                 $response[$item] = $content[$item];
             }
         }

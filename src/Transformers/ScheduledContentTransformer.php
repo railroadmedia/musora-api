@@ -6,7 +6,6 @@ class ScheduledContentTransformer extends ContentTransformer
 {
     public function transform($content, $responseStructure = [])
     {
-
         $responseStructure = config('musora-api.response-structure.live-schedule', []);
         if (!$responseStructure) {
             return $content->getArrayCopy();

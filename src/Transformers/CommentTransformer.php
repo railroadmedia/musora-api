@@ -8,7 +8,6 @@ class CommentTransformer extends TransformerAbstract
 {
     public function transform($comments)
     {
-
         $responseStructure = config('musora-api.response-structure.comment', []);
         if (!$responseStructure) {
             return $comments;
