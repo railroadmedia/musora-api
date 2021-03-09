@@ -3,8 +3,8 @@
 use Railroad\MusoraApi\Controllers\ContentController;
 use Railroad\MusoraApi\Controllers\PacksController;
 use Railroad\MusoraApi\Controllers\UserProgressController;
-use Railroad\MusoraApi\Controllers\AppleController;
 
+//authenticated user
 Route::group(
     [
         'prefix' => 'musora-api',
@@ -167,31 +167,37 @@ Route::group(
             \Railroad\MusoraApi\Controllers\AvatarController::class . '@put'
         );
 
+        //get authenticated user
         Route::get('/profile', \Railroad\MusoraApi\Controllers\AuthController::class . '@getAuthUser');
 
         //update user profile
         Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class . '@updateUser');
 
+        //add lessons to user playlist by default(onboarding screen)
         Route::put('/add-lessons', ContentController::class . '@addLessonsToUserList');
 
+        //my list
         Route::get('/my-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@getMyLists');
 
+        //search
         Route::get(
             '/search',
             ContentController::class . '@search'
         );
-
     }
 );
 
+//guest user
 Route::group(
     [
         'prefix' => 'musora-api',
         'middleware' => config('musora-api.user-middleware'),
     ],
     function () {
+        //create intercom user
         Route::put('/intercom-user', \Railroad\MusoraApi\Controllers\AuthController::class . '@createIntercomUser');
 
+        //login
         Route::put(
             '/login',
             [
@@ -203,7 +209,10 @@ Route::group(
             ]
         );
 
+        //forgot password
         Route::put('/forgot', \Railroad\Usora\Controllers\ApiController::class . '@forgotPassword');
+
+        //reset password
         Route::put(
             '/change-password',
             [

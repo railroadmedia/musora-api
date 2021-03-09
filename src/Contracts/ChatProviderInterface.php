@@ -4,7 +4,9 @@ namespace Railroad\MusoraApi\Contracts;
 
 interface ChatProviderInterface
 {
-    public function getEmbedUrl();
+    public function getEmbedUrl()
+    : string;
 
-    public function getCustomStyle();
+    public function getCustomStyle()
+    : array;
 }

@@ -135,6 +135,7 @@ class ContentController extends Controller
             )
         );
 
+        //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren = $parent['lessons'] ?? $this->contentService->getFiltered(
                 $request->get('page', 1),
                 $request->get('limit', 10),
@@ -155,6 +156,8 @@ class ContentController extends Controller
         $content['related_lessons'] = $parentChildrenTrimmed;
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        // attach next and previous lessons to content
         $content = $this->attachNextPrevLesson($parent, $content, $parentChildren);
 
         //attached comments on the content
@@ -168,6 +171,9 @@ class ContentController extends Controller
             $content['lessons'] = $this->contentService->getByParentId($content['id']);
         }
 
+        /**
+         * content with 'coach' type have lessons saved in different table, so we need to call getFilter method in order to pull them
+         */
         if ($content['type'] == 'coach') {
             $requestRequiredFields = $request->get('required_fields', []);
             $requiredFields = array_merge($requestRequiredFields, ['instructor,' . $content['id']]);
@@ -207,14 +213,15 @@ class ContentController extends Controller
             $content['total_xp'] = $totalXp;
         }
 
+        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
 
-        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
-
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
+        // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'])) {
 
