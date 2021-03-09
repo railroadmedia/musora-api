@@ -9,17 +9,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
-use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
+use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentHierarchyService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
+use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 
 class PacksController extends Controller
 {
@@ -283,27 +284,29 @@ class PacksController extends Controller
     {
         ContentRepository::$bypassPermissions = true;
 
-        $pack = $this->contentService->getById($packId);
+        $pack = $this->contentService->getById($packId)->getArrayCopy();
 
         if (empty($pack)) {
             return response()->json($pack);
         }
 
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
         $pack = $this->isOwnedOrLocked($pack, auth()->id());
 
-        $pack['thumbnail'] = $pack->fetch('data.header_image_url');
-        $pack['pack_logo'] = $pack->fetch('data.logo_image_url');
-        $pack['next_lesson_url'] = $pack->fetch('mobile_next_lesson_url');
+        $pack['thumbnail'] = ContentHelper::getDatumValue($pack, 'header_image_url');
+        $pack['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
+
         $pack['apple_product_id'] = $this->productProvider->getAppleProductId($pack['slug']);
         $pack['google_product_id'] = $this->productProvider->getGoogleProductId($pack['slug']);
 
         $packPrice = $this->productProvider->getPackPrice($pack['slug']);
 
-        $index = null;
-        $lessons = $this->contentService->getByParentId($pack['id']);
-
         $pack['full_price'] = $packPrice['full_price'] ?? 0;
         $pack['price'] = $packPrice['price'] ?? 0;
+
+        $index = null;
+        $lessons = $this->contentService->getByParentId($pack['id']);
 
         if ($pack['type'] == 'pack') {
             $pack['bundles'] = $lessons->toArray();
@@ -314,7 +317,7 @@ class PacksController extends Controller
                 $lessons[0]['is_owned'] = $pack['is_owned'];
                 $lessons[0]['full_price'] = $packPrice['full_price'] ?? 0;
                 $lessons[0]['price'] = $packPrice['price'] ?? 0;
-                $lessons[0]['pack_logo'] = $pack->fetch('data.logo_image_url');
+                $lessons[0]['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
                 $lessons[0]['apple_product_id'] = $pack['apple_product_id'];
                 $lessons[0]['google_product_id'] = $pack['google_product_id'];
                 $lessons[0]['next_lesson'] = $lessons[0]['current_lesson'] ?? null;
@@ -323,9 +326,10 @@ class PacksController extends Controller
             }
 
             $isSet = false;
+
             foreach ($lessons as $bundleIndex => $bundle) {
                 foreach ($bundle['lessons'] ?? [] as $lessonIndex => $lesson) {
-                    if ($lesson->fetch('completed') != true && $bundle->fetch('completed') != true && (!$isSet)) {
+                    if ($lesson['completed'] != true && $bundle['completed'] != true && (!$isSet)) {
                         $pack['current_lesson_index'] = $lessonIndex;
                         $pack['next_lesson'] = $bundle['lessons'][$lessonIndex] ?? null;
                         $isSet = true;
@@ -336,7 +340,7 @@ class PacksController extends Controller
         } else {
             $isSet = false;
             foreach ($lessons as $lessonIndex => $lesson) {
-                    if ($lesson->fetch('completed') != true && (!$isSet)) {
+                    if ($lesson['completed'] != true && (!$isSet)) {
                         $pack['current_lesson_index'] = $lessonIndex;
                         $pack['next_lesson'] = $lesson;
                         $isSet = true;
@@ -350,7 +354,7 @@ class PacksController extends Controller
 
     /**
      * @param $lessonId
-     * @return JsonResponse
+     * @return array|JsonResponse
      * @throws NonUniqueResultException
      */
     public function showLesson($lessonId)
