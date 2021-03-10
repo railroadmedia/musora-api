@@ -279,17 +279,10 @@ class ContentController extends Controller
             $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
         }
 
-        $page = $request->get('page', 1);
-        $limit = $request->get('limit', 10);
-
-        $includedFields = $request->get('included_fields', []);
         $requiredFields = $request->get('required_fields', []);
         if ($request->has('show_in_new_feed')) {
             $requiredFields = array_merge($requiredFields, ['show_in_new_feed,' . $request->get('show_in_new_feed')]);
         }
-
-        $requiredUserState = $request->get('required_user_states', []);
-        $includedUserState = $request->get('included_user_states', []);
 
         $sortedBy = '-published_on';
         foreach ($types as $type) {
@@ -297,13 +290,11 @@ class ContentController extends Controller
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
             }
         }
-
         $sorted = $request->get('sort', $sortedBy);
 
         $results = new ContentFilterResultsEntity(['results' => []]);
 
         if (!empty($types)) {
-
             ConfigService::$fieldOptionList = [
                 'instructor',
                 'topic',
@@ -312,16 +303,16 @@ class ContentController extends Controller
             ];
 
             $results = $this->contentService->getFiltered(
-                $page,
-                $limit,
+                $request->get('page', 1),
+                $request->get('limit', 10),
                 $sorted,
                 $types,
                 [],
                 [],
                 $requiredFields,
-                $includedFields,
-                $requiredUserState,
-                $includedUserState,
+                $request->get('included_fields', []),
+                $request->get('required_user_states', []),
+                $request->get('included_user_states', []),
                 ($types == ['coach-stream']) ? false : true
             );
         }
@@ -332,7 +323,6 @@ class ContentController extends Controller
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws NonUniqueResultException
      */
     public function getInProgressContent(Request $request)
     {
@@ -341,12 +331,6 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
-        $limit = $request->get('limit', 10);
-        $page = $request->get('page', 1);
-        $includedFields = $request->get('included_fields', []);
-        $requiredFields = $request->get('required_fields', []);
-        $sort = $request->get('sort', '-progress');
-
         if (in_array('shows', $types)) {
             $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
         }
@@ -355,14 +339,14 @@ class ContentController extends Controller
 
         if (!empty($types)) {
             $results = $this->contentService->getFiltered(
-                $page,
-                $limit,
-                $sort,
+                $request->get('page', 1),
+                $request->get('limit', 10),
+                $request->get('sort', '-progress'),
                 $types,
                 [],
                 [],
-                $requiredFields,
-                $includedFields,
+                $request->get('required_fields', []),
+                $request->get('included_fields', []),
                 ['started'],
                 [],
                 true
@@ -374,7 +358,7 @@ class ContentController extends Controller
 
     /**
      * @param Request $request
-     * @return array|mixed|ContentEntity[]|Collection
+     * @return array
      */
     public function getLiveSchedule(Request $request)
     {
@@ -549,10 +533,10 @@ class ContentController extends Controller
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws DBALException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws ReflectionException
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \ReflectionException
      */
     public function addLessonsToUserList(Request $request)
     {
@@ -565,7 +549,7 @@ class ContentController extends Controller
             $skill = ($topics != ['noTopic']) ? 'beginner' : 'noDifficulty';
         }
 
-        $userId = auth()->id();
+        $userId = $this->userProvider->getCurrentUser()->getId();
 
         $lessons = [];
         foreach ($topics as $topic) {
@@ -602,7 +586,7 @@ class ContentController extends Controller
             );
         }
 
-        return $this->contentService->getFiltered(
+        $lessons =  $this->contentService->getFiltered(
             1,
             10,
             '-published_on',
@@ -614,8 +598,9 @@ class ContentController extends Controller
             [],
             [],
             false
-        )
-            ->toJsonResponse();
+        );
+
+        return ResponseService::list($lessons, $request);
     }
 
     /**
