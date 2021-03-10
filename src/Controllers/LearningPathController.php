@@ -94,8 +94,6 @@ class LearningPathController extends Controller
             );
         }
 
-        $learningPath['length_in_seconds'] = $learningPath->fetch('fields.video.fields.length_in_seconds');
-
         $this->vimeoVideoDecorator->decorate(new Collection([$learningPath]));
 
         $learningPath['lesson_rank'] = $learningPath->fetch('next_lesson_rank');
@@ -104,35 +102,18 @@ class LearningPathController extends Controller
         $learningPath['banner_button_url'] = null;
 
         $learningPathNextLesson = $learningPath->fetch('next_lesson', []);
-
-        if (!empty($learningPathNextLesson)) {
-            $learningPath['next_lesson_url'] = url()->route(
+        if (!empty($learningPathNextLesson) &&
+            ($learningPathNextLesson->fetch('status') == ContentService::STATUS_PUBLISHED &&
+                Carbon::parse($learningPathNextLesson->fetch('published_on'))
+                    ->lessThanOrEqualTo(Carbon::now()))) {
+            $learningPath['banner_button_url'] = url()->route(
                 'mobile.learning-path.lesson.show',
                 [
                     $learningPathNextLesson['id'],
                 ]
             );
-            $learningPath['next_lesson_id'] = $learningPathNextLesson['id'];
-            $learningPath['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
-            $learningPath['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
-            $learningPath['next_lesson_length_in_seconds'] =
-                $learningPathNextLesson->fetch('fields.video.fields.length_in_seconds', null);
-            $learningPath['next_lesson_is_added_to_primary_playlist'] =
-                $learningPathNextLesson->fetch('is_added_to_primary_playlist', false);
-            $learningPath['next_lesson_publish_date'] = $learningPathNextLesson->fetch('published_on');
-            $learningPath['next_lesson_status'] = $learningPathNextLesson->fetch('status');
-
-            if ($learningPathNextLesson->fetch('status') == ContentService::STATUS_PUBLISHED &&
-                Carbon::parse($learningPathNextLesson->fetch('published_on'))
-                    ->lessThanOrEqualTo(Carbon::now())) {
-                $learningPath['banner_button_url'] = url()->route(
-                    'mobile.learning-path.lesson.show',
-                    [
-                        $learningPathNextLesson['id'],
-                    ]
-                );
-            }
         }
+
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
         if ($learningPath['slug'] == 'pianote-method') {
