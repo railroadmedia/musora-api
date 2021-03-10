@@ -28,8 +28,8 @@ class ContentTransformer extends TransformerAbstract
             if (is_array($value)) {
                 if (array_key_exists($index, $content) &&
                     (is_array($content[$index]) || $content[$index] instanceof Collection)) {
+                    $response[$index] = [];
                     foreach ($content[$index] as $content2) {
-
                         $response[$index][] = self::transform($content2, $value);
                     }
                 } elseif (array_key_exists($index, $content) && ($content[$index])) {
