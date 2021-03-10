@@ -173,7 +173,6 @@ class LearningPathController extends Controller
             $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
         }
 
-        //  $this->addedToPrimaryPlaylistDecorator->decorate($courses);
         $this->vimeoVideoDecorator->decorate(new Collection([$level]));
 
         $level['banner_button_url'] = $level->fetch('current_lesson') ? url()->route(
@@ -189,23 +188,9 @@ class LearningPathController extends Controller
             ($learningPath->fetch('next_lesson_level_id') == $level['id']) ? $learningPath->fetch('next_lesson', []) :
                 [];
 
-        $level['next_lesson_id'] = null;
-        if (!empty($learningPathNextLesson)) {
-            $level['next_lesson_url'] = url()->route(
-                'mobile.learning-path.lesson.show',
-                [
-                    $learningPathNextLesson['id'],
-                ]
-            );
-            $level['next_lesson_id'] = $learningPathNextLesson['id'];
-            $level['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
-            $level['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
-            $level['next_lesson_length_in_seconds'] =
-                $learningPathNextLesson->fetch('fields.video.fields.length_in_seconds', null);
-            $level['next_lesson_is_added_to_primary_playlist'] =
-                $learningPathNextLesson->fetch('is_added_to_primary_playlist', false);
-            $level['next_lesson_publish_date'] = $learningPathNextLesson->fetch('published_on', '');
-            $level['next_lesson_status'] = $learningPathNextLesson->fetch('status');
+        $level['next_lesson'] = null;
+        if ($learningPathNextLesson) {
+            $level['next_lesson'] = $learningPathNextLesson;
         }
 
         $level['level_rank'] = $learningPath->fetch('level_rank');
@@ -282,23 +267,8 @@ class LearningPathController extends Controller
         $learningPathNextLesson =
             ($learningPath->fetch('next_lesson_course_id') == $courseId) ? $learningPath->fetch('next_lesson', []) : [];
 
-        $course['next_lesson_id'] = null;
-        if (!empty($learningPathNextLesson) && ($learningPathNextLesson['sort'] != 0)) {
-            $course['next_lesson_url'] = url()->route(
-                'mobile.learning-path.lesson.show',
-                [
-                    $learningPathNextLesson['id'],
-                ]
-            );
-            $course['next_lesson_id'] = $learningPathNextLesson['id'];
-            $course['next_lesson_title'] = $learningPathNextLesson->fetch('fields.title');
-            $course['next_lesson_thumbnail_url'] = $learningPathNextLesson->fetch('data.thumbnail_url', null);
-            $course['next_lesson_length_in_seconds'] =
-                $learningPathNextLesson->fetch('fields.video.fields.length_in_seconds', null);
-            $course['next_lesson_is_added_to_primary_playlist'] =
-                $learningPathNextLesson->fetch('is_added_to_primary_playlist', false);
-            $course['next_lesson_publish_date'] = $learningPathNextLesson->fetch('published_on', '');
-            $course['next_lesson_status'] = $learningPathNextLesson->fetch('status');
+        if ($learningPathNextLesson) {
+            $course['next_lesson'] = $learningPathNextLesson;
         }
 
         $course['level_rank'] = $learningPath->fetch('level_rank');
@@ -369,34 +339,8 @@ class LearningPathController extends Controller
         $thisLesson['xp'] = $thisLesson->fetch('total_xp');
 
         $nextPrevLessons = $this->methodService->getNextAndPreviousLessons($lessonId, $learningPath['id']);
-
-        $prevLesson = $nextPrevLessons->getPreviousLesson();
-        $nextLesson = $nextPrevLessons->getNextLesson();
-
-        $thisLesson['prev_lesson_url'] = ($prevLesson) ? url()->route(
-            'mobile.learning-path.lesson.show',
-            [
-                $prevLesson['id'],
-            ]
-        ) : null;
-        $thisLesson['prev_lesson_id'] = $prevLesson['id'] ?? null;
-        $thisLesson['next_lesson_url'] = ($nextLesson) ? url()->route(
-            'mobile.learning-path.lesson.show',
-            [
-                $nextLesson['id'],
-            ]
-        ) : null;
-
-        $thisLesson['next_lesson_id'] = $nextLesson['id'] ?? null;
-
-        if ($nextLesson) {
-            $thisLesson['next_lesson_title'] = $nextLesson->fetch('fields.title') ?? '';
-            $thisLesson['next_lesson_thumbnail_url'] = $nextLesson->fetch('data.thumbnail_url') ?? '';
-            $thisLesson['next_lesson_length_in_seconds'] =
-                $nextLesson->fetch('fields.video.fields.length_in_seconds') ?? '';
-            $thisLesson['next_lesson_is_added_to_primary_playlist'] =
-                $nextLesson->fetch('is_added_to_primary_playlist', false);
-        }
+        $thisLesson['prev_lesson'] = $nextPrevLessons->getPreviousLesson();
+        $thisLesson['next_lesson'] = $nextPrevLessons->getNextLesson();
 
         //check if is last incomplete lesson from course or last incomplete course from level
         $levelCourses = $this->contentService->getByParentId($level['id']);
@@ -413,18 +357,9 @@ class LearningPathController extends Controller
                 $levelCourses->where('id', '!=', $course['id'])
                     ->where('completed', '=', false)
                     ->first();
-            $thisLesson['current_course_title'] = $course->fetch('fields.title') ?? '';
-            $thisLesson['current_course_xp'] = $course->fetch('total_xp');
-            $thisLesson['current_course_thumbnail_url'] = $course->fetch('data.thumbnail_url') ?? '';
-            $thisLesson['next_course_id'] = $nextCourse->fetch('id') ?? null;
-            $thisLesson['next_course_title'] = $nextCourse->fetch('fields.title') ?? '';
-            $thisLesson['next_course_thumbnail_url'] = $nextCourse->fetch('data.thumbnail_url') ?? '';
-            $thisLesson['next_course_is_added_to_primary_playlist'] =
-                $nextCourse->fetch('is_added_to_primary_playlist', false);
-            $thisLesson['next_course_lesson_count'] = $nextCourse->fetch('lesson_count');
-            $thisLesson['next_course_mobile_app_url'] = $nextCourse->fetch('mobile_app_url');
-            $thisLesson['next_course_level_rank'] = $thisLesson['level_position'] . '.' . $nextCourse['sort'];
-
+            $thisLesson['current_course'] = $course;
+            $nextCourse['level_rank'] = $thisLesson['level_position'] . '.' . $nextCourse['sort'];
+            $thisLesson['next_course'] = $nextCourse;
         } else {
             if ($thisLesson['is_last_incomplete_course_from_level']) {
                 $allLevels = $this->contentService->getByParentId($learningPath['id']);
@@ -432,37 +367,34 @@ class LearningPathController extends Controller
                     $allLevels->where('id', '!=', $level['id'])
                         ->where('completed', '=', false)
                         ->first();
-                $thisLesson['current_level_title'] = $level->fetch('fields.title') ?? '';
-                $thisLesson['current_level_xp'] = $level->fetch('total_xp');
-                $thisLesson['current_level_number'] = $level['position'];
-                $thisLesson['current_level_thumbnail_url'] = $level->fetch('data.thumbnail_url') ?? '';
-                $thisLesson['next_level_id'] = $nextLevel->fetch('id') ?? null;
-                $thisLesson['next_level_title'] = $nextLevel->fetch('fields.title') ?? '';
-                $thisLesson['next_level_thumbnail_url'] = $nextLevel->fetch('data.thumbnail_url') ?? '';
-                $thisLesson['next_level_is_added_to_primary_playlist'] =
-                    $nextLevel->fetch('is_added_to_primary_playlist', false);
-                $thisLesson['next_level_mobile_app_url'] = $nextLevel['mobile_app_url'];
-                $thisLesson['next_level_number'] = $nextLevel['position'];
-                $thisLesson['next_level_published_on'] = $nextLevel->fetch('published_on');
+                $level['level_number'] = $level['position'];
+                $thisLesson['current_level'] = $level;
+                $nextLevel['level_number'] = $nextLevel['position'];
+                $nextLevel['mobile_app_url'] = url()->route(
+                    'mobile.learning-path.level.show',
+                    [
+                        $learningPath['slug'],
+                        $nextLevel['slug'],
+                    ]
+                );
+                $thisLesson['next_level'] = $nextLevel;
             }
         }
 
         $this->vimeoVideoDecorator->decorate(new Collection([$thisLesson]));
 
+        //add comments
         CommentRepository::$availableContentId = $thisLesson['id'];
-
         $commentPage = 1;
-
         $comments = $this->commentService->getComments($commentPage, 10, '-created_on');
-
         $thisLesson['comments'] = (new CommentTransformer())->transform($comments['results']);
         $thisLesson['total_comments'] = $comments['total_results'];
 
+        //add course's resources to lesson
         if (!empty($thisLesson['resources']) || !empty($course['resources'])) {
             $thisLesson['resources'] = array_merge($thisLesson['resources'] ?? [], $course['resources'] ?? []);
         }
 
         return ResponseService::content($thisLesson);
     }
-
 }
