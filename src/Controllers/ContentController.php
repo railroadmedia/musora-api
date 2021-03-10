@@ -22,6 +22,7 @@ use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
@@ -136,7 +137,8 @@ class ContentController extends Controller
         );
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
-        $parentChildren = $parent['lessons'] ?? $this->contentService->getFiltered(
+        $parentChildren =
+            ($parent['lessons']) ? (new Collection($parent['lessons'])) : $this->contentService->getFiltered(
                 $request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
@@ -152,13 +154,13 @@ class ContentController extends Controller
                 false
             )['results'];
 
-        $parentChildrenTrimmed = $this->getParentChildTrimmed($parentChildren, $content);
-        $content['related_lessons'] = $parentChildrenTrimmed;
-
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         // attach next and previous lessons to content
-        $content = $this->attachNextPrevLesson($parent, $content, $parentChildren);
+        $content['next_lesson'] = $parentChildren->getMatchOffset($content, 1);
+        $content['previous_lesson'] = $parentChildren->getMatchOffset($content, -1);
+
+        $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         //attached comments on the content
         CommentRepository::$availableContentId = $content['id'];
@@ -166,6 +168,7 @@ class ContentController extends Controller
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
         $content['total_comments'] = $comments['total_results'];
 
+        //attached lessons to the content if not exists already
         if (!array_key_exists('lessons', $content) &&
             !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
             $content['lessons'] = $this->contentService->getByParentId($content['id']);
@@ -211,9 +214,17 @@ class ContentController extends Controller
 
             $content['duration_in_seconds'] = $duration;
             $content['total_xp'] = $totalXp;
+            $content['biography'] = ContentHelper::getDatumValue($content->getArrayCopy(), 'long_description');
         }
 
-        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+        //add parent's instructors and resources to content
+        if ($parent) {
+            $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+            $content['instructor'] = array_merge(
+                $content['instructor'] ?? [],
+                ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
+            );
+        }
 
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
@@ -250,53 +261,6 @@ class ContentController extends Controller
         }
 
         return $parentChildrenTrimmed;
-    }
-
-    /**
-     * @param $parent
-     * @param $content
-     * @param $parentChildren
-     * @return mixed
-     */
-    private function attachNextPrevLesson($parent, $content, $parentChildren)
-    {
-        if ($parent) {
-            $content['parent'] = $parent;
-            $content['parent_id'] = $parent['id'];
-            $parentChildren = new Collection($parentChildren);
-            $lessonContent =
-                $parentChildren->where('id', $content['id'])
-                    ->first();
-
-            $nextIncompleteLesson =
-                $parentChildren->where('completed', '=', false)
-                    ->where('id', '!=', $content['id']);
-            $content['parent']['current_lesson'] = $nextIncompleteLesson->first() ?? null;
-
-            $nextChild = $parentChildren->getMatchOffset($lessonContent, 1);
-            $previousChild = $parentChildren->getMatchOffset($lessonContent, -1);
-        } else {
-            if ($content['type'] != 'coach') {
-                ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
-
-                $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
-                    $content['type'],
-                    'published_on',
-                    $content['published_on']
-                    ??
-                    Carbon::now()
-                        ->toDateTimeString()
-                );
-
-                $nextChild = $neighbourSiblings['after']->first();
-                $previousChild = $neighbourSiblings['before']->first();
-            }
-        }
-
-        $content['next_lesson'] = $nextChild ?? null;
-        $content['previous_lesson'] = $previousChild ?? null;
-
-        return $content;
     }
 
     /**
