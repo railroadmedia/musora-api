@@ -14,6 +14,7 @@ use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Requests\CompleteContentRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
@@ -79,38 +80,15 @@ class UserProgressController extends Controller
     }
 
     /**
-     * @param Request $request
+     * @param CompleteContentRequest $request
      * @return JsonResponse
      * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
-    public function completeUserProgressOnContent(Request $request)
+    public function completeUserProgressOnContent(CompleteContentRequest $request)
     {
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
-
-        $rules = [
-            'content_id' => 'required',
-            'device_type' => 'required',
-        ];
-
-        $validator = Validator::make(
-            $request->all(),
-            $rules
-        );
-
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'title' => 'Complete Failed',
-                    'message' => implode(
-                        ',',
-                        $validator->getMessageBag()
-                            ->all()
-                    ),
-                ],
-                422
-            );
-        }
 
         $content = $this->contentService->getById($request->get('content_id'));
 
@@ -120,7 +98,7 @@ class UserProgressController extends Controller
 
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
-            auth()->id()
+            $this->userProvider->getCurrentUser()->getId()
         );
 
         if ($content['type'] != 'assignment') {
