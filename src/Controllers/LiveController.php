@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ChatProviderInterface;
+use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Services\LiveStreamEventService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\Railcontent\Services\ContentService;
@@ -27,6 +28,10 @@ class LiveController extends Controller
      * @var LiveStreamEventService
      */
     private $liveStreamEventService;
+    /**
+     * @var UserProviderInterface
+     */
+    private $userProvider;
 
     /**
      * LiveController constructor.
@@ -34,15 +39,18 @@ class LiveController extends Controller
      * @param ContentService $contentService
      * @param ChatProviderInterface $chatProvider
      * @param LiveStreamEventService $liveStreamEventService
+     * @param UserProviderInterface $userProvider
      */
     public function __construct(
         ContentService $contentService,
         ChatProviderInterface $chatProvider,
-        LiveStreamEventService $liveStreamEventService
+        LiveStreamEventService $liveStreamEventService,
+        UserProviderInterface $userProvider
     ) {
         $this->contentService = $contentService;
         $this->chatProvider = $chatProvider;
         $this->liveStreamEventService = $liveStreamEventService;
+        $this->userProvider = $userProvider;
     }
 
     /**
@@ -52,7 +60,7 @@ class LiveController extends Controller
      */
     public function getLiveEvent(Request $request)
     {
-       // $this->calendarService->getTimezone($request);
+        $this->userProvider->setAndGetUserTimezone();
 
         $chatrollEmbedUrl = $this->chatProvider->getEmbedUrl();
 

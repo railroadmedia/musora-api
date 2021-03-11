@@ -69,4 +69,10 @@ interface UserProviderInterface
      * @return mixed
      */
     public function getUsoraCurrentUser();
+
+    /**
+     * @return string
+     */
+    public function setAndGetUserTimezone()
+    : string;
 }
