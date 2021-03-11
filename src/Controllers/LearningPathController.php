@@ -96,8 +96,6 @@ class LearningPathController extends Controller
 
         $this->vimeoVideoDecorator->decorate(new Collection([$learningPath]));
 
-        $learningPath['lesson_rank'] = $learningPath->fetch('next_lesson_rank');
-        $learningPath['next_lesson_url'] = $learningPath->fetch('next_lesson_url_app');
         $learningPath['xp'] = $learningPath->fetch('total_xp', $learningPath->fetch('xp', 0));
         $learningPath['banner_button_url'] = null;
 
@@ -184,19 +182,10 @@ class LearningPathController extends Controller
 
         $level['courses'] = $courses;
 
-        $learningPathNextLesson =
-            ($learningPath->fetch('next_lesson_level_id') == $level['id']) ? $learningPath->fetch('next_lesson', []) :
-                [];
+        $level['next_lesson'] =
+            ($learningPath->fetch('next_lesson_level_id') == $level['id']) ? $learningPath->fetch('next_lesson', null) :
+                null;
 
-        $level['next_lesson'] = null;
-        if ($learningPathNextLesson) {
-            $level['next_lesson'] = $learningPathNextLesson;
-        }
-
-        $level['level_rank'] = $learningPath->fetch('level_rank');
-        $level['lesson_rank'] = $learningPath->fetch('next_lesson_rank');
-
-        $level['progress_percent'] = $level['user_progress'][auth()->id()]['progress_percent'] ?? 0;
 
         $level['xp'] = $level->fetch('total_xp');
 
@@ -358,7 +347,7 @@ class LearningPathController extends Controller
                     ->where('completed', '=', false)
                     ->first();
             $thisLesson['current_course'] = $course;
-            $nextCourse['level_rank'] = $thisLesson['level_position'] . '.' . $nextCourse['sort'];
+            $nextCourse['level_rank'] = $thisLesson['level_position'] . '.' . $nextCourse['position'];
             $thisLesson['next_course'] = $nextCourse;
         } else {
             if ($thisLesson['is_last_incomplete_course_from_level']) {
