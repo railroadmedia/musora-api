@@ -50,4 +50,20 @@ class UserProvider implements UserProviderInterface
     {
         // TODO: Implement getCurrentUser() method.
     }
+
+    public function setReviewDataForCurrentUser(string $deviceType, int $reviewCount)
+    {
+        // TODO: Implement setReviewDataForCurrentUser() method.
+    }
+
+    public function getUsoraCurrentUser()
+    {
+        // TODO: Implement getUsoraCurrentUser() method.
+    }
+
+    public function setAndGetUserTimezone()
+    : string
+    {
+        // TODO: Implement setAndGetUserTimezone() method.
+    }
 }
