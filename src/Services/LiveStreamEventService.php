@@ -180,9 +180,6 @@ class LiveStreamEventService
      */
     public function getCurrentOrNextYoutubeEventId()
     {
-        // temp hack because of api limit
-//        return 'WY14xLIeBbc';
-
         try {
             $cacheStore = cache()->store(config('cache.default'))->getStore();
 

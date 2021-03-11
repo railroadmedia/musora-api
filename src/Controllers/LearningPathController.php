@@ -166,30 +166,20 @@ class LearningPathController extends Controller
         }
 
         $courses = $this->contentService->getByParentId($level['id']);
-
         foreach ($courses as $course) {
             $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
         }
-
-        $this->vimeoVideoDecorator->decorate(new Collection([$level]));
-
-        $level['banner_button_url'] = $level->fetch('current_lesson') ? url()->route(
-            'mobile.learning-path.lesson.show',
-            [
-                $level->fetch('current_lesson')['id'],
-            ]
-        ) : '';
-
         $level['courses'] = $courses;
 
         $level['next_lesson'] =
             ($learningPath->fetch('next_lesson_level_id') == $level['id']) ? $learningPath->fetch('next_lesson', null) :
                 null;
 
-
         $level['xp'] = $level->fetch('total_xp');
 
         $level['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
+
+        $this->vimeoVideoDecorator->decorate(new Collection([$level]));
 
         return ResponseService::content($level);
     }
@@ -244,27 +234,17 @@ class LearningPathController extends Controller
 
         $course['lessons'] = $lessons;
 
-        $course['banner_button_url'] = $course->fetch('current_lesson') ? url()->route(
-            'mobile.learning-path.lesson.show',
-            [
-                $course->fetch('current_lesson')['id'],
-            ]
-        ) : '';
-
         $course['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
-        $learningPathNextLesson =
-            ($learningPath->fetch('next_lesson_course_id') == $courseId) ? $learningPath->fetch('next_lesson', []) : [];
+        $course['next_lesson'] =
+            ($learningPath->fetch('next_lesson_course_id') == $courseId) ? $learningPath->fetch('next_lesson', null) :
+                null;
 
-        if ($learningPathNextLesson) {
-            $course['next_lesson'] = $learningPathNextLesson;
-        }
-
-        $course['level_rank'] = $learningPath->fetch('level_rank');
         $course['level_position'] = $level['sort'] + 1;
-        $course['lesson_rank'] = ($course->fetch('current_lesson', [])['sort'] ?? 0) + 1;
-        $course['xp'] = $course->fetch('total_xp');
+
         $course['course_position'] = $levelCourses[$course['id']]['position'];
+
+        $course['xp'] = $course->fetch('total_xp');
 
         if ($request->has('download')) {
             $this->downloadService->attachLessonsDataForDownload($course);
@@ -322,7 +302,6 @@ class LearningPathController extends Controller
         $relatedLessons = $this->contentService->getByParentId($course['id']);
 
         $thisLesson['related_lessons'] = $relatedLessons;
-        $thisLesson['level_rank'] = $learningPath->fetch('level_rank');
         $thisLesson['level_position'] = $level['sort'] + 1;
         $thisLesson['course_position'] = $courseHierarchy['child_position'];
         $thisLesson['xp'] = $thisLesson->fetch('total_xp');

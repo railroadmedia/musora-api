@@ -3,14 +3,13 @@
 namespace Railroad\MusoraApi\Controllers;
 
 use Doctrine\ORM\NonUniqueResultException;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Services\ResponseService;
+use Railroad\MusoraApi\Services\UserProgressService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
@@ -55,6 +54,11 @@ class PacksController extends Controller
     private $vimeoVideoDecorator;
 
     /**
+     * @var UserProgressService
+     */
+    private $userProgressService;
+
+    /**
      * PacksController constructor.
      *
      * @param ContentService $contentService
@@ -62,6 +66,7 @@ class PacksController extends Controller
      * @param ContentHierarchyService $contentHierarchyService
      * @param ProductProviderInterface $productProvider
      * @param ContentRepository $contentRepository
+     * @param VimeoVideoSourcesDecorator $videoSourcesDecorator
      */
     public function __construct(
         ContentService $contentService,
@@ -69,7 +74,8 @@ class PacksController extends Controller
         ContentHierarchyService $contentHierarchyService,
         ProductProviderInterface $productProvider,
         ContentRepository $contentRepository,
-        VimeoVideoSourcesDecorator $videoSourcesDecorator
+        VimeoVideoSourcesDecorator $videoSourcesDecorator,
+        UserProgressService $userProgressService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -77,6 +83,7 @@ class PacksController extends Controller
         $this->contentRepository = $contentRepository;
         $this->productProvider = $productProvider;
         $this->vimeoVideoDecorator = $videoSourcesDecorator;
+        $this->userProgressService = $userProgressService;
     }
 
     /**
@@ -219,7 +226,7 @@ class PacksController extends Controller
         }
 
         if ($topPack) {
-            $topPack = $this->isOwnedOrLocked($topPack, auth()->id());
+            $topPack = $this->isOwnedOrLocked($topPack);
         }
 
         if (!$topPack) {
@@ -253,12 +260,10 @@ class PacksController extends Controller
 
     /**
      * @param $pack
-     * @param int $currentUserId
      * @return mixed
      */
-    private function isOwnedOrLocked(&$pack, int $currentUserId)
+    private function isOwnedOrLocked(&$pack)
     {
-        //TODO: Need a provider for user permissions
         $pack['is_owned'] = false;
         $pack['is_locked'] = true;
 
@@ -292,7 +297,7 @@ class PacksController extends Controller
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
-        $pack = $this->isOwnedOrLocked($pack, auth()->id());
+        $pack = $this->isOwnedOrLocked($pack);
 
         $pack['thumbnail'] = ContentHelper::getDatumValue($pack, 'header_image_url');
         $pack['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
@@ -413,7 +418,7 @@ class PacksController extends Controller
                 $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
                     ->first();
         }
-        $pack = $this->isOwnedOrLocked($pack, auth()->id());
+        $pack = $this->isOwnedOrLocked($pack);
 
         $thisLesson['is_owned'] = $pack['is_owned'];
 
@@ -477,36 +482,7 @@ class PacksController extends Controller
         if ($pack['type'] == 'pack') {
 
             $lessonsProgressRows =
-                $this->contentRepository->connection()
-                    ->table('railcontent_content_hierarchy as ch_1')
-                    ->select(
-                        [
-                            'ch_1.parent_id as pack_id',
-                            'ch_2.parent_id as pack_bundle_id',
-                            'ch_2.child_id as pack_bundle_lesson_id',
-
-                            'up.state as state',
-                            'up.progress_percent as progress_percent',
-                        ]
-                    )
-                    ->join('railcontent_content_hierarchy as ch_2', 'ch_2.parent_id', '=', 'ch_1.child_id')
-                    ->leftJoin(
-                        'railcontent_user_content_progress as up',
-                        function (JoinClause $join) {
-                            $join->on(
-                                'up.content_id',
-                                '=',
-                                'ch_2.child_id'
-                            )
-                                ->where(
-                                    function (Builder $builder) {
-                                        $builder->where('up.user_id', auth()->id());
-                                    }
-                                );
-                        }
-                    )
-                    ->where('ch_1.parent_id', $id)
-                    ->get();
+               $this->userProgressService->getProgressOnPack($pack['id']);
 
             foreach ($lessonsProgressRows as $childProgressRow) {
                 if ($childProgressRow['state'] != 'completed' && $childProgressRow['progress_percent'] != 100) {
