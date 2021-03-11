@@ -214,7 +214,6 @@ class ContentController extends Controller
 
             $content['duration_in_seconds'] = $duration;
             $content['total_xp'] = $totalXp;
-            $content['biography'] = ContentHelper::getDatumValue($content->getArrayCopy(), 'long_description');
         }
 
         //add parent's instructors and resources to content
