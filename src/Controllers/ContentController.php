@@ -3,7 +3,10 @@
 namespace Railroad\MusoraApi\Controllers;
 
 use Carbon\Carbon;
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +23,6 @@ use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
-use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -31,6 +33,7 @@ use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Support\Collection;
+use ReflectionException;
 
 class ContentController extends Controller
 {
@@ -157,8 +160,17 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         // attach next and previous lessons to content
-        $content['next_lesson'] = $parentChildren->getMatchOffset($content, 1);
-        $content['previous_lesson'] = $parentChildren->getMatchOffset($content, -1);
+        $currentContentIterator =
+            $parentChildren->where('id', '=', $content['id'])
+                ->keys()
+                ->first() ?? 1;
+
+        $content['next_lesson'] =
+            $parentChildren->only($currentContentIterator + 1)
+                ->first();
+        $content['previous_lesson'] =
+            $parentChildren->only($currentContentIterator - 1)
+                ->first();
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
@@ -532,10 +544,10 @@ class ContentController extends Controller
     /**
      * @param Request $request
      * @return JsonResponse
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \ReflectionException
+     * @throws DBALException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws ReflectionException
      */
     public function addLessonsToUserList(Request $request)
     {
@@ -548,7 +560,9 @@ class ContentController extends Controller
             $skill = ($topics != ['noTopic']) ? 'beginner' : 'noDifficulty';
         }
 
-        $userId = $this->userProvider->getCurrentUser()->getId();
+        $userId =
+            $this->userProvider->getCurrentUser()
+                ->getId();
 
         $lessons = [];
         foreach ($topics as $topic) {
@@ -585,7 +599,7 @@ class ContentController extends Controller
             );
         }
 
-        $lessons =  $this->contentService->getFiltered(
+        $lessons = $this->contentService->getFiltered(
             1,
             10,
             '-published_on',
