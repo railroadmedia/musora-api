@@ -64,6 +64,6 @@ class UserProvider implements UserProviderInterface
     public function setAndGetUserTimezone()
     : string
     {
-        // TODO: Implement setAndGetUserTimezone() method.
+        return '';
     }
 }

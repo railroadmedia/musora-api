@@ -8,17 +8,17 @@ class ProductProvider implements ProductProviderInterface
 
     public function getPackPrice($slug)
     : array {
-        // TODO: Implement getPackPrice() method.
+        return [];
     }
 
     public function getAppleProductId($slug)
     : string {
-        // TODO: Implement getAppleProductId() method.
+        return '';
     }
 
     public function getGoogleProductId($slug)
     : string {
-        // TODO: Implement getGoogleProductId() method.
+        return '';
     }
 
     public function currentUserOwnsPack($id)
