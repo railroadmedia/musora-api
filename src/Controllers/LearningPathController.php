@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\MethodService;
@@ -47,6 +48,10 @@ class LearningPathController extends Controller
      * @var DownloadService
      */
     private $downloadService;
+    /**
+     * @var StripTagDecorator
+     */
+    private $stripTagDecorator;
 
     /**
      * LearningPathController constructor.
@@ -57,6 +62,7 @@ class LearningPathController extends Controller
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param MethodService $methodService
      * @param DownloadService $downloadService
+     * @param StripTagDecorator $stripTagDecorator
      */
     public function __construct(
         ContentService $contentService,
@@ -64,7 +70,8 @@ class LearningPathController extends Controller
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
         ContentHierarchyRepository $contentHierarchyRepository,
         MethodService $methodService,
-        DownloadService $downloadService
+        DownloadService $downloadService,
+        StripTagDecorator $stripTagDecorator
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -72,6 +79,7 @@ class LearningPathController extends Controller
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->methodService = $methodService;
         $this->downloadService = $downloadService;
+        $this->stripTagDecorator = $stripTagDecorator;
     }
 
     /**
@@ -349,6 +357,9 @@ class LearningPathController extends Controller
             }
         }
 
+        $thisLesson['instructor'] = $level->fetch('*fields.instructor');
+
+        $this->stripTagDecorator->decorate(new Collection([$thisLesson]));
         $this->vimeoVideoDecorator->decorate(new Collection([$thisLesson]));
 
         //add comments
