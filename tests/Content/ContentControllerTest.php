@@ -69,15 +69,6 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        $responseStructure = (config('musora-api.response-structure')[$content['type']]);
-        $this->assertEquals(count($responseStructure), count($response->decodeResponseJson()));
-
-        foreach ($responseStructure as $key => $value) {
-            if (is_string($key) && (!str_contains($key, '.'))) {
-                $this->assertTrue(array_key_exists($key, $response->decodeResponseJson()));
-            }
-        }
-
         $this->assertEquals(
             $content['id'],
             $response->decodeResponseJson()['id']
@@ -112,14 +103,6 @@ class ContentControllerTest extends TestCase
                 );
 
         $response->assertStatus(200);
-        $responseStructure = (config('musora-api.response-structure')[$content['type'] . '_download']);
-        $this->assertEquals(count($responseStructure), count($response->decodeResponseJson()));
-
-        foreach ($responseStructure as $key) {
-            if (is_string($key) && (!str_contains($key, '.'))) {
-                $this->assertTrue(array_key_exists($key, $response->decodeResponseJson()));
-            }
-        }
 
         foreach ($response->decodeResponseJson()['lessons'] as $lesson) {
             $this->assertTrue(array_key_exists('comments', $lesson));
@@ -209,14 +192,35 @@ class ContentControllerTest extends TestCase
 
     public function test_in_progress_endpoint()
     {
-        $includedType = $this->faker->word;
+        $includedType = 'course-part';
 
-        for ($i = 0; $i < 50; $i++) {
-            $contents[] = $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED);
+        for ($i = 0; $i < 3; $i++) {
+            $contents[] =
+                $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED);
         }
 
+        $user = $this->createUser();
+
         $response =
-            $this->actingAs()
+            $this->actingAs($user)
+                ->call(
+                    'GET',
+
+                    '/musora-api/in-progress',
+                    [
+                        'included_types' => [$includedType],
+                    ],
+                );
+
+        $response->assertStatus(200);
+
+        //assert we have empty data if not exists content in progress
+        $this->assertTrue(empty($response->decodeResponseJson('data')));
+
+        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id']);
+
+        $response =
+            $this->actingAs($user)
                 ->call(
                     'GET',
                     '/musora-api/in-progress',
@@ -226,21 +230,7 @@ class ContentControllerTest extends TestCase
                 );
 
         $response->assertStatus(200);
-
-        //assert we have empty data if not exists content in progress
-        $this->assertTrue(empty($response->decodeResponseJson('data')));
-
-        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12,  auth()->id());
-
-        $response = $this->call(
-            'GET',
-            '/musora-api/in-progress',
-            [
-                'included_types' => [$includedType],
-            ]
-        );
-
-        $response->assertStatus(200);
+        dd($response->decodeResponseJson());
 
         $this->assertEquals($contents[0]['id'], $response->decodeResponseJson('data')[0]['id']);
     }
@@ -341,7 +331,7 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data')??[] as $result) {
+        foreach ($response->decodeResponseJson('data') ?? [] as $result) {
             $this->assertEquals($content['id'], $result['id']);
             $this->assertTrue($content['isLive']);
         }
@@ -547,12 +537,10 @@ class ContentControllerTest extends TestCase
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data')??[] as $result) {
+        foreach ($response->decodeResponseJson('data') ?? [] as $result) {
             $this->assertEquals($forcedContent['id'], $result['id']);
             $this->assertFalse($forcedContent['isLive']);
         }
     }
-
-
 
 }
