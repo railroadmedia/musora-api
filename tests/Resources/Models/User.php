@@ -10,7 +10,22 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property integer $id
  * @property string $email
  */
-class User extends Authenticatable
+class User extends Authenticatable implements \Tymon\JWTAuth\Contracts\JWTSubject
 {
     protected $table = 'users';
+
+    public function getJWTIdentifier()
+    {
+        return $this->id;
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
+
+    public function resolveChildRouteBinding($childType, $value, $field)
+    {
+        // TODO: Implement resolveChildRouteBinding() method.
+    }
 }
