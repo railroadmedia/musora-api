@@ -45,6 +45,11 @@ class StripTagDecorator extends ModeDecoratorBase
                         }
                     }
                 }
+
+                //coach biography
+                if($entity['type'] == 'coach') {
+                    $entities[$entityIndex]['biography'] = strip_tags(html_entity_decode($entity['biography']));
+                }
             }
 
             if ($entity instanceof CommentEntity) {
