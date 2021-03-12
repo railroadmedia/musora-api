@@ -5,6 +5,7 @@ namespace Railroad\MusoraApi\Middleware;
 use Closure;
 use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
 use Tymon\JWTAuth\JWTAuth;
+use Tymon\JWTAuth\Facades\JWTAuth as JWTFacade;
 
 class MobileAppTokenAuth extends BaseMiddleware
 {
@@ -27,9 +28,9 @@ class MobileAppTokenAuth extends BaseMiddleware
     public function handle($request, Closure $next)
     {
         try {
-            
+
             $user =
-                $this->auth->parseToken()
+                JWTFacade::setRequest($request)->parseToken()
                     ->getPayload()
                     ->get('sub');
 

@@ -5,16 +5,19 @@ namespace Railroad\MusoraApi\Tests;
 use Carbon\Carbon;
 use Faker\Generator;
 use Illuminate\Auth\AuthManager;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Railroad\Ecommerce\Faker\Faker;
+use PHPUnit\Framework\MockObject\MockObject;
 use Railroad\Ecommerce\Gateways\AppleStoreKitGateway;
 use Railroad\MusoraApi\Contracts\ChatProviderInterface;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
+use Railroad\MusoraApi\Middleware\AuthIfTokenExist;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
 use Railroad\MusoraApi\Tests\Fixtures\ChatProvider;
 use Railroad\MusoraApi\Tests\Fixtures\ProductProvider;
@@ -27,8 +30,9 @@ use Railroad\Railcontent\Factories\PermissionsFactory;
 use Railroad\Railcontent\Factories\UserContentProgressFactory;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
-use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Response\Providers\ResponseServiceProvider;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Providers\LaravelServiceProvider;
 
 class TestCase extends BaseTestCase
 {
@@ -55,7 +59,7 @@ class TestCase extends BaseTestCase
      */
     protected $userProgressFactory;
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject
+     * @var MockObject
      */
     protected $appleStoreKitGatewayMock;
 
@@ -75,27 +79,36 @@ class TestCase extends BaseTestCase
      */
     protected $contentPermissionFactory;
 
+    protected $jwtAuth;
+
     protected function setUp()
     {
         parent::setUp();
 
         error_reporting(E_ALL);
 
-        $this->artisan('migrate:fresh', []);
+        $this->artisan('migrate:fresh');
+
         $this->artisan('cache:clear', []);
 
         $this->databaseManager = $this->app->make(DatabaseManager::class);
+
         $this->faker = $this->app->make(Generator::class);
         $this->contentFactory = $this->app->make(ContentFactory::class);
         $this->commentFactory = $this->app->make(CommentFactory::class);
         $this->userProgressFactory = $this->app->make(UserContentProgressFactory::class);
         $this->permissionFactory = $this->app->make(PermissionsFactory::class);
         $this->contentPermissionFactory = $this->app->make(ContentPermissionsFactory::class);
-
-        // $this->ecommerceFaker = $this->app->make(Faker::class);
         $this->authManager = $this->app->make(AuthManager::class);
 
         //call the MobileAppTokenAuth
+        $middleware = $this->app->make(AuthIfTokenExist::class);
+        $middleware->handle(
+            request(),
+            function () {
+            }
+        );
+
         $middleware = $this->app->make(ContentPermissionsMiddleware::class);
         $middleware->handle(
             request(),
@@ -133,25 +146,26 @@ class TestCase extends BaseTestCase
         $productProvider = new ProductProvider();
         $this->app->instance(ProductProviderInterface::class, $productProvider);
 
+        \Railroad\Railcontent\Repositories\RepositoryBase::$connectionMask = null;
     }
 
     /**
      * Define environment setup.
      *
-     * @param \Illuminate\Foundation\Application $app
+     * @param Application $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
     {
-
         $defaultConfig = require(__DIR__ . '/../config/railcontent.php');
 
-        $app['config']->set('railcontent.database_connection_name', 'testbench');
+        $app['config']->set('railcontent.database_connection_name', $defaultConfig['database_connection_name']);
         $app['config']->set('railcontent.cache_duration', $defaultConfig['cache_duration']);
         $app['config']->set('railcontent.cache_driver', $defaultConfig['cache_driver']);
         $app['config']->set('railcontent.cache_prefix', $defaultConfig['cache_prefix']);
         $app['config']->set('railcontent.table_prefix', $defaultConfig['table_prefix']);
         $app['config']->set('railcontent.data_mode', $defaultConfig['data_mode']);
+        $app['config']->set('railcontent.connection_mask_prefix', $defaultConfig['connection_mask_prefix']);
         $app['config']->set('railcontent.brand', $defaultConfig['brand']);
         $app['config']->set('railcontent.available_brands', $defaultConfig['available_brands']);
         $app['config']->set('railcontent.available_languages', $defaultConfig['available_languages']);
@@ -187,6 +201,7 @@ class TestCase extends BaseTestCase
             $defaultConfig['administrator_routes_middleware']
         );
 
+        $app['config']->set('database_connection_name', 'testbench');
         $app['config']->set('database.default', 'testbench');
         $app['config']->set(
             'database.connections.testbench',
@@ -210,14 +225,6 @@ class TestCase extends BaseTestCase
             ]
         );
         $app['config']->set('railcontent.database.default', 'testbench');
-        $app['config']->set(
-            'railcontent.database.connections.testbench',
-            [
-                'driver' => 'sqlite',
-                'database' => ':memory:',
-                'prefix' => '',
-            ]
-        );
 
         $app['config']->set(
             'railcontent.database.redis',
@@ -231,7 +238,9 @@ class TestCase extends BaseTestCase
                 ],
             ]
         );
-        $app['config']->set('railcontent.cache.default', 'redis');
+        $app['config']->set('cache.default', env('CACHE_DRIVER', 'redis'));
+        $app['config']->set('railcontent.cache_prefix', $defaultConfig['cache_prefix']);
+        $app['config']->set('railcontent.cache_driver', $defaultConfig['cache_driver']);
 
         // allows access to built in user auth
         $app['config']->set('auth.providers.users.model', User::class);
@@ -239,48 +248,56 @@ class TestCase extends BaseTestCase
         $musoraApiConfig = require(__DIR__ . '/../config/musora-api.php');
         $app['config']->set('musora-api.response-structure', $musoraApiConfig['response-structure']);
 
+        $jwtConfig = require(__DIR__ . '/../config/jwt.php');
+        $app['config']->set('jwt', $jwtConfig);
+
+        $app->register(MusoraApiServiceProvider::class);
+
+        $app->register(LaravelServiceProvider::class);
         $app->register(ResponseServiceProvider::class);
         $app->register(RailcontentServiceProvider::class);
-        $app->register(MusoraApiServiceProvider::class);
+
     }
 
     /**
      * Set the currently logged in user for the application.
      *
-     * @param \Illuminate\Contracts\Auth\Authenticatable $user
+     * @param Authenticatable $user
      * @param string|null $driver
      * @return $this
      */
     public function actingAs($user = null, $driver = null)
     {
         if (!$user) {
-            $user = $this->createAndLogInNewUser();
+            $user = $this->createUser();
         }
+
+        $this->withHeader('Authorization', "Bearer " . $user['token']);
 
         parent::actingAs($user);
 
         return $this;
+
     }
 
     /**
      * @return int
      */
-    public function createAndLogInNewUser()
+    public function createUser()
     {
         $userId =
             $this->databaseManager->connection()
-                ->table('users')
+                ->query()
+                ->from('users')
                 ->insertGetId(
                     ['email' => $this->faker->email]
                 );
 
         $user =
             User::query()
-                ->where('id', $userId)
-                ->first();
+                ->find($userId);
 
-        //        $this->authManager->guard()
-        //            ->onceUsingId($userId);
+        $user['token'] = JWTAuth::fromUser($user);
 
         return $user;
     }
@@ -288,6 +305,7 @@ class TestCase extends BaseTestCase
     /**
      * Helper method to seed a test content
      *      *
+     *
      * @return array
      */
     public function fakeContent($contentData = [])
@@ -296,9 +314,10 @@ class TestCase extends BaseTestCase
             'slug' => $this->faker->slug,
             'type' => $this->faker->text,
             'brand' => config('railcontent.brand'),
-            'language' => $this>$this->faker->text,
+            'language' => $this->faker->text,
             'status' => 'published',
-            'published_on' => Carbon::now()->subDays(1)
+            'published_on' => Carbon::now()
+                ->subDays(1)
                 ->toDateTimeString(),
             'created_on' => Carbon::now()
                 ->toDateTimeString(),
@@ -339,22 +358,21 @@ class TestCase extends BaseTestCase
      *
      * @return array
      */
-//    public function fakeContentPermission($contentPermissionData = [])
-//    {
-//        $contentPermissionData += [
-//            'permission_id' => rand(1,10),
-//            'brand' => config('railcontent.brand')
-//        ];
-//
-//        $permissionId =
-//            $this->databaseManager->table('railcontent_content_permissions')
-//                ->insertGetId($contentPermissionData);
-//
-//        $contentPermissionData['id'] = $permissionId;
-//
-//        return $contentPermissionData;
-//    }
+    public function fakeContentPermission($contentPermissionData = [])
+    {
+        $contentPermissionData += [
+            'permission_id' => rand(1, 10),
+            'brand' => config('railcontent.brand'),
+        ];
 
+        $permissionId =
+            $this->databaseManager->table('railcontent_content_permissions')
+                ->insertGetId($contentPermissionData);
+
+        $contentPermissionData['id'] = $permissionId;
+
+        return $contentPermissionData;
+    }
 
     protected function tearDown()
     {

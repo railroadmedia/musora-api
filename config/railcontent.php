@@ -12,7 +12,7 @@ return [
     'cache_driver' => 'redis',
 
     // database
-    'database_connection_name' => 'mysql',
+    'database_connection_name' => 'testbench',
     'connection_mask_prefix' => 'railcontent_',
     'data_mode' => 'host',
     'table_prefix' => 'railcontent_',
