@@ -181,3 +181,204 @@ When the server-side reports an error, it returns a JSON object in the following
   "message": "Invalid Email or Password"
 }
 ```
+
+
+## Forgot password
+An email is sent with a link to a webpage which contains a form where the user can enter the new password.
+
+### HTTP Request
+`PUT musora-api/forgot`
+
+
+### Permissions
+    - Without restrictions
+
+### Request Parameters
+
+
+|Type|Key|Required|Notes|
+|----|---|--------|-----|
+|body|email|  yes  ||
+
+
+### Request Example:
+
+```js
+$.ajax({
+    url: 'https://www.domain.com' +
+             '/musora-api/forgot',
+{
+    "email": "email@email.ro"
+}
+   ,
+    success: function(response) {},
+    error: function(response) {}
+});
+```
+
+### Response Example (200):
+
+```json
+{
+    "success": true,
+    "title": "Please check your email",
+    "message": "Follow the instructions sent to your email address to reset your password."
+}
+```
+
+## Change password
+The form where the user can enter the new password, using the link received after forgot password action.
+
+### HTTP Request
+`PUT musora-api/change-password`
+
+
+### Permissions
+    - Without restrictions
+
+### Request Parameters
+
+
+|Type|Key|Required|Notes|
+|----|---|--------|-----|
+|body|rp-key|  yes  |Token provided in forgot password email|
+|body|user_login|  yes  |User's email|
+|body|pass1|  yes  |User's pass|
+
+
+### Request Example:
+
+```js
+$.ajax({
+    url: 'https://www.domain.com' +
+             '/musora-api/change-password',
+{
+    "user_login": "email@email.ro",
+    "rp_key": "accccc",
+    "pass1": "new password"
+}
+   ,
+    success: function(response) {},
+    error: function(response) {}
+});
+```
+
+### Response Example (200):
+
+```json
+{
+  "success": true,
+  "token": "eyJ0eX0YyJ9.ayJrvjNMrfDg78Aedglp6sEEoz6jzMLbHl7Gcy6Cygg",
+  "isEdge": true,
+  "isEdgeExpired": false,
+  "edgeExpirationDate": null,
+  "isPackOlyOwner": false,
+  "tokenType": "bearer",
+  "expiresIn": 3600,
+  "userId": 1
+}
+```
+
+### Response Example (500):
+When the server-side reports an error, it returns a JSON object in the following format:
+```json
+{
+  "success": false,
+  "message": "Password reset failed, please try again."
+}
+```
+
+
+## Forgot password
+An email is sent with a link to a webpage which contains a form where the user can enter the new password.
+
+### HTTP Request
+`PUT musora-api/forgot`
+
+
+### Permissions
+    - Without restrictions
+
+### Request Parameters
+
+
+|Type|Key|Required|Notes|
+|----|---|--------|-----|
+|body|email|  yes  ||
+
+
+### Request Example:
+
+```js
+$.ajax({
+    url: 'https://www.domain.com' +
+             '/musora-api/forgot',
+{
+    "email": "email@email.ro"
+}
+   ,
+    success: function(response) {},
+    error: function(response) {}
+});
+```
+
+### Response Example (200):
+
+```json
+{
+    "success": true,
+    "title": "Please check your email",
+    "message": "Follow the instructions sent to your email address to reset your password."
+}
+```
+
+## Create Intercom user
+Create a new user in Intercom, with user's email address and tag `drumeo_started_app_signup_flow`
+
+
+### HTTP Request
+`PUT musora-api/intercom-user`
+
+
+### Permissions
+    - Without restrictions
+
+### Request Parameters
+
+
+|Type|Key|Required|Notes|
+|----|---|--------|-----|
+|body|email|  yes  |User's email|
+
+
+### Request Example:
+
+```js
+$.ajax({
+    url: 'https://www.domain.com' +
+             '/musora-api/intercom-user',
+{
+    "email": "email@email.ro"
+}
+   ,
+    success: function(response) {},
+    error: function(response) {}
+});
+```
+
+### Response Example (200):
+
+```json
+{
+  "success": true,
+}
+```
+
+### Response Example (500):
+When the server-side reports an error, it returns a JSON object in the following format:
+```json
+{
+  "success": false,
+  "message": 'Intercom exception when create intercom user. Message:.....',
+}
+```
