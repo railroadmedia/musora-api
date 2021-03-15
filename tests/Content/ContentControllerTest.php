@@ -196,7 +196,7 @@ class ContentControllerTest extends TestCase
 
         for ($i = 0; $i < 3; $i++) {
             $contents[] =
-                $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED);
+                $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED, null, config('railcontent.brand'),null,Carbon::now()->subDays(3)->toDateTimeString());
         }
 
         $user = $this->createUser();
@@ -217,8 +217,17 @@ class ContentControllerTest extends TestCase
         //assert we have empty data if not exists content in progress
         $this->assertTrue(empty($response->decodeResponseJson('data')));
 
-        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id']);
+      //  $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id'], true);
 
+            $this->actingAs($user)
+                ->call(
+                    'PUT',
+                    '/railcontent/progress',
+                    [
+                        'content_id' => $contents[0]['id'],
+                        'progress_percent' => 12
+                    ]
+                );
         $response =
             $this->actingAs($user)
                 ->call(
@@ -229,8 +238,7 @@ class ContentControllerTest extends TestCase
                     ]
                 );
 
-        $response->assertStatus(200);
-        dd($response->decodeResponseJson());
+       $response->assertStatus(200);
 
         $this->assertEquals($contents[0]['id'], $response->decodeResponseJson('data')[0]['id']);
     }

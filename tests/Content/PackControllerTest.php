@@ -11,13 +11,13 @@ class PackControllerTest extends TestCase
     /**
      * @var ContentFactory
      */
-    protected $contentFactory;
+   protected $contentFactory;
 
     protected function setUp()
     {
         parent::setUp();
 
-        $this->contentFactory = $this->app->make(ContentFactory::class);
+       $this->contentFactory = $this->app->make(ContentFactory::class);
     }
 
     public function test_all_packs_endpoint_no_packs()
@@ -88,7 +88,15 @@ class PackControllerTest extends TestCase
                 $this->contentFactory->create($this->faker->slug, 'pack', ContentService::STATUS_PUBLISHED);
         }
 
-        $this->userProgressFactory->saveContentProgress($packsFreeWithMembership[3]['id'], 5, $user['id']);
+        $this->actingAs($user)
+            ->call(
+                'PUT',
+                'api/railcontent/progress',
+                [
+                    'content_id' => $packsFreeWithMembership[3]['id'],
+                    'progress_percent' => 5
+                ]
+            );
 
         $response =
             $this->actingAs($user)
