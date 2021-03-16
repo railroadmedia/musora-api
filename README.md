@@ -69,13 +69,13 @@ API Endpoints
 |                                                          | Endpoints                                               |
 |:-----------------------------------------------------------------|:----------------------------------------------------------|
 | [Catalogues (filter contents)](#filter-contents)        | `/musora-api/all`                                               |
-| [In-progress lists](#)                  | `/musora-api/in-progress`                                              |
-| [Pull content](#)                        | `/musora-api/content/{contentId}`                                     |
-| [Search](#)                        | `/musora-api/search`                                     |
-| [My lists](#)                        | `/musora-api/my-list`                                     |
+| [In-progress lists](#pull-in-progress-contents)                  | `/musora-api/in-progress`                                              |
+| [Pull content](docs/Content.md)                        | `/musora-api/content/{contentId}`                                     |
+| [Search](#search)                        | `/musora-api/search`                                     |
+| [My lists](#my-list)                        | `/musora-api/my-list`                                     |
 |             &nbsp;      |                                   |
-| [Packs list](#)        | `/musora-api/packs`                                               |
-| [Get pack](#)                   | `/musora-api/pack/{packId}`                                       |
+| [Packs list](#packs)        | `/musora-api/packs`                                               |
+| [Get pack](#pack)                   | `/musora-api/pack/{packId}`                                       |
 | [Get pack's lesson](#)        | `/musora-api/pack/lesson/{lessonId}`                                               |
 | [Get next pack lesson](#)                  | `/musora-api/packs/jump-to-next-lesson/{packId}`                                              |
 | &nbsp;            |                                              |
