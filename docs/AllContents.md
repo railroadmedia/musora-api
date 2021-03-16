@@ -2,7 +2,7 @@
 Get an array with contents data that respect filters criteria.
 The results are paginated and respect the response structure defined in musora-api config file.
 
-[<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUxC0ISgJe2YAO7vrTEam7j1wIur2KdsYjdg&usqp=CAU" width=100>](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-06a04692-d63f-4678-a0a6-293b5ae8df5d)
+[<img align="right" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUxC0ISgJe2YAO7vrTEam7j1wIur2KdsYjdg&usqp=CAU" width=100>](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-06a04692-d63f-4678-a0a6-293b5ae8df5d)
 
 ### HTTP Request
 `GET musora-api/all`
