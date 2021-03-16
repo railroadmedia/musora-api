@@ -84,25 +84,25 @@ API Endpoints
 | [Leaning path course](docs/LearningPathCourse.md)                        | `/musora-api/learning-path-courses/{courseId}`                                     |
 | [Learning path lesson](docs/LearningPathLesson.md)                   | `/musora-api/learning-path-lessons/{lessonId}`                                       |
 |         &nbsp;         | &nbsp;                                     |
-| [Schedule list](#)                        | `/musora-api/schedule`                                     |
-| [Live schedule list](#)                   | `/musora-api/live-schedule`                                       |
-| [Live event](#)                   | `/musora-api/live-event`                                       |
+| [Schedule list](docs/Schedule.md)                        | `/musora-api/schedule`                                     |
+| [Live schedule list](docs/LiveSchedule.md)                   | `/musora-api/live-schedule`                                       |
+| [Live event](docs/Live.md)                   | `/musora-api/live-event`                                       |
 | &nbsp;                      | &nbsp;                                     |
-| [Mark content as completed](#)                   | `/musora-api/complete`                                       |
-| [Reset user content progress](#)                        | `/musora-api/reset`                                     |
+| [Mark content as completed](docs/MarkAsComplete.md)                   | `/musora-api/complete`                                       |
+| [Reset user content progress](docs/ResetProgress.md)                        | `/musora-api/reset`                                     |
 | &nbsp;                      | &nbsp;                                     |
-| [Track media](#)                   | `/musora-api/media`                                       |
-| [Save video progress](#)                   | `/musora-api/media/{sessionId}`                                       |
+| [Track media](docs/TrackMedia.md)                   | `/musora-api/media`                                       |
+| [Save video progress](docs/SaveVideoProgress.md)                   | `/musora-api/media/{sessionId}`                                       |
 | &nbsp;                      | &nbsp;                                     |
-| [Submit question](#)                        | `/musora-api/submit-question`                                     |
-| [Submit video](#)                   | `/musora-api/submit-video`                                       |
-| [Submit student focus](#)                   | `/musora-api/submit-student-focus-form`                                       |
+| [Submit question](docs/SubmitQuestion.md)                        | `/musora-api/submit-question`                                     |
+| [Submit video](docs/SubmitVideo.md)                   | `/musora-api/submit-video`                                       |
+| [Submit student focus](docs/SubmitStudentFocus.md)                   | `/musora-api/submit-student-focus-form`                                       |
 | &nbsp;                      | &nbsp;                                     |
-| [Get authenticated user profile](#)                        | `/musora-api/profile`                                     |
-| [Upload avatar](#)                   | `/musora-api/avatar/upload`                                       |
-| [Update user profile](#)                   | `/musora-api/profile/update`                                       |
+| [Get authenticated user profile](docs/GetAuthenticatedUserProfile.md)                        | `/musora-api/profile`                                     |
+| [Upload avatar](docs/UploadAvatar.md)                   | `/musora-api/avatar/upload`                                       |
+| [Update user profile](docs/UpdateUserProfile.md)                   | `/musora-api/profile/update`                                       |
 | &nbsp;                      | &nbsp;
-| [Add default lessons to user's list](#)                   | `/musora-api/add-lessons`                                       |
+| [Add default lessons to user's list](docs/AddDefaultLesson.md)                   | `/musora-api/add-lessons`                                       |
 
 
 
