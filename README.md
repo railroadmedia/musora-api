@@ -76,13 +76,13 @@ API Endpoints
 |             &nbsp;      |                                   |
 | [Packs list](docs/Packs.md)        | `/musora-api/packs`                                               |
 | [Get pack](docs/Pack.md)                   | `/musora-api/pack/{packId}`                                       |
-| [Get pack's lesson](#)        | `/musora-api/pack/lesson/{lessonId}`                                               |
-| [Get next pack lesson](#)                  | `/musora-api/packs/jump-to-next-lesson/{packId}`                                              |
+| [Get pack's lesson](docs/PackLesson.md)        | `/musora-api/pack/lesson/{lessonId}`                                               |
+| [Get next pack lesson](docs/NextPackLesson.md)                  | `/musora-api/packs/jump-to-next-lesson/{packId}`                                              |
 | &nbsp;            |                                              |
-| [Leaning path](#)                        | `/musora-api/learning-paths/{learningPathSlug}`                                     |
-| [Learning path level](#)                   | `/musora-api/learning-path-levels/{learningPathSlug}/{levelSlug}`                                       |
-| [Leaning path course](#)                        | `/musora-api/learning-path-courses/{courseId}`                                     |
-| [Learning path lesson](#)                   | `/musora-api/learning-path-lessons/{lessonId}`                                       |
+| [Leaning path(Method)](docs/LearningPath.md)                        | `/musora-api/learning-paths/{learningPathSlug}`                                     |
+| [Learning path level](docs/LearningPathLevel.md)                   | `/musora-api/learning-path-levels/{learningPathSlug}/{levelSlug}`                                       |
+| [Leaning path course](docs/LearningPathCourse.md)                        | `/musora-api/learning-path-courses/{courseId}`                                     |
+| [Learning path lesson](docs/LearningPathLesson.md)                   | `/musora-api/learning-path-lessons/{lessonId}`                                       |
 |         &nbsp;         | &nbsp;                                     |
 | [Schedule list](#)                        | `/musora-api/schedule`                                     |
 | [Live schedule list](#)                   | `/musora-api/live-schedule`                                       |
