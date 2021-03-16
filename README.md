@@ -71,11 +71,11 @@ API Endpoints
 | [Catalogues (filter contents)](docs/AllContents.md)        | `/musora-api/all`                                               |
 | [In-progress lists](docs/InProgress.md)                  | `/musora-api/in-progress`                                              |
 | [Pull content](docs/Content.md)                        | `/musora-api/content/{contentId}`                                     |
-| [Search](#search)                        | `/musora-api/search`                                     |
-| [My lists](#my-list)                        | `/musora-api/my-list`                                     |
+| [Search](docs/Search.md)                        | `/musora-api/search`                                     |
+| [My lists](docs/MyList.md)                        | `/musora-api/my-list`                                     |
 |             &nbsp;      |                                   |
-| [Packs list](#packs)        | `/musora-api/packs`                                               |
-| [Get pack](#pack)                   | `/musora-api/pack/{packId}`                                       |
+| [Packs list](docs/Packs.md)        | `/musora-api/packs`                                               |
+| [Get pack](docs/Pack.md)                   | `/musora-api/pack/{packId}`                                       |
 | [Get pack's lesson](#)        | `/musora-api/pack/lesson/{lessonId}`                                               |
 | [Get next pack lesson](#)                  | `/musora-api/packs/jump-to-next-lesson/{packId}`                                              |
 | &nbsp;            |                                              |
