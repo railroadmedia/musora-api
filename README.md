@@ -59,8 +59,8 @@ API Endpoints
 |                                                          | Endpoints                                               |
 |:-----------------------------------------------------------------|:----------------------------------------------------------|
 | [Login](docs/Login.md)                              | `/musora-api/login`                                               |
-| [Forgot password](docs/Forgot password.md)                  | `/musora-api/forgot`                                              |
-| [Change password](docs/Change password.md)                        | `/musora-api/change-password`                                     |
+| [Forgot password](docs/ForgotPassword.md)                  | `/musora-api/forgot`                                              |
+| [Change password](docs/ChangePassword.md)                        | `/musora-api/change-password`                                     |
 | [Create Intercom user](docs/Intercom.md)                   | `/musora-api/intercom-user`                                       |
 
 
@@ -68,8 +68,8 @@ API Endpoints
 
 |                                                          | Endpoints                                               |
 |:-----------------------------------------------------------------|:----------------------------------------------------------|
-| [Catalogues (filter contents)](docs/All contents.md)        | `/musora-api/all`                                               |
-| [In-progress lists](docs/In progress.md)                  | `/musora-api/in-progress`                                              |
+| [Catalogues (filter contents)](docs/AllContents.md)        | `/musora-api/all`                                               |
+| [In-progress lists](docs/InProgress.md)                  | `/musora-api/in-progress`                                              |
 | [Pull content](docs/Content.md)                        | `/musora-api/content/{contentId}`                                     |
 | [Search](#search)                        | `/musora-api/search`                                     |
 | [My lists](#my-list)                        | `/musora-api/my-list`                                     |
