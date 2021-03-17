@@ -84,8 +84,8 @@ API Endpoints
 | [Leaning path course](docs/LearningPathCourse.md)                        | `/musora-api/learning-path-courses/{courseId}`                                     |
 | [Learning path lesson](docs/LearningPathLesson.md)                   | `/musora-api/learning-path-lessons/{lessonId}`                                       |
 |         &nbsp;         | &nbsp;                                     |
-| [Schedule list](docs/Schedule.md)                        | `/musora-api/schedule`                                     |
-| [Live schedule list](docs/LiveSchedule.md)                   | `/musora-api/live-schedule`                                       |
+| [Schedule list](docs/Shedule.md)                        | `/musora-api/schedule`                                     |
+| [Live schedule list](docs/LiveShedule.md)                   | `/musora-api/live-schedule`                                       |
 | [Live event](docs/Live.md)                   | `/musora-api/live-event`                                       |
 | &nbsp;                      | &nbsp;                                     |
 | [Mark content as completed](docs/MarkAsComplete.md)                   | `/musora-api/complete`                                       |

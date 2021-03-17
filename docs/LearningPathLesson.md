@@ -1,4 +1,4 @@
-## Learning path course
+## Learning path lesson
 Return lesson content based on lesson id.
 The results respect the response structure defined in musora-api config file.
 
