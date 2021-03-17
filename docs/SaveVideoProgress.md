@@ -2,6 +2,12 @@
 
 Store in the database information about user progress on video: how many seconds the user watched.
 
+<a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-35138923-5c9d-4c79-9869-2bcb85625824">
+<button style="float:right; background-color:#0b76db;height:35px;width:150px;color:#fff;font-family:Roboto Condensed;font-weight:700;">
+Try it with Postman!
+</button>
+</a>
+
 ### HTTP Request
 `PUT musora-api/reset/{sessonId}`
 
@@ -9,7 +15,10 @@ Store in the database information about user progress on video: how many seconds
 ### Permissions
     - Only authenticated user can access the endpoint
 
-[Try in Postman](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-35138923-5c9d-4c79-9869-2bcb85625824)
+
+
+
+
 
 ### Request Parameters
 
