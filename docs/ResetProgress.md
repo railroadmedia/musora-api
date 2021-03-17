@@ -3,14 +3,16 @@
 Delete the content progress for the authenticated user.
 Return the parent content if exists, empty response otherwise.
 
+<a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-47bdb9ce-4c81-410d-acfc-463b3f55fb3d"  target="_blank" style="float:right;">
+<img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
+</a>
+
 ### HTTP Request
 `PUT musora-api/reset`
 
 
 ### Permissions
     - Only authenticated user can access the endpoint
-
-[Try in Postman](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-35138923-5c9d-4c79-9869-2bcb85625824)
 
 ### Request Parameters
 

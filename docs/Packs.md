@@ -6,14 +6,15 @@ Return an array with:
 
 The results respect the response structure defined in musora-api config file.
 
+<a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-f8b68eae-7e02-4b7e-a99a-13a3eb27a263"  target="_blank" style="float:right;">
+<img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
+</a>
+
 ### HTTP Request
 `GET musora-api/packs`
 
 ### Permissions
     - Only authenticated user can access the endpoint
-
-[Try in Postman](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-f8b68eae-7e02-4b7e-a99a-13a3eb27a263)
-
 
 ### Request Example:
 

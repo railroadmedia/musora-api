@@ -4,14 +4,16 @@ Get content data based on content id.
 
 For the content with `coach` type, the endpoint return the associated lessons in the response also, with filter feature.
 
+<a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-50078eda-4039-4084-ba6d-d527a332deb8"  target="_blank" style="float:right;">
+<img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
+</a>
+
 ### HTTP Request
 `GET musora-api/content/{id}`
 
 
 ### Permissions
     - Only authenticated user can access the endpoint
-
-[Try in Postman](https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-50078eda-4039-4084-ba6d-d527a332deb8)
 
 ### Request Parameters
 
