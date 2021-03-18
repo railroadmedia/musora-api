@@ -4,6 +4,9 @@ Get content data based on content id.
 
 For the content with `coach` type, the endpoint return the associated lessons in the response also, with filter feature.
 
+
+If `download` parameter exists on the request, extra data are returned for the offline mode.
+
 <a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-50078eda-4039-4084-ba6d-d527a332deb8"  target="_blank" style="float:right;">
 <img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
 </a>
@@ -23,6 +26,7 @@ For the content with `coach` type, the endpoint return the associated lessons in
 | query           |  statuses                         |  no       |  'published'     |  Only for coach: All coach lessons must have one of these statuses.                                                                                                                                                                                                                                   |
 | query           |  filter[required_user_states]     |  no       |  []              |  Only for coach: All returned lessons are required to have these states for the authenticated user. Value format is: state                                                                                                                                                                     |
 | query           |  filter[included_user_states]     |  no       |  []              |  Only for coach: All returned lessons that have any of these states for the authenticated user will be returned. The first included user state is the same as a required user state but all included states after the first act inclusively. Value format is: state.                                        |
+| query           |  download    |  no       |               |  Add extra data for offline mode.                                       |
 
 
 ### Request Example:

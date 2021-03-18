@@ -553,7 +553,7 @@ class ContentController extends Controller
     {
         $input = json_decode($request->getContent(), true);
 
-        $skill = $input['skill'];
+        $skill = $input['skill']??null;
         $topics = $input['topics'] ?? ['noTopic'];
 
         if (!$skill) {

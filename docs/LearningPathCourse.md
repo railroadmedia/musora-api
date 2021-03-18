@@ -1,5 +1,8 @@
 ## Learning path course
 Return course content based on course id.
+
+If `download` parameter exists on the request, extra data are returned for the offline mode.
+
 The results respect the response structure defined in musora-api config file.
 
 <a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-540650eb-e7e2-42ea-becd-7ba891274f89"  target="_blank" style="float:right;">
@@ -11,6 +14,14 @@ The results respect the response structure defined in musora-api config file.
 
 ### Permissions
     - Only authenticated user can access the endpoint
+
+### Request Parameters
+
+| path\|query\|body|  key        |  required |  description                       |
+|-----------------|--------------|-----------|------------------------------------|
+| path            |  id          |  yes      |  Id of the course you want to pull |
+| query           |  download    |  no       |  Add extra data for the offline mode.  |
+
 
 ### Request Example:
 

@@ -4,6 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
+use Railroad\MusoraApi\Requests\UploadAvatarRequest;
 use Railroad\Railcontent\Controllers\RemoteStorageJsonController;
 use Railroad\Railcontent\Services\RemoteStorageService;
 
@@ -28,7 +29,7 @@ class AvatarController extends RemoteStorageJsonController
         $this->imageManager = $imageManager;
     }
 
-    public function put(Request $request)
+    public function put(UploadAvatarRequest $request)
     {
         $image = $this->imageManager->make($request->file('file'));
 
