@@ -4,7 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManager;
-use Railroad\MusoraApi\Requests\UploadAvatarRequest;
+use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\Railcontent\Controllers\RemoteStorageJsonController;
 use Railroad\Railcontent\Services\RemoteStorageService;
 
@@ -19,6 +19,12 @@ class AvatarController extends RemoteStorageJsonController
      */
     private $imageManager;
 
+    /**
+     * AvatarController constructor.
+     *
+     * @param RemoteStorageService $remoteStorageService
+     * @param ImageManager $imageManager
+     */
     public function __construct(
         RemoteStorageService $remoteStorageService,
         ImageManager $imageManager
@@ -29,8 +35,15 @@ class AvatarController extends RemoteStorageJsonController
         $this->imageManager = $imageManager;
     }
 
-    public function put(UploadAvatarRequest $request)
+    /**
+     * @param Request $request
+     * @return mixed
+     * @throws \Throwable
+     */
+    public function put(Request $request)
     {
+        throw_if(!$request->file('file'), new NotFoundException('File not found.'));
+
         $image = $this->imageManager->make($request->file('file'));
 
         $image->orientate()

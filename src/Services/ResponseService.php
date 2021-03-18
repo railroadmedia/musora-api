@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Services;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use League\Fractal\Serializer\ArraySerializer;
 use League\Fractal\TransformerAbstract;
@@ -13,6 +14,7 @@ use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
 use Railroad\MusoraApi\Transformers\LiveTransformer;
 use Railroad\MusoraApi\Transformers\PacksTransformer;
 use Railroad\MusoraApi\Transformers\ScheduledContentTransformer;
+use Railroad\MusoraApi\Transformers\UserDataTransformer;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Spatie\Fractal\Fractal;
 
@@ -137,6 +139,45 @@ class ResponseService
                 'total_results' => $data->totalResults(),
             ]
         ))->toJsonResponse();
+    }
+
+    /**
+     * @param $data
+     * @return array
+     */
+    public static function userData($data)
+    {
+        return Fractal::create()
+            ->item($data)
+           ->transformWith(UserDataTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
+    }
+
+    /**
+     * @param int $statusCode
+     * @return JsonResponse
+     */
+    public static function empty($statusCode = 200)
+    {
+        $response = new JsonResponse();
+        $response->setStatusCode($statusCode);
+        $response->setData();
+
+        return $response;
+    }
+
+    /**
+     * @param int $statusCode
+     * @return JsonResponse
+     */
+    public static function array($data, $statusCode = 200)
+    {
+        $response = new JsonResponse();
+        $response->setStatusCode($statusCode);
+        $response->setData($data);
+
+        return $response;
     }
 }
 

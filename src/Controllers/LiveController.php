@@ -78,12 +78,12 @@ class LiveController extends Controller
         }
 
         if (!$currentEvent) {
-            return response()->json();
+            return ResponseService::array([]);
         }
 
         $currentEvent['youtubeId'] = $youtubeId ?? $this->liveStreamEventService->getCurrentOrNextYoutubeEventId();
-        $currentEvent['chatRollEmbedUrl'] =$chatrollEmbedUrl;
-        $currentEvent['chatRollViewersNumberClass'] =  '.chat-online-count';
+        $currentEvent['chatRollEmbedUrl'] = $chatrollEmbedUrl;
+        $currentEvent['chatRollViewersNumberClass'] = '.chat-online-count';
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
         return ResponseService::live($currentEvent);

@@ -15,6 +15,8 @@ use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Exceptions\MusoraAPIException;
+use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
 use Railroad\MusoraApi\Requests\SubmitVideoRequest;
@@ -34,6 +36,7 @@ use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
+use Throwable;
 
 class ContentController extends Controller
 {
@@ -120,16 +123,14 @@ class ContentController extends Controller
     /**
      * @param $contentId
      * @param Request $request
-     * @return JsonResponse
+     * @return array
      * @throws NonUniqueResultException
+     * @throws Throwable
      */
     public function getContent($contentId, Request $request)
     {
         $content = $this->contentService->getById($contentId);
-
-        if (!$content) {
-            return response()->json();
-        }
+        throw_if(!$content, new NotFoundException('Content not exists.'));
 
         //get content's parent for related lessons and resources
         $parent = array_first(
@@ -142,8 +143,8 @@ class ContentController extends Controller
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren =
             ($parent['lessons']) ? (new Collection($parent['lessons'])) : $this->contentService->getFiltered(
-                $request->get('page', 1),
-                $request->get('limit', 10),
+                1,
+                10,
                 '-published_on',
                 [$content['type']],
                 [],
@@ -523,16 +524,10 @@ class ContentController extends Controller
         try {
             $this->mailoraMailService->sendSecure($input);
         } catch (Exception $exception) {
-            return response()->json(
-                [
-                    'title' => 'Submission Failed',
-                    'message' => $exception->getMessage(),
-                ],
-                500
-            );
+            throw new MusoraAPIException($exception->getMessage(), 'Submission Failed', 500);
         }
 
-        return response()->json(
+        return ResponseService::array(
             [
                 'success' => true,
                 'title' => 'Thanks for your submission!',
@@ -553,7 +548,7 @@ class ContentController extends Controller
     {
         $input = json_decode($request->getContent(), true);
 
-        $skill = $input['skill']??null;
+        $skill = $input['skill'] ?? null;
         $topics = $input['topics'] ?? ['noTopic'];
 
         if (!$skill) {
@@ -647,5 +642,4 @@ class ContentController extends Controller
             $request
         );
     }
-
 }

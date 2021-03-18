@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Services\UserProgressService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
@@ -20,6 +21,7 @@ use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentHierarchyService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
+use Throwable;
 
 class PacksController extends Controller
 {
@@ -67,6 +69,7 @@ class PacksController extends Controller
      * @param ProductProviderInterface $productProvider
      * @param ContentRepository $contentRepository
      * @param VimeoVideoSourcesDecorator $videoSourcesDecorator
+     * @param UserProgressService $userProgressService
      */
     public function __construct(
         ContentService $contentService,
@@ -282,19 +285,18 @@ class PacksController extends Controller
 
     /**
      * @param $packId
-     * @return JsonResponse
+     * @return array
      * @throws NonUniqueResultException
+     * @throws Throwable
      */
     public function showPack($packId)
     {
         ContentRepository::$bypassPermissions = true;
 
-        $pack = $this->contentService->getById($packId)->getArrayCopy();
+        $packEntity = $this->contentService->getById($packId);
+        throw_if(!$packEntity, new NotFoundException('Pack not found.'));
 
-        if (empty($pack)) {
-            return response()->json($pack);
-        }
-
+        $pack = $packEntity->getArrayCopy();
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $pack = $this->isOwnedOrLocked($pack);
@@ -345,11 +347,11 @@ class PacksController extends Controller
         } else {
             $isSet = false;
             foreach ($lessons as $lessonIndex => $lesson) {
-                    if ($lesson['completed'] != true && (!$isSet)) {
-                        $pack['current_lesson_index'] = $lessonIndex;
-                        $pack['next_lesson'] = $lesson;
-                        $isSet = true;
-                    }
+                if ($lesson['completed'] != true && (!$isSet)) {
+                    $pack['current_lesson_index'] = $lessonIndex;
+                    $pack['next_lesson'] = $lesson;
+                    $isSet = true;
+                }
             }
             $pack['lessons'] = $lessons;
         }
@@ -365,10 +367,7 @@ class PacksController extends Controller
     public function showLesson($lessonId)
     {
         $thisLesson = $this->contentService->getById($lessonId);
-
-        if (empty($thisLesson)) {
-            return response()->json($thisLesson);
-        }
+        throw_if(!$thisLesson, new NotFoundException('Lesson not found.'));
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
@@ -392,9 +391,7 @@ class PacksController extends Controller
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['semester-pack'])
                 ->first();
 
-        if (empty($thisPackBundle) && empty($pack)) {
-            return response()->json($thisLesson);
-        }
+        throw_if((empty($thisPackBundle) && empty($pack)), new NotFoundException('Lesson not found.'));
 
         $parent = $thisPackBundle ?? $pack;
 
@@ -481,8 +478,7 @@ class PacksController extends Controller
 
         if ($pack['type'] == 'pack') {
 
-            $lessonsProgressRows =
-               $this->userProgressService->getProgressOnPack($pack['id']);
+            $lessonsProgressRows = $this->userProgressService->getProgressOnPack($pack['id']);
 
             foreach ($lessonsProgressRows as $childProgressRow) {
                 if ($childProgressRow['state'] != 'completed' && $childProgressRow['progress_percent'] != 100) {
@@ -506,7 +502,7 @@ class PacksController extends Controller
             }
         }
 
-        return response()->json();
+        return ResponseService::empty();
     }
 
 }

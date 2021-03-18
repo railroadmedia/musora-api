@@ -10,6 +10,7 @@ use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\MethodService;
 use Railroad\MusoraApi\Services\ResponseService;
@@ -96,11 +97,7 @@ class LearningPathController extends Controller
             $this->contentService->getBySlugAndType($learningPathSlug, 'learning-path')
                 ->first();
 
-        if (empty($learningPath)) {
-            return response()->json(
-                $learningPath
-            );
-        }
+        throw_if(!($learningPath), new NotFoundException('Learning path not found.'));
 
         $this->vimeoVideoDecorator->decorate(new Collection([$learningPath]));
 
@@ -155,11 +152,7 @@ class LearningPathController extends Controller
             $this->contentService->getBySlugAndType($levelSlug, 'learning-path-level')
                 ->first();
 
-        if (empty($level)) {
-            return response()->json(
-                $level
-            );
-        }
+        throw_if(!$level, new NotFoundException('Level not found.'));
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
@@ -167,11 +160,7 @@ class LearningPathController extends Controller
             $this->contentService->getBySlugAndType($learningPathSlug, 'learning-path')
                 ->first();
 
-        if (empty($learningPath)) {
-            return response()->json(
-                $learningPath
-            );
-        }
+        throw_if(!$learningPath, new NotFoundException('Learning path not found.'));
 
         $courses = $this->contentService->getByParentId($level['id']);
         foreach ($courses as $course) {
@@ -205,38 +194,19 @@ class LearningPathController extends Controller
         ContentRepository::$pullFutureContent = true;
 
         $course = $this->contentService->getById($courseId);
-
-        if (empty($course)) {
-            return response()->json(
-                $course
-            );
-        }
+        throw_if(!$course, new NotFoundException('Course not found.'));
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $level =
             $this->contentService->getByChildIdWhereParentTypeIn($courseId, ['learning-path-level'])
                 ->first();
-
-        $levelCourses =
-            $this->contentService->getByParentId($level['id'])
-                ->keyBy('id');
-
-        if (empty($level)) {
-            return response()->json(
-                $level
-            );
-        }
+        throw_if(!$level, new NotFoundException('Level not found.'));
 
         $learningPath =
             $this->contentService->getByChildIdWhereParentTypeIn($level['id'], ['learning-path'])
                 ->first();
-
-        if (empty($learningPath)) {
-            return response()->json(
-                $learningPath
-            );
-        }
+        throw_if(!$learningPath, new NotFoundException('Learning path not found.'));
 
         $lessons = $this->contentService->getByParentId($courseId);
 
@@ -249,6 +219,10 @@ class LearningPathController extends Controller
                 null;
 
         $course['level_position'] = $level['sort'] + 1;
+
+        $levelCourses =
+            $this->contentService->getByParentId($level['id'])
+                ->keyBy('id');
 
         $course['course_position'] = $levelCourses[$course['id']]['position'];
 
@@ -275,35 +249,24 @@ class LearningPathController extends Controller
         ContentRepository::$pullFutureContent = true;
 
         $thisLesson = $this->contentService->getById($lessonId);
-
-        if (empty($thisLesson)) {
-            return response()->json($thisLesson);
-        }
+        throw_if(!$thisLesson, new NotFoundException('Lesson not found.'));
 
         $course =
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['learning-path-course'])
                 ->first();
+        throw_if(!$course, new NotFoundException('Course not found.'));
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
-
-        if (empty($course)) {
-            return response()->json($course);
-        }
 
         $level =
             $this->contentService->getByChildIdWhereParentTypeIn($course['id'], ['learning-path-level'])
                 ->first();
-        if (empty($level)) {
-            return response()->json($level);
-        }
+        throw_if(!$level, new NotFoundException('Level not found.'));
 
         $learningPath =
             $this->contentService->getByChildIdWhereParentTypeIn($level['id'], ['learning-path'])
                 ->first();
-
-        if (empty($learningPath)) {
-            return response()->json($learningPath);
-        }
+        throw_if(!$learningPath, new NotFoundException('Learning path not found.'));
 
         $courseHierarchy = $this->contentHierarchyRepository->getByChildIdParentId($level['id'], $course['id']);
 

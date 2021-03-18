@@ -14,6 +14,7 @@ use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Requests\CompleteContentRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
@@ -85,16 +86,14 @@ class UserProgressController extends Controller
      * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws \Throwable
      */
     public function completeUserProgressOnContent(CompleteContentRequest $request)
     {
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $content = $this->contentService->getById($request->get('content_id'));
-
-        if (empty($content)) {
-            return response()->json($content);
-        }
+        throw_if(!$content, new NotFoundException('Content not found.'));
 
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
@@ -204,7 +203,7 @@ class UserProgressController extends Controller
             );
         }
 
-        return response()->json($response);
+        return ResponseService::array($response);
     }
 
     /**
@@ -233,10 +232,7 @@ class UserProgressController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $content = $this->contentService->getById($request->get('content_id'));
-
-        if (empty($content)) {
-            return response()->json($content);
-        }
+        throw_if(!$content, new NotFoundException('Content not found.'));
 
         $this->userContentProgressService->resetContent(
             $request->get('content_id'),
@@ -253,7 +249,7 @@ class UserProgressController extends Controller
         }
 
         if ($parent->isEmpty()) {
-            return response()->json();
+            return ResponseService::empty();
         }
 
         return ResponseService::content($parent->first());
@@ -297,6 +293,6 @@ class UserProgressController extends Controller
             );
         }
 
-        return response()->json(['success' => true, 'session_id' => $sessionId]);
+        return ResponseService::array(['success' => true, 'session_id' => $sessionId]);
     }
 }

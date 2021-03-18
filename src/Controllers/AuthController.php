@@ -8,7 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\Ecommerce\Events\AppSignupStartedEvent;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
+use Railroad\MusoraApi\Exceptions\MusoraAPIException;
+use Railroad\MusoraApi\Exceptions\UnauthorizedException;
 use Railroad\MusoraApi\Requests\CreateIntercomUserRequest;
+use Railroad\MusoraApi\Services\ResponseService;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -30,7 +34,7 @@ class AuthController extends Controller
 
     /**
      * @param Request $request
-     * @return JsonResponse
+     * @return array
      */
     public function updateUser(Request $request)
     {
@@ -43,17 +47,7 @@ class AuthController extends Controller
         }
 
         if ($request->has('display_name')) {
-            $updatedUser = $this->userProvider->setCurrentUserDisplayName($request->get('display_name'));
-            if (!$updatedUser) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'title' => 'This display name is already in use',
-                        'message' => 'Please try again',
-                    ],
-                    500
-                );
-            }
+            $this->userProvider->setCurrentUserDisplayName($request->get('display_name'));
         }
 
         if ($request->has('firebase_token_ios') || $request->has('firebase_token_android')) {
@@ -67,13 +61,13 @@ class AuthController extends Controller
         $profileData = $this->userProvider->getCurrentUserProfileData();
         $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
-        return response()->json(array_merge($profileData, $experienceData, $membershipData));
-
+        return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
     }
 
     /**
      * @param CreateIntercomUserRequest $request
      * @return JsonResponse
+     * @throws MusoraAPIException
      */
     public function createIntercomUser(CreateIntercomUserRequest $request)
     {
@@ -86,42 +80,27 @@ class AuthController extends Controller
                 )
             );
         } catch (Exception $e) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'errors' => 'Intercom exception when create intercom user. Message:' . $e->getMessage(),
-                ]
-            );
+            throw new MusoraAPIException('Intercom exception when create intercom user. Message:' . $e->getMessage(), 'Intercom exception.', $e->getCode());
         }
 
-        return response()->json(
-            [
-                'success' => true,
-            ]
-        );
+        return ResponseService::array([
+            'success' => true,
+        ]);
     }
 
     /**
-     * @return JsonResponse
+     * @return array
+     * @throws Throwable
      */
     public function getAuthUser()
     {
         $user = $this->userProvider->getCurrentUser();
-
-        if (!$user) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'errors' => 'Login Required.',
-                ],
-                401
-            );
-        }
+        throw_if(!$user, new UnauthorizedException('Login Required.'));
 
         $membershipData = $this->userProvider->getCurrentUserMembershipData();
         $profileData = $this->userProvider->getCurrentUserProfileData();
         $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
-        return response()->json(array_merge($profileData, $experienceData, $membershipData));
+        return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
     }
 }
