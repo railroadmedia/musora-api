@@ -12,6 +12,7 @@ class ContentTransformer extends TransformerAbstract
     {
         $response = [];
 
+        //The response structure should be defined in musora-api config file per content type
         if (empty($responseStructure) && array_key_exists('type', $content)) {
 
             $type = (in_array($content['type'], config('railcontent.showTypes'))) ? 'show-lesson' : $content['type'];
@@ -20,24 +21,46 @@ class ContentTransformer extends TransformerAbstract
 
         }
 
+        // if the response structure for a specific content type is missing, the content is not transformed
         if (!$responseStructure) {
             return (!is_array($content)) ? $content->getArrayCopy() : $content;
         }
 
+        /** The response structure can contain:
+         * - content property (e.g: 'id', 'type')
+         * - specific content's field (e.g: 'fields.title')
+         * - array with specific content fields (e.g:  '*fields.instructor')
+         * - specific content's data (e.g:  'data.description',  'data.thumbnail_url' )
+         * - array with specific content data (e.g:  '*data.sheet_music_image_url',  '*data.captions')
+         * - array with response structure for content association
+               (e.g:   'next_lesson' => [
+                                            'id',
+                                            'type',
+                                            'published_on',
+                                            'completed',
+                                            'started',
+                                            'progress_percent',
+                                            'is_added_to_primary_playlist',
+                                            'fields.title',
+                                            'length_in_seconds',
+                                            'data.thumbnail_url',
+                                        ],
+         *
+         */
         foreach ($responseStructure as $index => $value) {
+
             if (is_array($value)) {
                 if (array_key_exists($index, $content) &&
                     (is_array($content[$index]) || $content[$index] instanceof Collection)) {
                     $response[$index] = [];
+                    //we need to transform each content using the response structure from 'value'
                     foreach ($content[$index] as $content2) {
                         $response[$index][] = self::transform($content2, $value);
                     }
                 } elseif (array_key_exists($index, $content) && ($content[$index])) {
+                    //transform the content using response structure from 'value'
                     $response[$index] = self::transform($content[$index], $value);
-                } elseif (array_key_exists($index, $content)) {
-                    $response[$index] = $content[$index];
                 }
-
             } else {
                 $response = $this->transformItem($value, $content, $response);
             }
@@ -100,12 +123,14 @@ class ContentTransformer extends TransformerAbstract
                 $response[$item] = [];
                 foreach ($content[$item] as $index => $val) {
                     if (isset($val['id'])) {
+                        //nested contents should be transformed
                         $response[$item][$index] = self::transform($val);
                     } else {
                         $response[$item][$index] = $val;
                     }
                 }
             } elseif (isset($content[$item]['id'])) {
+                //nested content should be transformed
                 $response[$item] = self::transform($content[$item]);
             } elseif (array_key_exists($item, $content)) {
                 $response[$item] = $content[$item];
