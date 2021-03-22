@@ -53,7 +53,7 @@ class LiveStreamEventService
         ContentRepository::$pullFutureContent = true;
 
         $liveEvents = $this->contentService->getWhereTypeInAndStatusAndPublishedOnOrdered(
-            $types ?? config('railcontent.liveContentTypes'),
+            $types ?? config('railcontent.liveContentTypes', []),
             ContentService::STATUS_SCHEDULED,
             Carbon::now()
                 ->subHours(24)
