@@ -562,6 +562,8 @@ return [
             'instructors',
             'chatRollEmbedUrl',
             'chatRollViewersNumberClass',
+            'youtubeId',
+            'chatRollStyle',
         ],
 
         'pack' => [
