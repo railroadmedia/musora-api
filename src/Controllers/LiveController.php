@@ -81,7 +81,13 @@ class LiveController extends Controller
             return ResponseService::array([]);
         }
 
-        $currentEvent['youtubeId'] = $youtubeId ?? $currentEvent->fetch('fields.live_event_youtube_id',$this->liveStreamEventService->getCurrentOrNextYoutubeEventId());
+        $currentEvent['youtube_video_id'] =
+            $youtubeId
+            ??
+            $currentEvent->fetch(
+                'fields.live_event_youtube_id',
+                $this->liveStreamEventService->getCurrentOrNextYoutubeEventId()
+            );
         $currentEvent['chatRollEmbedUrl'] = $chatrollEmbedUrl;
         $currentEvent['chatRollViewersNumberClass'] = '.chat-online-count';
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();

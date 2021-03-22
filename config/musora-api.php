@@ -562,7 +562,7 @@ return [
             'instructors',
             'chatRollEmbedUrl',
             'chatRollViewersNumberClass',
-            'youtubeId',
+            'youtube_video_id',
             'chatRollStyle',
         ],
 
