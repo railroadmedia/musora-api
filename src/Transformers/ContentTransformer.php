@@ -122,7 +122,7 @@ class ContentTransformer extends TransformerAbstract
             if (is_array($content[$item] ?? false)) {
                 $response[$item] = [];
                 foreach ($content[$item] as $index => $val) {
-                    if (isset($val['id'])) {
+                    if (is_array($val) && isset($val['id'])) {
                         //nested contents should be transformed
                         $response[$item][$index] = self::transform($val);
                     } else {
