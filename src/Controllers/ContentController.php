@@ -230,8 +230,9 @@ class ContentController extends Controller
         }
 
         //add parent's instructors and resources to content
+        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+
         if ($parent) {
-            $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
             $content['instructor'] = array_merge(
                 $content['instructor'] ?? [],
                 ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
