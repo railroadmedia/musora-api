@@ -43,18 +43,118 @@ $.ajax({
 ### Response Example (200):
 ```json
 {
-    "id": 292762,
-    "type": "coach-stream",
-    "isLive": false,
-    "title": "Your Q&A With Shcack",
-    "live_event_start_time": "2021/03/10 20:00:00",
-    "live_event_end_time": "2021/03/10 21:00:00",
+    "id": 290983,
+    "type": "question-and-answer",
+    "title": "What's The Purpose Of A Scale?",
+    "live_event_start_time": "2021/02/18 22:00:00",
+    "live_event_end_time": "2021/02/18 23:00:00",
     "is_added_to_primary_playlist": false,
-    "thumbnail_url": "https://d1923uyy6spedc.cloudfront.net/292762-card-thumbnail-1614107005.png",
+    "thumbnail_url": "https://d1923uyy6spedc.cloudfront.net/290983-card-thumbnail-1614112375.png",
     "instructors": [
-        "Michael Schack"
+        "Lisa Witt"
     ],
-    "chatRollEmbedUrl": "https://chatroll.com/embed/chat/drumeo-dev-chat?id=enabv2muCjJ&platform=php&uid=149628&uname=Roxana+R&ulink=https://staging.drumeo.com/laravel/public/members/profile/149628&upic=https://dzryyo1we6bm3.cloudfront.net/avatars/Screenshot_20210223-123705-1614849346-149628.jpg&ismod=1&sig=51c2f9a2cbc5a10a86be8cc68c602d78",
-    "chatRollViewersNumberClass": ".chat-online-count"
+    "chatRollEmbedUrl": "https://chatroll.com/embed/chat/drumeo-dev-chat?id=enabv2muCjJ&platform=php&uid=149628&uname=Roxana+R&upic=https%3A%2F%2Fdzryyo1we6bm3.cloudfront.net%2Favatars%2FScreenshot_20210223-123705-1614849346-149628.jpg&ismod=1&sig=51c2f9a2cbc5a10a86be8cc68c602d78",
+    "chatRollViewersNumberClass": ".chat-online-count",
+    "youtube_video_id": "36YnV9STBqc",
+    "chatRollStyle": {
+        ".chat-popout-button": {
+            "display": "none"
+        },
+        ".chat-contacts-banner": {
+            "display": "none"
+        },
+        ".chat-welcome-message": {
+            "display": "none"
+        },
+        ".message-content": {
+            "padding": "5px",
+            "align-items": "center"
+        },
+        ".chat-input-wrapper": {
+            "top": 0,
+            "padding": "10px",
+            "padding-left": 0
+        },
+        ".chat-signin-box": {
+            "background": {
+                "dark": "#00101D",
+                "light": "#F7F9FC"
+            }
+        },
+        ".profile-icon-image": {
+            "border": "1px solid",
+            "border-color": {
+                "dark": "#445F74",
+                "light": "#00101D"
+            }
+        },
+        ".chat-wrapper": {
+            "display": "flex",
+            "flex-direction": "column",
+            "background": {
+                "dark": "#00101D",
+                "light": "#F7F9FC"
+            }
+        },
+        ".message-text": {
+            "font-weigh": 400,
+            "font-size": "12px",
+            "color": {
+                "dark": "#EDEEEF",
+                "light": "#00101D"
+            }
+        },
+        ".message-profile-name": {
+            "font-weight": 400,
+            "font-size": "12px",
+            "margin-right": "5px",
+            "color": {
+                "dark": "#97AABE",
+                "light": "#445F74"
+            }
+        },
+        ".message-profile-image": {
+            "top": 0,
+            "left": 0,
+            "padding": 0,
+            "border": "none",
+            "position": "relative"
+        },
+        ".chat-messages-container": {
+            "top": 0,
+            "padding": 0,
+            "overflow": "unset",
+            "position": "relative",
+            "padding-bottom": "60px",
+            "background": {
+                "dark": "#00101D",
+                "light": "#F7F9FC"
+            }
+        },
+        ".message": {
+            "font-size": 0,
+            "padding": "10px",
+            "display": "flex",
+            "align-items": "center",
+            "justify-content": "flex-end",
+            "flex-direction": "row-reverse"
+        },
+        ".chat-input-container": {
+            "bottom": 0,
+            "padding": 0,
+            "border": "none",
+            "display": "flex",
+            "position": "fixed",
+            "background": "#0b0b0b"
+        },
+        "textarea": {
+            "color": "white",
+            "border": "none",
+            "height": "40px",
+            "padding": "5px",
+            "background": "#242527",
+            "border-radius": "10px"
+        }
+    }
 }
 ```
