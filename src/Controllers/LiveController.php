@@ -65,8 +65,14 @@ class LiveController extends Controller
         $chatrollEmbedUrl = $this->chatProvider->getEmbedUrl();
 
         if ($request->has('forced-content-id')) {
-            // this is for previewing any upcoming event
+            // this is for previewing any live event
             $currentEvent = $this->contentService->getById($request->get('forced-content-id'));
+            $currentEvent['isLive'] = true;
+            $youtubeId = '36YnV9STBqc';
+        } elseif ($request->has('forced-upcoming-content-id')) {
+            // this is for previewing any upcoming event
+            $currentEvent = $this->contentService->getById($request->get('forced-upcoming-content-id'));
+            $currentEvent['isLive'] = false;
             $youtubeId = '36YnV9STBqc';
         } else {
 
@@ -81,10 +87,7 @@ class LiveController extends Controller
             return ResponseService::array([]);
         }
 
-        $currentEvent['youtube_video_id'] =
-            $youtubeId
-            ??
-            $currentEvent->fetch(
+        $currentEvent['youtube_video_id'] = $youtubeId ?? $currentEvent->fetch(
                 'fields.live_event_youtube_id',
                 $this->liveStreamEventService->getCurrentOrNextYoutubeEventId()
             );
