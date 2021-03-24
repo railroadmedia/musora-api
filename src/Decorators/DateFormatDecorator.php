@@ -32,15 +32,15 @@ class DateFormatDecorator extends ModeDecoratorBase
 
                 if (isset($content['live_event_start_time_in_timezone'])) {
                     $contents[$contentIndex]['live_event_start_time_in_timezone'] =
-                        $content['live_event_start_time_in_timezone']->format('Y/m/d H:i:s');
+                        Carbon::parse($content['live_event_start_time_in_timezone'])->format('Y/m/d H:i:s');
                 }
                 if (isset($content['live_event_end_time_in_timezone'])) {
                     $contents[$contentIndex]['live_event_end_time_in_timezone'] =
-                        $content['live_event_end_time_in_timezone']->format('Y/m/d H:i:s');
+                        Carbon::parse($content['live_event_end_time_in_timezone'])->format('Y/m/d H:i:s');
                 }
                 if (isset($content['published_on_in_timezone'])) {
                     $contents[$contentIndex]['published_on_in_timezone'] =
-                        $content['published_on_in_timezone']->format('Y/m/d H:i:s');
+                        Carbon::parse($content['published_on_in_timezone'])->format('Y/m/d H:i:s');
                 }
             }
         }catch(Exception $exception){
