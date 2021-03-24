@@ -2,7 +2,9 @@
 
 Return the current, or the next live event based on the event start date. The next live event is returned only if there is an event within the next X minutes. (X - is set in website config file; by default: 240 min).
 
-For testing purpose (a preview for the event) the `forced-content-id` request parameter can be used.
+For testing purpose (a preview for the live event or upcoming event) the `forced-content-id`/ `forced-upcoming-content-id` request parameter can be used. 
+
+In the endpoint's response structure, `isLive` will be true if there is an live event and false if there is an upcoming event.
 
 <a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-35138923-5c9d-4c79-9869-2bcb85625824"  target="_blank" style="float:right;">
 <img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
@@ -19,8 +21,9 @@ For testing purpose (a preview for the event) the `forced-content-id` request pa
 
 | path\|query\|body|  key                |  required |  description           |
 |------------------|---------------------|-----------|------------------------|
-| query            |  forced-content-id  |  no       |  For testing purpose.
-| query            |  timezone           |  no       |  Used to return live event based on user timezone                 |
+| body            |  forced-content-id  |  no       |  Used to preview a live event.
+| body            |  forced-upcoming-content-id  |  no       |  Used to preview an upcoming event.
+| body            |  timezone           |  no       |  Used to return live event based on user timezone                 |
 
 
 ### Request Example:
@@ -45,9 +48,12 @@ $.ajax({
 {
     "id": 290983,
     "type": "question-and-answer",
+    "isLive": true,
     "title": "What's The Purpose Of A Scale?",
-    "live_event_start_time": "2021/02/18 22:00:00",
-    "live_event_end_time": "2021/02/18 23:00:00",
+    "live_event_start_time": "2021/02/25 22:00:00",
+    "live_event_end_time": "2021/02/25 23:00:00",
+    "live_event_start_time_in_timezone": "2021/02/25 14:00:00",
+    "live_event_end_time_in_timezone": "2021/02/25 15:00:00",
     "is_added_to_primary_playlist": false,
     "thumbnail_url": "https://d1923uyy6spedc.cloudfront.net/290983-card-thumbnail-1614112375.png",
     "instructors": [
