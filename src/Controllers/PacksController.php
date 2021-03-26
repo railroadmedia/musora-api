@@ -505,4 +505,104 @@ class PacksController extends Controller
         return ResponseService::empty();
     }
 
+    /**
+     * @param $packSlug
+     * @param null $bundleSlug
+     * @param null $lessonSlug
+     * @return array|JsonResponse
+     * @throws NonUniqueResultException
+     * @throws Throwable
+     */
+    public function getDeepLinkForPack($packSlug, $bundleSlug = null, $lessonSlug = null)
+    {
+        ContentRepository::$bypassPermissions = true;
+
+        if ($lessonSlug) {
+            $lesson =
+                $this->contentService->getBySlugAndType($lessonSlug, 'pack-bundle-lesson')
+                    ->first();
+
+            return $this->showLesson($lesson['id'] ?? 0);
+        }
+
+        $pack =
+            $this->contentService->getBySlugAndType($packSlug, 'pack')
+                ->first();
+
+        if($pack['bundle_count'] == 1){
+            return $this->showPack($pack['id'] ?? 0);
+        }
+
+        if ($bundleSlug) {
+            $bundle =
+                $this->contentService->getBySlugAndType($bundleSlug, 'pack-bundle')
+                    ->first();
+
+            return $this->showPack($bundle['id'] ?? 0);
+        }
+
+        return $this->showPack($pack['id'] ?? 0);
+    }
+
+    /**
+     * @param $packSlug
+     * @param null $lessonSlug
+     * @return mixed
+     */
+    public function getDeepLinkForSemesterPack($packSlug, $lessonSlug = null)
+    {
+        ContentRepository::$bypassPermissions = true;
+
+        if ($lessonSlug) {
+            $lesson =
+                $this->contentService->getBySlugAndType($lessonSlug, 'semester-pack-lesson')
+                    ->first();
+
+            return $this->showLesson($lesson['id'] ?? 0);
+        }
+
+        $pack =
+            $this->contentService->getBySlugAndType($packSlug, 'semester-pack')
+                ->first();
+
+        return $this->showPack($pack['id']);
+    }
+
+    /**
+     * @param $packSlug
+     * @param null $bundleSlug
+     * @param null $bundleId
+     * @return array
+     * @throws NonUniqueResultException
+     * @throws Throwable
+     */
+    public function getDeepLinkForPianotePack($packSlug, $bundleSlug, $bundleId)
+    {
+            return $this->showPack($bundleId);
+    }
+
+    /**
+     * @param $packSlug
+     * @param $bundleSlug
+     * @param $lessonSlug
+     * @param $lessonId
+     * @return array|JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function getDeepLinkForPianotePackBundleLesson($packSlug, $bundleSlug, $lessonSlug, $lessonId)
+    {
+        return $this->showLesson($lessonId);
+    }
+
+    /**
+     * @param $packSlug
+     * @param $lessonSlug
+     * @param $lessonId
+     * @return array|JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function getDeepLinkForPianotePackLesson($packSlug, $lessonSlug, $lessonId)
+    {
+        return $this->showLesson($lessonId);
+    }
 }

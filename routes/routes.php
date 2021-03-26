@@ -184,6 +184,68 @@ Route::group(
             '/search',
             ContentController::class . '@search'
         );
+
+        //routes for packs deep links - same as website's links + 'musora-api' prefix
+        Route::get(
+            '/members/packs/{packSlug}',
+            [
+                'as' => 'mobile.packs.bundles.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPack',
+            ]
+        );
+        Route::get(
+            '/members/packs/{packSlug}/bundle/{bundleSlug}/{bundleId}',
+            [
+                'as' => 'mobile.pianote.pack.bundle.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPianotePack',
+            ]
+        );
+
+        //pianote
+        Route::get(
+            '/members/packs/{packSlug}/bundle/{bundleSlug}/{lessonSlug}/{lessonId}',
+            [
+                'as' => 'mobile.pianote.pack.bundle.lesson.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPianotePackBundleLesson',
+            ]
+        );
+        Route::get(
+            '/members/packs/{packSlug}/{bundleSlug}',
+            [
+                'as' => 'mobile.pack.bundle.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPack',
+            ]
+        );
+        Route::get(
+            '/members/packs/{packSlug}/{lessonSlug}/{lessonId}',
+            [
+                'as' => 'mobile.pianote.packs.bundles.lessons.lesson.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPianotePackLesson',
+            ]
+        )->where('lessonId', '[0-9]+');
+
+        Route::get(
+            '/members/packs/{packSlug}/{bundleSlug}/{lessonSlug}',
+            [
+                'as' => 'mobile.packs.bundles.lessons.lesson.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForPack',
+            ]
+        );
+
+        Route::get(
+            '/members/semester-packs/{packSlug}',
+            [
+                'as' => 'mobile.semester-packs.lessons.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForSemesterPack',
+            ]
+        );
+        Route::get(
+            '/members/semester-packs/{packSlug}/{lessonSlug}',
+            [
+                'as' => 'mobile.semester-packs.lessons.show.deeplink',
+                'uses' => PacksController::class . '@getDeepLinkForSemesterPack',
+            ]
+        );
     }
 );
 
