@@ -14,35 +14,35 @@ class MobileAppUrlDecorator extends ModeDecoratorBase
             if ($content['type'] == 'pack' ||
                 $content['type'] == 'semester-pack' ||
                 $content['type'] == 'pack-bundle') {
-                $content['mobile_app_url'] = url()->route('mobile.pack.show', [$content['id']]);
+                $content['mobile_app_url'] = url()->route('mobile.musora-api.pack.show', [$content['id']]);
             } elseif ($content['type'] == 'pack-bundle-lesson') {
-                $content['mobile_app_url'] = url()->route('mobile.pack.lesson.show', [$content['id']]);
+                $content['mobile_app_url'] = url()->route('mobile.musora-api.pack.lesson.show', [$content['id']]);
             } elseif ($content['type'] == 'semester-pack-lesson') {
-                $content['mobile_app_url'] = url()->route('mobile.pack.lesson.show', [$content['id']]);
+                $content['mobile_app_url'] = url()->route('mobile.musora-api.pack.lesson.show', [$content['id']]);
             }elseif($content['type'] == 'learning-path-level'){
                 $content['banner_button_url'] = $content->fetch('current_lesson') ? url()->route(
-                    'mobile.learning-path.lesson.show',
+                    'mobile.musora-api.learning-path.lesson.show',
                     [
                         $content->fetch('current_lesson')['id'],
                     ]
                 ) : '';
             } elseif ($content['type'] == 'learning-path-course') {
                 $content['mobile_app_url'] = url()->route(
-                    'mobile.learning-path.course.show',
+                    'mobile.musora-api.learning-path.course.show',
                     [
                         $content['id'],
                     ]
                 );
 
                 $content['banner_button_url'] = $content->fetch('current_lesson') ? url()->route(
-                    'mobile.learning-path.lesson.show',
+                    'mobile.musora-api.learning-path.lesson.show',
                     [
                         $content->fetch('current_lesson')['id'],
                     ]
                 ) : '';
             } elseif($content['type'] == 'learning-path-lesson'){
                 $content['mobile_app_url'] =url()->route(
-                    'mobile.learning-path.lesson.show',
+                    'mobile.musora-api.learning-path.lesson.show',
                     [
                         $content['id'],
                     ]

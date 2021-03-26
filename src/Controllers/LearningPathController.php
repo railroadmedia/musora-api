@@ -110,7 +110,7 @@ class LearningPathController extends Controller
                 Carbon::parse($learningPathNextLesson->fetch('published_on'))
                     ->lessThanOrEqualTo(Carbon::now()))) {
             $learningPath['banner_button_url'] = url()->route(
-                'mobile.learning-path.lesson.show',
+                'mobile.musora-api.learning-path.lesson.show',
                 [
                     $learningPathNextLesson['id'],
                 ]

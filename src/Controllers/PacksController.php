@@ -253,7 +253,7 @@ class PacksController extends Controller
         }
 
         if ($topPack) {
-            $topPack['next_lesson_url'] = url()->route('mobile.pack.jump-to-next-lesson', [$topPack['id']]);
+            $topPack['next_lesson_url'] = url()->route('mobile.musora-api.pack.jump-to-next-lesson', [$topPack['id']]);
             $topPack['apple_product_id'] = $this->productProvider->getAppleProductId($topPack['slug']);
             $topPack['google_product_id'] = $this->productProvider->getGoogleProductId($topPack['slug']);
         }

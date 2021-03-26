@@ -24,7 +24,7 @@ Route::group(
         Route::get(
             '/all',
             [
-                'as' => 'mobile.contents.filter',
+                'as' => 'mobile.musora-api.contents.filter',
                 'uses' => ContentController::class . '@filterContents',
             ]
         );
@@ -33,7 +33,7 @@ Route::group(
         Route::get(
             '/in-progress',
             [
-                'as' => 'mobile.in-progress.contents',
+                'as' => 'mobile.musora-api.in-progress.contents',
                 'uses' => ContentController::class . '@getInProgressContent',
             ]
         );
@@ -42,7 +42,7 @@ Route::group(
         Route::get(
             '/packs',
             [
-                'as' => 'mobile.packs.show',
+                'as' => 'mobile.musora-api.packs.show',
                 'uses' => PacksController::class . '@showAllPacks',
             ]
         );
@@ -50,7 +50,7 @@ Route::group(
         Route::get(
             '/pack/{packId}',
             [
-                'as' => 'mobile.pack.show',
+                'as' => 'mobile.musora-api.pack.show',
                 'uses' => PacksController::class . '@showPack',
             ]
         );
@@ -58,7 +58,7 @@ Route::group(
         Route::get(
             '/pack/lesson/{lessonId}',
             [
-                'as' => 'mobile.pack.lesson.show',
+                'as' => 'mobile.musora-api.pack.lesson.show',
                 'uses' => PacksController::class . '@showLesson',
             ]
         );
@@ -66,7 +66,7 @@ Route::group(
         Route::get(
             '/packs/jump-to-next-lesson/{packContentId}',
             [
-                'as' => 'mobile.pack.jump-to-next-lesson',
+                'as' => 'mobile.musora-api.pack.jump-to-next-lesson',
                 'uses' => PacksController::class . '@jumpToNextLesson',
             ]
         );
@@ -91,7 +91,7 @@ Route::group(
         Route::get(
             '/learning-paths/{learningPathSlug}',
             [
-                'as' => 'mobile.learning-path.show',
+                'as' => 'mobile.musora-api.learning-path.show',
                 'uses' => \Railroad\MusoraApi\Controllers\LearningPathController::class . '@showLearningPath',
             ]
         );
@@ -99,7 +99,7 @@ Route::group(
         Route::get(
             '/learning-path-levels/{learningPathSlug}/{levelSlug}',
             [
-                'as' => 'mobile.learning-path.level.show',
+                'as' => 'mobile.musora-api.learning-path.level.show',
                 'uses' => \Railroad\MusoraApi\Controllers\LearningPathController::class . '@showLevel',
             ]
         );
@@ -107,7 +107,7 @@ Route::group(
         Route::get(
             '/learning-path-courses/{courseId}',
             [
-                'as' => 'mobile.learning-path.course.show',
+                'as' => 'mobile.musora-api.learning-path.course.show',
                 'uses' => \Railroad\MusoraApi\Controllers\LearningPathController::class . '@showCourse',
             ]
         );
@@ -115,7 +115,7 @@ Route::group(
         Route::get(
             '/learning-path-lessons/{lessonId}',
             [
-                'as' => 'mobile.learning-path.lesson.show',
+                'as' => 'mobile.musora-api.learning-path.lesson.show',
                 'uses' => \Railroad\MusoraApi\Controllers\LearningPathController::class . '@showLesson',
             ]
         );
@@ -124,7 +124,7 @@ Route::group(
         Route::get(
             '/live-schedule',
             [
-                'as' => 'mobile.live-schedule',
+                'as' => 'mobile.musora-api.live-schedule',
                 'uses' => ContentController::class . '@getLiveSchedule',
             ]
         );
@@ -132,7 +132,7 @@ Route::group(
         Route::get(
             '/schedule',
             [
-                'as' => 'mobile.content-schedule',
+                'as' => 'mobile.musora-api.content-schedule',
                 'uses' => ContentController::class . '@getAllSchedule',
             ]
         );
@@ -141,7 +141,7 @@ Route::group(
         Route::get(
             '/live-event',
             [
-                'as' => 'mobile.live-event',
+                'as' => 'mobile.musora-api.live-event',
                 'uses' => \Railroad\MusoraApi\Controllers\LiveController::class . '@getLiveEvent',
             ]
         );
@@ -189,14 +189,14 @@ Route::group(
         Route::get(
             '/members/packs/{packSlug}',
             [
-                'as' => 'mobile.packs.bundles.deeplink',
+                'as' => 'mobile.musora-api.packs.bundles.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPack',
             ]
         );
         Route::get(
             '/members/packs/{packSlug}/bundle/{bundleSlug}/{bundleId}',
             [
-                'as' => 'mobile.pianote.pack.bundle.deeplink',
+                'as' => 'mobile.musora-api.pianote.pack.bundle.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPianotePack',
             ]
         );
@@ -205,21 +205,21 @@ Route::group(
         Route::get(
             '/members/packs/{packSlug}/bundle/{bundleSlug}/{lessonSlug}/{lessonId}',
             [
-                'as' => 'mobile.pianote.pack.bundle.lesson.deeplink',
+                'as' => 'mobile.musora-api.pianote.pack.bundle.lesson.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPianotePackBundleLesson',
             ]
         );
         Route::get(
             '/members/packs/{packSlug}/{bundleSlug}',
             [
-                'as' => 'mobile.pack.bundle.deeplink',
+                'as' => 'mobile.musora-api.pack.bundle.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPack',
             ]
         );
         Route::get(
             '/members/packs/{packSlug}/{lessonSlug}/{lessonId}',
             [
-                'as' => 'mobile.pianote.packs.bundles.lessons.lesson.deeplink',
+                'as' => 'mobile.musora-api.pianote.packs.bundles.lessons.lesson.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPianotePackLesson',
             ]
         )->where('lessonId', '[0-9]+');
@@ -227,7 +227,7 @@ Route::group(
         Route::get(
             '/members/packs/{packSlug}/{bundleSlug}/{lessonSlug}',
             [
-                'as' => 'mobile.packs.bundles.lessons.lesson.deeplink',
+                'as' => 'mobile.musora-api.packs.bundles.lessons.lesson.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPack',
             ]
         );
@@ -235,14 +235,14 @@ Route::group(
         Route::get(
             '/members/semester-packs/{packSlug}',
             [
-                'as' => 'mobile.semester-packs.lessons.deeplink',
+                'as' => 'mobile.musora-api.semester-packs.lessons.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForSemesterPack',
             ]
         );
         Route::get(
             '/members/semester-packs/{packSlug}/{lessonSlug}',
             [
-                'as' => 'mobile.semester-packs.lessons.show.deeplink',
+                'as' => 'mobile.musora-api.semester-packs.lessons.show.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForSemesterPack',
             ]
         );
