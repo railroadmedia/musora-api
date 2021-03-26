@@ -41,7 +41,7 @@ class ContentControllerTest extends TestCase
                     '/musora-api/content/' . rand()
                 );
 
-        $response->assertStatus(200);
+        $response->assertStatus(404);
     }
 
     public function test_pull_existing_content_endpoint()

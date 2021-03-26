@@ -219,7 +219,7 @@ Route::group(
         Route::get(
             '/members/packs/{packSlug}/{lessonSlug}/{lessonId}',
             [
-                'as' => 'mobile.musora-api.pianote.packs.bundles.lessons.lesson.deeplink',
+                'as' => 'mobile.musora-api.pianote.pack.lesson.deeplink',
                 'uses' => PacksController::class . '@getDeepLinkForPianotePackLesson',
             ]
         )->where('lessonId', '[0-9]+');

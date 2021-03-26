@@ -23,12 +23,12 @@ class ProductProvider implements ProductProviderInterface
 
     public function currentUserOwnsPack($id)
     : bool {
-        // TODO: Implement currentUserOwnsPack() method.
+        return true;
     }
 
     public function getMembershipProductIds()
     : array
     {
-        // TODO: Implement getMembershipProductIds() method.
+        return [];
     }
 }

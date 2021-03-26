@@ -19,6 +19,8 @@ use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Middleware\AuthIfTokenExist;
 use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
+use Railroad\MusoraApi\Tests\Decorators\NewDecorator;
+use Railroad\MusoraApi\Tests\Decorators\PackDecorator;
 use Railroad\MusoraApi\Tests\Fixtures\ChatProvider;
 use Railroad\MusoraApi\Tests\Fixtures\ProductProvider;
 use Railroad\MusoraApi\Tests\Fixtures\UserProvider;
@@ -193,7 +195,15 @@ class TestCase extends BaseTestCase
             'railcontent.allowed_types_for_bubble_progress',
             $defaultConfig['allowed_types_for_bubble_progress']
         );
+       // dd($defaultConfig['decorators']['content']);
         $app['config']->set('railcontent.decorators', $defaultConfig['decorators']);
+        $app['config']->set('railcontent.decorators.content', array_merge(
+            $defaultConfig['decorators']['content'],
+            [
+                PackDecorator::class,
+                NewDecorator::class
+            ]
+        ));
         $app['config']->set('railcontent.all_routes_middleware', $defaultConfig['all_routes_middleware']);
         $app['config']->set('railcontent.user_routes_middleware', $defaultConfig['user_routes_middleware']);
         $app['config']->set(
