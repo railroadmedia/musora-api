@@ -15,7 +15,7 @@ Route::group(
         Route::get(
             '/content/{id}',
             [
-                'as' => 'mobile.content.show',
+                'as' => 'mobile.musora-api.content.show',
                 'uses' => ContentController::class . '@getContent',
             ]
         );
