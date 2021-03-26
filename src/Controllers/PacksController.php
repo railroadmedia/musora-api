@@ -371,7 +371,7 @@ class PacksController extends Controller
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
-        $thisLesson['total_xp'] = $thisLesson['xp'];
+        $thisLesson['total_xp'] = $thisLesson['xp'] ?? 0;
 
         if (array_key_exists('resources', $thisLesson)) {
             $thisLesson['resources'] = array_values($thisLesson['resources']);
@@ -388,12 +388,19 @@ class PacksController extends Controller
                 ->first();
 
         $pack =
+            $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['pack'])
+                ->first();
+
+        $semesterPack =
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['semester-pack'])
                 ->first();
 
-        throw_if((empty($thisPackBundle) && empty($pack)), new NotFoundException('Lesson not found.'));
+        throw_if(
+            (empty($thisPackBundle) && empty($pack) && empty($semesterPack)),
+            new NotFoundException('Lesson not found.')
+        );
 
-        $parent = $thisPackBundle ?? $pack;
+        $parent = $thisPackBundle ?? $pack ?? $semesterPack;
 
         $parentLessons = $this->contentService->getByParentId($parent['id']);
 
@@ -412,6 +419,8 @@ class PacksController extends Controller
 
         if (!$pack) {
             $pack =
+                $semesterPack
+                ??
                 $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
                     ->first();
         }
@@ -529,7 +538,7 @@ class PacksController extends Controller
             $this->contentService->getBySlugAndType($packSlug, 'pack')
                 ->first();
 
-        if($pack['bundle_count'] == 1){
+        if ($pack['bundle_count'] == 1) {
             return $this->showPack($pack['id'] ?? 0);
         }
 
@@ -578,7 +587,7 @@ class PacksController extends Controller
      */
     public function getDeepLinkForPianotePack($packSlug, $bundleSlug, $bundleId)
     {
-            return $this->showPack($bundleId);
+        return $this->showPack($bundleId);
     }
 
     /**
