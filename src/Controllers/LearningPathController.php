@@ -126,7 +126,7 @@ class LearningPathController extends Controller
 
         foreach ($learningPath['levels'] as $level) {
             $level['mobile_app_url'] = url()->route(
-                'mobile.learning-path.level.show',
+                'mobile.musora-api.learning-path.level.show',
                 [
                     $learningPath['slug'],
                     $level['slug'],
@@ -310,7 +310,7 @@ class LearningPathController extends Controller
                 $thisLesson['current_level'] = $level;
                 $nextLevel['level_number'] = $nextLevel['position'];
                 $nextLevel['mobile_app_url'] = url()->route(
-                    'mobile.learning-path.level.show',
+                    'mobile.musora-api.learning-path.level.show',
                     [
                         $learningPath['slug'],
                         $nextLevel['slug'],
