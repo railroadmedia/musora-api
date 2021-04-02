@@ -9,4 +9,8 @@ interface ChatProviderInterface
 
     public function getCustomStyle()
     : array;
+
+    public function getRailchatData()
+    : array;
+
 }

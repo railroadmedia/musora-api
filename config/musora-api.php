@@ -609,6 +609,10 @@ return [
             'chatRollViewersNumberClass',
             'youtube_video_id',
             'chatRollStyle',
+            'apiKey',
+            'chatChannelName' ,
+            'questionsChannelName',
+            'token'
         ],
 
         'pack' => [

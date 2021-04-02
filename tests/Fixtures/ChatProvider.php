@@ -18,4 +18,10 @@ class ChatProvider implements ChatProviderInterface
     {
         return [];
     }
+
+    public function getRailchatData()
+    : array
+    {
+        return [];
+    }
 }

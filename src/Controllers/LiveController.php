@@ -95,7 +95,11 @@ class LiveController extends Controller
         $currentEvent['chatRollViewersNumberClass'] = '.chat-online-count';
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
-        return ResponseService::live($currentEvent);
+        $railchatDataArray = $this->chatProvider->getRailchatData();
+
+        $event = array_merge($currentEvent->getArrayCopy(), $railchatDataArray);
+
+        return ResponseService::live($event);
     }
 
 }
