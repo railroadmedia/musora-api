@@ -87,6 +87,8 @@ class LiveController extends Controller
             return ResponseService::array([]);
         }
 
+        $currentEvent['instructor_head_shot_picture_url'] = $currentEvent->fetch('fields.instructor.data.head_shot_picture_url');
+
         $currentEvent['youtube_video_id'] = $youtubeId ?? $currentEvent->fetch(
                 'fields.live_event_youtube_id',
                 $this->liveStreamEventService->getCurrentOrNextYoutubeEventId()

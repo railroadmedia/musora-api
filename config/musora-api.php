@@ -602,6 +602,7 @@ return [
             'fields.title',
             'fields.live_event_start_time',
             'fields.live_event_end_time',
+            'instructor_head_shot_picture_url',
             'is_added_to_primary_playlist',
             'data.thumbnail_url',
             'instructors',
