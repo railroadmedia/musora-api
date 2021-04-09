@@ -97,6 +97,8 @@ class LiveController extends Controller
         $currentEvent['chatRollViewersNumberClass'] = '.chat-online-count';
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
+        $currentEvent['userId'] = $this->userProvider->getCurrentUser()->getId();
+
         $railchatDataArray = $this->chatProvider->getRailchatData();
 
         $event = array_merge($currentEvent->getArrayCopy(), $railchatDataArray);

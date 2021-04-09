@@ -613,7 +613,8 @@ return [
             'apiKey',
             'chatChannelName' ,
             'questionsChannelName',
-            'token'
+            'token',
+            'userId',
         ],
 
         'pack' => [
