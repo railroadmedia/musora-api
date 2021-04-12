@@ -107,12 +107,12 @@ class VimeoVideoSourcesDecorator extends ModeDecoratorBase
                                             ];
 
                                             $response['body']['pictures']['sizes'] = array_combine(
-                                                array_column($response['body']['pictures']['sizes'], 'height'),
-                                                $response['body']['pictures']['sizes']
+                                                array_column($response['body']['pictures']['sizes'] ?? [], 'height'),
+                                                $response['body']['pictures']['sizes'] ?? []
                                             );
 
                                             $sizes = array_keys(
-                                                $response['body']['pictures']['sizes']
+                                                $response['body']['pictures']['sizes'] ?? []
                                             );
 
                                             $sizes = array_filter(
@@ -127,8 +127,8 @@ class VimeoVideoSourcesDecorator extends ModeDecoratorBase
                                             );
 
                                             $contentResults[$contentIndex]
-                                            [$prefix . 'video_poster_image_url'] = $response['body']['pictures']
-                                                ['sizes'][max($sizes)]['link'] ?? '';
+                                            [$prefix . 'video_poster_image_url'] = (!empty($sizes))?$response['body']['pictures']
+                                                ['sizes'][max($sizes)]['link'] ?? '':'';
 
                                             ksort(
                                                 $contentResults[$contentIndex]
