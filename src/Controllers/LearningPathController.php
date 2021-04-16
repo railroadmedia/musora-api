@@ -119,12 +119,7 @@ class LearningPathController extends Controller
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
-        if ($learningPath['slug'] == 'pianote-method') {
-            $learningPath['levels'] = $learningPath['units'];
-            unset($learningPath['units']);
-        }
-
-        foreach ($learningPath['levels'] as $level) {
+        foreach ($learningPath['units'] as $level) {
             $level['mobile_app_url'] = url()->route(
                 'mobile.musora-api.learning-path.level.show',
                 [
@@ -133,6 +128,13 @@ class LearningPathController extends Controller
                 ]
             );
         }
+
+        if ($learningPath['slug'] == 'pianote-method') {
+            $learningPath['levels'] = $learningPath['units'];
+            unset($learningPath['units']);
+        }
+
+
 
         return ResponseService::content($learningPath);
     }
