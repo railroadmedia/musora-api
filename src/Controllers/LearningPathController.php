@@ -218,7 +218,7 @@ class LearningPathController extends Controller
             ($learningPath->fetch('next_lesson_course_id') == $courseId) ? $learningPath->fetch('next_lesson', null) :
                 null;
 
-        $course['level_position'] = $level['sort'] + 1;
+        $course['level_position'] = $level['level_number'];
 
         $levelCourses =
             $this->contentService->getByParentId($level['id'])
