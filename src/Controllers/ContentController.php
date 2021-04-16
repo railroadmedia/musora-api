@@ -237,6 +237,9 @@ class ContentController extends Controller
                 $content['instructor'] ?? [],
                 ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
             );
+
+            $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
+            $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
         }
 
         $content =
