@@ -14,14 +14,15 @@ class CommentTransformer extends TransformerAbstract
         }
 
         $response = [];
-        foreach ($comments as $index => $comment) {
+
+        foreach ($comments->values() ?? [] as $index => $comment) {
             foreach ($responseStructure as $key => $item) {
                 if (is_array($item)) {
-                    foreach ($item as $index2=>$it) {
+                    foreach ($item as $index2 => $it) {
 
                         $response[$index][$key][$it] = $comment[$key][$it] ?? false;
                     }
-                } elseif(array_key_exists($item, $comment)){
+                } elseif (array_key_exists($item, $comment)) {
                     $response[$index][$item] = $comment[$item];
                 }
             }
