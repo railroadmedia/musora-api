@@ -120,6 +120,14 @@ Route::group(
             ]
         );
 
+        Route::get(
+            '/learning-path-lesson/{lessonId}',
+            [
+                'as' => 'mobile.musora-api.learning-paths.unit-part.show',
+                'uses' => \Railroad\MusoraApi\Controllers\LearningPathController::class . '@showUnitPart',
+            ]
+        );
+
         //route for live schedule
         Route::get(
             '/live-schedule',

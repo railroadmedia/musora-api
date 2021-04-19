@@ -119,22 +119,20 @@ class LearningPathController extends Controller
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
-        foreach ($learningPath['units'] as $level) {
-            $level['mobile_app_url'] = url()->route(
-                'mobile.musora-api.learning-path.level.show',
-                [
-                    $learningPath['slug'],
-                    $level['slug'],
-                ]
-            );
-        }
+                foreach ($learningPath['units'] as $level) {
+                    $level['mobile_app_url'] = url()->route(
+                        'mobile.musora-api.learning-path.level.show',
+                        [
+                            $learningPath['slug'],
+                            $level['slug'],
+                        ]
+                    );
+                }
 
         if ($learningPath['slug'] == 'pianote-method') {
             $learningPath['levels'] = $learningPath['units'];
             unset($learningPath['units']);
         }
-
-
 
         return ResponseService::content($learningPath);
     }
@@ -154,6 +152,12 @@ class LearningPathController extends Controller
             $this->contentService->getBySlugAndType($levelSlug, 'learning-path-level')
                 ->first();
 
+        if (!$level) {
+            $level =
+                $this->contentService->getBySlugAndType($levelSlug, 'unit')
+                    ->first();
+        }
+
         throw_if(!$level, new NotFoundException('Level not found.'));
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
@@ -165,10 +169,21 @@ class LearningPathController extends Controller
         throw_if(!$learningPath, new NotFoundException('Learning path not found.'));
 
         $courses = $this->contentService->getByParentId($level['id']);
-        foreach ($courses as $course) {
-            $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
+        if ($level['type'] == 'learning-path-level') {
+            foreach ($courses as $course) {
+                $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
+            }
+            $level['courses'] = $courses;
+        } else {
+            foreach ($level['lessons'] ?? $courses as $lesson) {
+                $lesson['mobile_app_url'] = url()->route(
+                    'mobile.musora-api.learning-paths.unit-part.show',
+                    [
+                        $lesson['id'],
+                    ]
+                );
+            }
         }
-        $level['courses'] = $courses;
 
         $level['next_lesson'] =
             ($learningPath->fetch('next_lesson_level_id') == $level['id']) ? $learningPath->fetch('next_lesson', null) :
@@ -241,8 +256,9 @@ class LearningPathController extends Controller
 
     /**
      * @param $lessonId
-     * @return array|JsonResponse
+     * @return array
      * @throws NonUniqueResultException
+     * @throws \Throwable
      */
     public function showLesson($lessonId)
     {
@@ -337,6 +353,93 @@ class LearningPathController extends Controller
         //add course's resources to lesson
         if (!empty($thisLesson['resources']) || !empty($course['resources'])) {
             $thisLesson['resources'] = array_merge($thisLesson['resources'] ?? [], $course['resources'] ?? []);
+        }
+
+        return ResponseService::content($thisLesson);
+    }
+
+    /**
+     * @param $unitPartId
+     * @return array|JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function showUnitPart($unitPartId)
+    {
+        ContentRepository::$bypassPermissions = true;
+        ContentRepository::$availableContentStatues = false;
+        ContentRepository::$pullFutureContent = true;
+
+        $thisLesson = $this->contentService->getById($unitPartId);
+
+        if (empty($thisLesson)) {
+            return response()->json($thisLesson);
+        }
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        $unit =
+            $this->contentService->getByChildIdWhereParentTypeIn($unitPartId, ['unit'])
+                ->first();
+
+        if (empty($unit)) {
+            return response()->json($unit);
+        }
+
+        $learningPath =
+            $this->contentService->getByChildIdWhereParentTypeIn($unit['id'], ['learning-path'])
+                ->first();
+
+        if (empty($learningPath)) {
+            return response()->json($learningPath);
+        }
+
+        $unitLessons = $this->contentService->getByParentId($unit['id']);
+
+        $isLastIncompleteUnitPart = true;
+        foreach ($unitLessons as $index => $lesson) {
+            if (($lesson->fetch('completed', false) == false) && ($lesson['id'] != $thisLesson['id'])) {
+                $isLastIncompleteUnitPart = false;
+            }
+            if ($lesson['id'] == $thisLesson['id']) {
+                $nextChild = ($index < count($unitLessons) - 1) ? $unitLessons[$index + 1] : null;
+                $previousChild = ($index > 0) ? $unitLessons[$index - 1] : null;
+            }
+        }
+
+        $thisLesson['next_lesson'] = $nextChild ?? null;
+        $thisLesson['previous_lesson'] = $previousChild ?? null;
+
+        if ($isLastIncompleteUnitPart) {
+            $learningPathUnits = $this->contentService->getByParentId($learningPath['id']);
+            foreach ($learningPathUnits as $index => $learningPathUnit) {
+                if (($learningPathUnit['id'] == $unit['id']) && (array_key_exists($index + 1, $learningPathUnits))) {
+                    $thisLesson['next_unit'] = $learningPathUnits[$index + 1];
+                }
+            }
+        }
+
+
+        $thisLesson['related_lessons'] = $unitLessons;
+
+        $thisLesson['xp'] = $thisLesson->fetch('total_xp');
+
+        $thisLesson['instructors'] = $unit->fetch('*fields.instructor');
+
+        $this->vimeoVideoDecorator->decorate(new Collection([$thisLesson]));
+
+        CommentRepository::$availableContentId = $thisLesson['id'];
+        $comments = $this->commentService->getComments(1, 10, '-created_on');
+        $thisLesson['comments'] = $this->stripTagDecorator->decorate(new Collection($comments['results']));
+
+        $thisLesson['total_comments'] = $comments['total_results'];
+
+        $this->stripTagDecorator->decorate(new Collection($thisLesson['comments']));
+        $this->stripTagDecorator->decorate(new Collection([$thisLesson]));
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
+
+        if (!empty($thisLesson['resources']) || !empty($unit['resources'])) {
+            $thisLesson['resources'] = array_merge($thisLesson['resources'] ?? [], $unit['resources'] ?? []);
         }
 
         return ResponseService::content($thisLesson);
