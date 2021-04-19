@@ -142,7 +142,7 @@ class LearningPathController extends Controller
      * @param $levelSlug
      * @return JsonResponse
      */
-    public function showLevel($learningPathSlug, $levelSlug)
+    public function showLevel($learningPathSlug, $levelSlug, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
         ContentRepository::$availableContentStatues = false;
@@ -175,7 +175,12 @@ class LearningPathController extends Controller
             }
             $level['courses'] = $courses;
         } else {
+            $totalLengthInSeconds = 0;
+            $totalXp = 0;
+
             foreach ($level['lessons'] ?? $courses as $lesson) {
+                $totalLengthInSeconds += $lesson->fetch('fields.video.fields.length_in_seconds', 0);
+                $totalXp += $lesson->fetch('total_xp', $lesson->fetch('fields.xp', 0));
                 $lesson['mobile_app_url'] = url()->route(
                     'mobile.musora-api.learning-paths.unit-part.show',
                     [
@@ -183,6 +188,9 @@ class LearningPathController extends Controller
                     ]
                 );
             }
+            
+            $level['duration'] = $totalLengthInSeconds;
+            $level['total_xp'] = $totalXp;
         }
 
         $level['next_lesson'] =
@@ -194,6 +202,12 @@ class LearningPathController extends Controller
         $level['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
         $this->vimeoVideoDecorator->decorate(new Collection([$level]));
+
+        if ($request->has('download')) {
+            $this->downloadService->attachLessonsDataForDownload($level);
+
+            return ResponseService::contentForDownload($level);
+        }
 
         return ResponseService::content($level);
     }
