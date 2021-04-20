@@ -189,7 +189,7 @@ class LearningPathController extends Controller
                 );
             }
             
-            $level['duration'] = $totalLengthInSeconds;
+            $level['total_length_in_seconds'] = $totalLengthInSeconds;
             $level['total_xp'] = $totalXp;
         }
 
