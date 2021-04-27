@@ -302,6 +302,7 @@ class PacksController extends Controller
         $pack = $this->isOwnedOrLocked($pack);
 
         $pack['thumbnail'] = ContentHelper::getDatumValue($pack, 'header_image_url');
+        $pack['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
 
         $pack['apple_product_id'] = $this->productProvider->getAppleProductId($pack['slug']);
         $pack['google_product_id'] = $this->productProvider->getGoogleProductId($pack['slug']);
