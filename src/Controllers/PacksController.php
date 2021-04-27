@@ -326,7 +326,7 @@ class PacksController extends Controller
                 $lessons[0]['is_owned'] = $pack['is_owned'];
                 $lessons[0]['full_price'] = $packPrice['full_price'] ?? 0;
                 $lessons[0]['price'] = $packPrice['price'] ?? 0;
-                $lessons[0]['pack_logo'] = $pack['pack_logo'];
+                $lessons[0]['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
 
                 $lessons[0]['apple_product_id'] = $pack['apple_product_id'];
                 $lessons[0]['google_product_id'] = $pack['google_product_id'];
