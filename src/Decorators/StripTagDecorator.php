@@ -31,9 +31,10 @@ class StripTagDecorator extends ModeDecoratorBase
                     }
                 }
 
-                $instructors = $entity['instructor'] ?? [];
+                $instructors = $entity['instructor'] ?? $entity->fetch('*fields.instructor',[]);
 
                 foreach ($instructors as $index => $item) {
+                    $entities[$entityIndex]['instructor'][$index] = $item;
 
                     if ($item instanceof ContentEntity) {
 

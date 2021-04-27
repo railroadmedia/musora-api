@@ -302,7 +302,6 @@ class PacksController extends Controller
         $pack = $this->isOwnedOrLocked($pack);
 
         $pack['thumbnail'] = ContentHelper::getDatumValue($pack, 'header_image_url');
-        $pack['pack_logo'] = ContentHelper::getDatumValue($pack, 'logo_image_url');
 
         $pack['apple_product_id'] = $this->productProvider->getAppleProductId($pack['slug']);
         $pack['google_product_id'] = $this->productProvider->getGoogleProductId($pack['slug']);
@@ -349,6 +348,14 @@ class PacksController extends Controller
             }
 
         } else {
+
+            $parent =
+                $this->contentService->getByChildIdWhereParentTypeIn($pack['id'], ['pack'])
+                    ->first();
+            if ($parent) {
+                $pack['pack_logo'] = $parent->fetch('data.logo_image_url');
+            }
+
             $isSet = false;
             foreach ($lessons as $lessonIndex => $lesson) {
                 if ($lesson['completed'] != true && (!$isSet)) {
