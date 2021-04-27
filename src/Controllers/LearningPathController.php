@@ -119,15 +119,17 @@ class LearningPathController extends Controller
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
-                foreach ($learningPath['units'] as $level) {
-                    $level['mobile_app_url'] = url()->route(
-                        'mobile.musora-api.learning-path.level.show',
-                        [
-                            $learningPath['slug'],
-                            $level['slug'],
-                        ]
-                    );
-                }
+        $levels = $learningPath['units'] ?? $learningPath['levels'];
+
+        foreach ($levels ?? [] as $level) {
+            $level['mobile_app_url'] = url()->route(
+                'mobile.musora-api.learning-path.level.show',
+                [
+                    $learningPath['slug'],
+                    $level['slug'],
+                ]
+            );
+        }
 
         if ($learningPath['slug'] == 'pianote-method') {
             $learningPath['levels'] = $learningPath['units'];
@@ -188,7 +190,7 @@ class LearningPathController extends Controller
                     ]
                 );
             }
-            
+
             $level['total_length_in_seconds'] = $totalLengthInSeconds;
             $level['total_xp'] = $totalXp;
         }
@@ -431,7 +433,6 @@ class LearningPathController extends Controller
                 }
             }
         }
-
 
         $thisLesson['related_lessons'] = $unitLessons;
 
