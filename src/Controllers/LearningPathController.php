@@ -336,21 +336,26 @@ class LearningPathController extends Controller
         } else {
             if ($thisLesson['is_last_incomplete_course_from_level']) {
                 $allLevels = $this->contentService->getByParentId($learningPath['id']);
+
                 $nextLevel =
                     $allLevels->where('id', '!=', $level['id'])
                         ->where('completed', '=', false)
                         ->first();
+
                 $level['level_number'] = $level['position'];
                 $thisLesson['current_level'] = $level;
-                $nextLevel['level_number'] = $nextLevel['position'];
-                $nextLevel['mobile_app_url'] = url()->route(
-                    'mobile.musora-api.learning-path.level.show',
-                    [
-                        $learningPath['slug'],
-                        $nextLevel['slug'],
-                    ]
-                );
-                $thisLesson['next_level'] = $nextLevel;
+
+                if($nextLevel) {
+                    $nextLevel['level_number'] = $nextLevel['position'];
+                    $nextLevel['mobile_app_url'] = url()->route(
+                        'mobile.musora-api.learning-path.level.show',
+                        [
+                            $learningPath['slug'],
+                            $nextLevel['slug'],
+                        ]
+                    );
+                    $thisLesson['next_level'] = $nextLevel;
+                }
             }
         }
 
