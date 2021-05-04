@@ -393,7 +393,7 @@ class PacksController extends Controller
 
         $comments = $this->commentService->getComments(1, 10, '-created_on');
         $thisLesson['comments'] = (new CommentTransformer())->transform($comments['results']);
-        $thisLesson['total_comments'] = $comments['total_results'];
+        $thisLesson['total_comments'] = $comments['total_comments_and_results'];
 
         $thisPackBundle =
             $this->contentService->getByChildIdWhereParentTypeIn($lessonId, ['pack-bundle'])

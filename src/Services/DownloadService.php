@@ -66,7 +66,7 @@ class DownloadService{
 
             $comments = $this->commentService->getComments(1, 'null', '-created_on');
             $content['lessons'][$lessonIndex]['comments'] = (new CommentTransformer())->transform($comments['results']);
-            $content['lessons'][$lessonIndex]['total_comments'] = $comments['total_results'];
+            $content['lessons'][$lessonIndex]['total_comments'] = $comments['total_comments_and_results'];
         }
 
         return $content;

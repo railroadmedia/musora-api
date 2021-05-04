@@ -179,7 +179,7 @@ class ContentController extends Controller
         CommentRepository::$availableContentId = $content['id'];
         $comments = $this->commentService->getComments(1, 10, '-created_on');
         $content['comments'] = (new CommentTransformer())->transform($comments['results']);
-        $content['total_comments'] = $comments['total_results'];
+        $content['total_comments'] = $comments['total_comments_and_results'];
 
         //attached lessons to the content if not exists already
         if (!array_key_exists('lessons', $content) &&

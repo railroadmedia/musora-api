@@ -364,7 +364,7 @@ class LearningPathController extends Controller
         $commentPage = 1;
         $comments = $this->commentService->getComments($commentPage, 10, '-created_on');
         $thisLesson['comments'] = (new CommentTransformer())->transform($comments['results']);
-        $thisLesson['total_comments'] = $comments['total_results'];
+        $thisLesson['total_comments'] = $comments['total_comments_and_results'];
 
         //add course's resources to lesson
         if (!empty($thisLesson['resources']) || !empty($course['resources'])) {
@@ -446,7 +446,7 @@ class LearningPathController extends Controller
         $comments = $this->commentService->getComments(1, 10, '-created_on');
         $thisLesson['comments'] = $this->stripTagDecorator->decorate(new Collection($comments['results']));
 
-        $thisLesson['total_comments'] = $comments['total_results'];
+        $thisLesson['total_comments'] = $comments['total_comments_and_results'];
 
         $this->stripTagDecorator->decorate(new Collection($thisLesson['comments']));
         $this->stripTagDecorator->decorate(new Collection([$thisLesson]));
