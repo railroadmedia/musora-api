@@ -342,7 +342,6 @@ class LearningPathController extends Controller
                         ->where('completed', '=', false)
                         ->first();
 
-                $level['level_number'] = $level['position'];
                 $thisLesson['current_level'] = $level;
 
                 if($nextLevel) {
