@@ -319,6 +319,16 @@ class ContentController extends Controller
                 'style',
             ];
 
+            if($types = ['song'])
+            {
+                ConfigService::$fieldOptionList = [
+                    'topic',
+                    'difficulty',
+                    'style',
+                    'artist'
+                ];
+            }
+
             $results = $this->contentService->getFiltered(
                 $request->get('page', 1),
                 $request->get('limit', 10),
