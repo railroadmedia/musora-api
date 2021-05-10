@@ -319,7 +319,7 @@ class ContentController extends Controller
                 'style',
             ];
 
-            if($types = ['song'])
+            if($types == ['song'])
             {
                 ConfigService::$fieldOptionList = [
                     'topic',
