@@ -73,7 +73,8 @@ class LearningPathController extends Controller
         MethodService $methodService,
         DownloadService $downloadService,
         StripTagDecorator $stripTagDecorator
-    ) {
+    )
+    {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
@@ -109,12 +110,21 @@ class LearningPathController extends Controller
             ($learningPathNextLesson->fetch('status') == ContentService::STATUS_PUBLISHED &&
                 Carbon::parse($learningPathNextLesson->fetch('published_on'))
                     ->lessThanOrEqualTo(Carbon::now()))) {
-            $learningPath['banner_button_url'] = url()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                [
-                    $learningPathNextLesson['id'],
-                ]
-            );
+            if ($learningPath['slug'] != 'foundations-2019') {
+                $learningPath['banner_button_url'] = url()->route(
+                    'mobile.musora-api.learning-path.lesson.show',
+                    [
+                        $learningPathNextLesson['id'],
+                    ]
+                );
+            } else {
+                $learningPath['banner_button_url'] = url()->route(
+                    'mobile.musora-api.learning-paths.unit-part.show',
+                    [
+                        $learningPathNextLesson['id'],
+                    ]
+                );
+            }
         }
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
@@ -344,7 +354,7 @@ class LearningPathController extends Controller
 
                 $thisLesson['current_level'] = $level;
 
-                if($nextLevel) {
+                if ($nextLevel) {
                     $nextLevel['level_number'] = $nextLevel['position'];
                     $nextLevel['mobile_app_url'] = url()->route(
                         'mobile.musora-api.learning-path.level.show',
