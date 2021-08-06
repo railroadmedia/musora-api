@@ -6,10 +6,10 @@ use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Validator;
 use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
@@ -22,6 +22,7 @@ use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\UserContentProgressService;
 use Railroad\Railtracker\Trackers\MediaPlaybackTracker;
+use Illuminate\Validation\ValidationException;
 
 class UserProgressController extends Controller
 {
@@ -265,6 +266,29 @@ class UserProgressController extends Controller
      */
     public function saveVideoProgress(Request $request, $sessionId = null)
     {
+        try {
+            $this->validate(
+                $request,
+                [
+                    'media_id' => 'required',
+                    'media_length_seconds' => 'numeric',
+                    'media_type' => 'required|string',
+                    'media_category' => 'required|string',
+                    'current_second' => 'numeric',
+                    'seconds_played' => 'numeric',
+                ]
+            );
+        } catch (ValidationException $exception) {
+            throw new HttpResponseException(
+                response()->json(
+                    [
+                        'errors' => $exception->errors(),
+                    ],
+                    422
+                )
+            );
+        }
+
         if (!$sessionId) {
             $mediaTypeId = $this->mediaPlaybackTracker->trackMediaType(
                 $request->get('media_type', 'video'),
