@@ -23,9 +23,12 @@ use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\UserContentProgressService;
 use Railroad\Railtracker\Trackers\MediaPlaybackTracker;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 
 class UserProgressController extends Controller
 {
+    use ValidatesRequests;
+
     /**
      * @var ContentService
      */
