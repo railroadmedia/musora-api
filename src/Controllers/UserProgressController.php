@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +27,8 @@ use Illuminate\Validation\ValidationException;
 
 class UserProgressController extends Controller
 {
+    use ValidatesRequests;
+
     /**
      * @var ContentService
      */
