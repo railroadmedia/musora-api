@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
+use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Services\UserProgressService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
@@ -61,8 +62,11 @@ class PacksController extends Controller
     private $userProgressService;
 
     /**
-     * PacksController constructor.
-     *
+     * @var DownloadService
+     */
+    private $downloadService;
+
+    /**
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param ContentHierarchyService $contentHierarchyService
@@ -70,6 +74,7 @@ class PacksController extends Controller
      * @param ContentRepository $contentRepository
      * @param VimeoVideoSourcesDecorator $videoSourcesDecorator
      * @param UserProgressService $userProgressService
+     * @param DownloadService $downloadService
      */
     public function __construct(
         ContentService $contentService,
@@ -78,7 +83,8 @@ class PacksController extends Controller
         ProductProviderInterface $productProvider,
         ContentRepository $contentRepository,
         VimeoVideoSourcesDecorator $videoSourcesDecorator,
-        UserProgressService $userProgressService
+        UserProgressService $userProgressService,
+        DownloadService $downloadService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -87,6 +93,7 @@ class PacksController extends Controller
         $this->productProvider = $productProvider;
         $this->vimeoVideoDecorator = $videoSourcesDecorator;
         $this->userProgressService = $userProgressService;
+        $this->downloadService = $downloadService;
     }
 
     /**
@@ -289,7 +296,7 @@ class PacksController extends Controller
      * @throws NonUniqueResultException
      * @throws Throwable
      */
-    public function showPack($packId)
+    public function showPack($packId, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
 
@@ -333,6 +340,14 @@ class PacksController extends Controller
                 $lessons[0]['google_product_id'] = $pack['google_product_id'];
                 $lessons[0]['next_lesson'] = $lessons[0]['current_lesson'] ?? null;
 
+                $isDownload = $request->get('download', false);
+                if ($isDownload && !empty($lessons[0]['lessons'])) {
+
+                    $this->downloadService->attachLessonsDataForDownload($lessons[0]);
+
+                    return ResponseService::contentForDownload($lessons[0]);
+                }
+
                 return ResponseService::content($lessons[0]);
             }
 
@@ -366,6 +381,14 @@ class PacksController extends Controller
                 }
             }
             $pack['lessons'] = $lessons;
+        }
+
+        $isDownload = $request->get('download', false);
+        if ($isDownload && !empty($pack['lessons'])) {
+
+            $this->downloadService->attachLessonsDataForDownload($pack);
+
+            return ResponseService::contentForDownload($pack);
         }
 
         return ResponseService::content($pack);
