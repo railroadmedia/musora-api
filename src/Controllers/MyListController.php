@@ -44,6 +44,11 @@ class MyListController extends Controller
      */
     public function getMyLists(Request $request)
     {
+        ContentRepository::$availableContentStatues =
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED, ContentService::STATUS_SCHEDULED];
+
+        ContentRepository::$pullFutureContent = true;
+
         $state = $request->get('state');
 
         $oldFieldOptions = ConfigService::$fieldOptionList;
