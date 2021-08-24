@@ -148,7 +148,7 @@ class ContentTransformer extends TransformerAbstract
             } elseif (isset($content[$item]['id'])) {
                 //nested content should be transformed
                 $response[$item] = self::transform($content[$item]);
-            } elseif (is_array($content) && array_key_exists($item, $content)) {
+            } elseif (array_key_exists($item, $content)) {
                 $response[$item] = $content[$item];
             }
         }
