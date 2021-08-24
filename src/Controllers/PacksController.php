@@ -498,7 +498,7 @@ class PacksController extends Controller
         }
 
         $thisLesson['parent'] = $thisPackBundle;
-        $thisLesson['parent']['current_lesson'] = $incompleteLesson;
+        $thisLesson['parent']['current_lesson'] = $incompleteLesson->getArrayCopy();
 
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;

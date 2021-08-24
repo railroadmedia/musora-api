@@ -3,6 +3,7 @@
 namespace Railroad\MusoraApi\Transformers;
 
 use League\Fractal\TransformerAbstract;
+use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Support\Collection;
 
@@ -54,8 +55,12 @@ class ContentTransformer extends TransformerAbstract
                     (is_array($content[$index]) || $content[$index] instanceof Collection)) {
                     $response[$index] = [];
                     //we need to transform each content using the response structure from 'value'
-                    foreach ($content[$index] as $content2) {
-                        $response[$index][] = self::transform($content2, $value);
+                    if (!isset($content[$index]['id'])) {
+                        foreach ($content[$index] as $content2) {
+                            $response[$index][] = self::transform($content2, $value);
+                        }
+                    } else{
+                        $response[$index] = self::transform($content[$index], $value);
                     }
                 } elseif (array_key_exists($index, $content) && ($content[$index])) {
                     //transform the content using response structure from 'value'
@@ -87,7 +92,18 @@ class ContentTransformer extends TransformerAbstract
                 $response[$key] = ContentHelper::getFieldValues($content, $fields[1]);
             } elseif ($fields[0] == 'fields') {
                 if (count($fields) > 2) {
-                    $response[$key] = $content->fetch($item, null);
+                    if($content instanceof ContentEntity ) {
+                        $response[$key] = $content->fetch($item, null);
+                    } else {
+                       // in the response structure can be one field frm the content field   e.g.:'fields.video.fields.length_in_seconds',
+                       if(count($fields) == 4){
+                           $fieldValue = ContentHelper::getFieldValue($content, $fields[1])->getArrayCopy();
+
+                           $response[$key] = ContentHelper::getFieldValue($fieldValue, $fields[3]);
+                       } else {
+                           $response[$key] = ContentHelper::getFieldValue($content, last($fields));
+                       }
+                    }
                 } else {
                     $content = (!is_array($content)) ? $content->getArrayCopy() : $content;
                     $response[$key] = ContentHelper::getFieldValue($content, $fields[1]);
@@ -132,7 +148,7 @@ class ContentTransformer extends TransformerAbstract
             } elseif (isset($content[$item]['id'])) {
                 //nested content should be transformed
                 $response[$item] = self::transform($content[$item]);
-            } elseif (array_key_exists($item, $content)) {
+            } elseif (is_array($content) && array_key_exists($item, $content)) {
                 $response[$item] = $content[$item];
             }
         }
