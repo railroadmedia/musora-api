@@ -127,7 +127,7 @@ class ContentTransformer extends TransformerAbstract
                 $response[$key] = $content->fetch($item);
             }
 
-            if ($key != 'sheet_music_image_url' && is_array($response[$key])) {
+            if ($key != 'sheet_music_image_url' && $key != 'length_in_seconds' && is_array($response[$key])) {
                 foreach ($response[$key] as $index => $val) {
                     if (isset($val['id'])) {
 
