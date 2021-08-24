@@ -97,9 +97,10 @@ class ContentTransformer extends TransformerAbstract
                     } else {
                        // in the response structure can be one field frm the content field   e.g.:'fields.video.fields.length_in_seconds',
                        if(count($fields) == 4){
-                           $fieldValue = ContentHelper::getFieldValue($content, $fields[1])->getArrayCopy();
-
-                           $response[$key] = ContentHelper::getFieldValue($fieldValue, $fields[3]);
+                           $fieldValue = ContentHelper::getFieldValue($content, $fields[1]);
+                           if($fieldValue){
+                               $response[$key] = ContentHelper::getFieldValue($fieldValue->getArrayCopy(), $fields[3]);
+                           }
                        } else {
                            $response[$key] = ContentHelper::getFieldValue($content, last($fields));
                        }
