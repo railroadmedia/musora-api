@@ -9,7 +9,8 @@ use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Support\Collection;
 
-class DownloadService{
+class DownloadService
+{
     /**
      * @var ContentService
      */
@@ -42,6 +43,7 @@ class DownloadService{
 
     /**
      * Add extra data for download: lessons assignments, vimeo urls, comments, resources
+     *
      * @param $content
      *
      * @return array
@@ -59,7 +61,13 @@ class DownloadService{
             $content['lessons'][$lessonIndex]['previous_lesson'] = $parentChildren[$lessonIndex - 1] ?? null;
             $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
 
-            $content['lessons'][$lessonIndex]['resources'] = array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
+            $content['lessons'][$lessonIndex]['resources'] =
+                array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
+
+            if ($content['type'] == 'learning-path-course') {
+                $content['lessons'][$lessonIndex]['course_position'] = $content['course_position'] ?? '0';
+                $content['lessons'][$lessonIndex]['level_position'] = $content['level_position'] ?? '1';
+            }
 
             //attach comments for each lesson
             CommentRepository::$availableContentId = $lesson['id'];
