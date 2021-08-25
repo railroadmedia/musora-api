@@ -322,7 +322,7 @@ class LearningPathController extends Controller
         $thisLesson['xp'] = $thisLesson->fetch('total_xp');
 
         $nextPrevLessons = $this->methodService->getNextAndPreviousLessons($lessonId, $learningPath['id']);
-        $thisLesson['prev_lesson'] = $nextPrevLessons->getPreviousLesson();
+        $thisLesson['prev_lesson'] = $thisLesson['previous_lesson'] = $nextPrevLessons->getPreviousLesson();
         $thisLesson['next_lesson'] = $nextPrevLessons->getNextLesson();
 
         //check if is last incomplete lesson from course or last incomplete course from level
