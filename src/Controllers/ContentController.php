@@ -134,10 +134,8 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn(
-                $contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
-            )
+            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
         );
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
@@ -319,13 +317,12 @@ class ContentController extends Controller
                 'style',
             ];
 
-            if($types == ['song'])
-            {
+            if ($types == ['song']) {
                 ConfigService::$fieldOptionList = [
                     'topic',
                     'difficulty',
                     'style',
-                    'artist'
+                    'artist',
                 ];
             }
 
@@ -542,13 +539,11 @@ class ContentController extends Controller
             throw new MusoraAPIException($exception->getMessage(), 'Submission Failed', 500);
         }
 
-        return ResponseService::array(
-            [
+        return ResponseService::array([
                 'success' => true,
                 'title' => 'Thanks for your submission!',
                 'message' => $input['success'],
-            ]
-        );
+            ]);
     }
 
     /**
@@ -648,13 +643,32 @@ class ContentController extends Controller
         );
 
         return ResponseService::catalogue(
-            new ContentFilterResultsEntity(
-                [
+            new ContentFilterResultsEntity([
                     'results' => $contentsData['results'],
                     'total_results' => $contentsData['total_results'],
-                ]
-            ),
+                ]),
             $request
         );
     }
+
+    /**
+     * @param $slug
+     * @return array
+     * @throws NonUniqueResultException
+     * @throws Throwable
+     */
+    public function getDeepLinkForCoach($slug)
+    {
+        $content = $this->contentService->getBySlugAndType($slug, 'coach');
+        throw_if($content->isEmpty(), new NotFoundException('Content not exists.'));
+
+        $request = new Request();
+        $request->merge([
+            'statuses' => [ContentService::STATUS_PUBLISHED],
+            'future' => true,
+        ]);
+
+        return $this->getContent($content->first()['id'], $request);
+    }
+
 }

@@ -254,6 +254,15 @@ Route::group(
                 'uses' => PacksController::class . '@getDeepLinkForSemesterPack',
             ]
         );
+
+        //routes for coaches deep links - same as website's links + 'musora-api' prefix
+        Route::get(
+            '/members/coaches/{coachSlug}',
+            [
+                'as' => 'mobile.musora-api.coaches.deeplink',
+                'uses' => ContentController::class . '@getDeepLinkForCoach',
+            ]
+        );
     }
 );
 
