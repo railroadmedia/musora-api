@@ -492,13 +492,14 @@ class PacksController extends Controller
                         $incompleteLesson['lesson_count'] = $this->contentHierarchyService->countParentsChildren(
                             [$incompleteLesson['id']]
                         )[$incompleteLesson['id']];
+                        $incompleteLesson = $incompleteLesson->getArrayCopy();
                     }
                 }
             }
         }
 
         $thisLesson['parent'] = $thisPackBundle;
-        $thisLesson['parent']['current_lesson'] = $incompleteLesson->getArrayCopy();
+        $thisLesson['parent']['current_lesson'] = $incompleteLesson;
 
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;
