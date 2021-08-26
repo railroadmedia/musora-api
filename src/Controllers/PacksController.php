@@ -499,7 +499,7 @@ class PacksController extends Controller
         }
 
         $thisLesson['parent'] = $thisPackBundle;
-        $thisLesson['parent']['current_lesson'] = $incompleteLesson;
+        $thisLesson['parent']['current_lesson'] = $thisLesson['parent']['next_lesson'] = $incompleteLesson;
 
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;
