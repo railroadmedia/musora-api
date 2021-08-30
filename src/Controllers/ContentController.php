@@ -138,9 +138,11 @@ class ContentController extends Controller
                 ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
         );
 
+        $lessons = $content['lessons']??($parent['lessons'] ?? false) ;
+
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren =
-            ($parent['lessons'] ?? false) ? (new Collection($parent['lessons'])) : $this->contentService->getFiltered(
+            ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
                 1,
                 10,
                 '-published_on',
@@ -172,6 +174,10 @@ class ContentController extends Controller
                 ->first();
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
+
+        if(array_key_exists('lessons', $content)){
+            $content['next_lesson'] = $content['lessons']->where('completed', '=', false)->first();
+        }
 
         //attached comments on the content
         CommentRepository::$availableContentId = $content['id'];
