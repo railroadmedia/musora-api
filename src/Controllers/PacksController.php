@@ -452,7 +452,7 @@ class PacksController extends Controller
 
         $thisLesson['next_content_type'] = 'lesson';
 
-        if($thisPackBundle){
+        if ($thisPackBundle) {
             $pack =
                 $this->contentService->getByChildIdWhereParentTypeIn($thisPackBundle['id'], ['pack'])
                     ->first();
@@ -467,7 +467,10 @@ class PacksController extends Controller
 
             $allPackLessons = new Collection($allPackLessons);
 
-            $currentLessonIndex = ($allPackLessons->where('id', $thisLesson['id'])->keys()->first());
+            $currentLessonIndex =
+                ($allPackLessons->where('id', $thisLesson['id'])
+                    ->keys()
+                    ->first());
             $nextChild = $allPackLessons->get($currentLessonIndex + 1);
             $previousChild = $allPackLessons->get($currentLessonIndex - 1);
         }
@@ -509,19 +512,22 @@ class PacksController extends Controller
 
                     $incompleteLesson = $this->contentService->getById($nextBundleId);
                     if ($incompleteLesson) {
-                        $incompleteLesson['lesson_count'] = $this->contentHierarchyService->countParentsChildren(
-                            [$incompleteLesson['id']]
-                        )[$incompleteLesson['id']];
+                        $incompleteLesson['lesson_count'] =
+                            $this->contentHierarchyService->countParentsChildren([$incompleteLesson['id']]
+                            )[$incompleteLesson['id']];
                         $incompleteLesson = $incompleteLesson->getArrayCopy();
+                        
+                        if ($thisPackBundle['id'] != $nextBundleId) {
+                            $thisPackBundle['next_bundle'] = $incompleteLesson;
+                        }
                     }
                 }
             }
 
-            $thisPackBundle['next_bundle'] =  $incompleteLesson;
         }
 
         $thisLesson['parent'] = $thisPackBundle;
-        $thisLesson['parent']['current_lesson'] =  $incompleteLesson;
+        $thisLesson['parent']['current_lesson'] = $incompleteLesson;
         $thisLesson['parent']['next_lesson'] = $nextChild;
 
         $thisLesson['next_lesson'] = $nextChild;
@@ -556,11 +562,9 @@ class PacksController extends Controller
         } else {
             if ($pack['type'] == 'semester-pack') {
                 $packBundles = $this->contentService->getByParentId($pack['id']);
-                $packBundles = $packBundles->sort(
-                    function ($a, $b) {
-                        return strtotime($a["published_on"]) - strtotime($b["published_on"]);
-                    }
-                );
+                $packBundles = $packBundles->sort(function ($a, $b) {
+                    return strtotime($a["published_on"]) - strtotime($b["published_on"]);
+                });
 
                 foreach ($packBundles as $packBundle) {
                     if ($packBundle['completed'] == false) {
