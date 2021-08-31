@@ -176,6 +176,7 @@ class ContentController extends Controller
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         if(array_key_exists('lessons', $content)){
+            $content['lessons'] = new Collection($content['lessons']);
             $content['next_lesson'] = $content['lessons']->where('completed', '=', false)->first();
         }
 
