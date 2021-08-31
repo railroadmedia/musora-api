@@ -491,24 +491,24 @@ class PacksController extends Controller
                 ->where('id', '!=', $lessonId)
                 ->first();
 
-        if (empty($incompleteLesson)) {
-            $incompleteBundles =
-                $this->contentService->getByParentId($pack['id'])
-                    ->where('completed', '!=', true);
+        $thisLesson['parent'] = $thisPackBundle;
+        $thisLesson['parent']['next_lesson'] = $incompleteLesson;
 
+        if (empty($incompleteLesson)) {
             $thisLesson['next_content_type'] = 'bundle';
             $thisLesson['bundle_count'] = $pack->fetch('bundle_count');
             $bundleSiblings = $this->contentHierarchyService->getByParentIds([$pack['id']]);
 
             foreach ($bundleSiblings as $index => $bundleSibling) {
                 if ($bundleSibling['child_id'] == $thisPackBundle['id']) {
-                    $nextBundleId =
-                        (array_key_exists($index + 1, $bundleSiblings)) ? $bundleSiblings[$index + 1]['child_id'] :
-                            null;
 
-                    if (!$nextBundleId) {
-                        $nextBundleId = $incompleteBundles->first()['child_id'];
-                    }
+                    $incompleteBundles =
+                        $this->contentService->getByParentId($pack['id'])
+                            ->where('completed', '!=', true)
+                            ->where('id', '!=', $thisPackBundle['id']);
+
+                    $nextBundle = $incompleteBundles->first();
+                    $nextBundleId = $nextBundle ? $nextBundle['child_id'] : null;
 
                     $incompleteLesson = $this->contentService->getById($nextBundleId);
                     if ($incompleteLesson) {
@@ -526,9 +526,7 @@ class PacksController extends Controller
 
         }
 
-        $thisLesson['parent'] = $thisPackBundle;
         $thisLesson['parent']['current_lesson'] = $incompleteLesson;
-        $thisLesson['parent']['next_lesson'] = $nextChild;
 
         $thisLesson['next_lesson'] = $nextChild;
         $thisLesson['previous_lesson'] = $previousChild;
