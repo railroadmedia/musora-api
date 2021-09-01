@@ -17,6 +17,10 @@ class DateFormatDecorator extends ModeDecoratorBase
                     Carbon::parse($content['published_on'])
                         ->format('Y/m/d H:i:s');
 
+                $contents[$contentIndex]['created_on'] =
+                    Carbon::parse($content['created_on'])
+                        ->format('Y/m/d H:i:s');
+
                 foreach ($content['fields'] as $index => $field) {
                     if ($field['key'] === 'live_event_start_time') {
                         $contents[$contentIndex]['fields'][$index]['value'] =
