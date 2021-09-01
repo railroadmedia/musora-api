@@ -219,7 +219,10 @@ class UserProgressController extends Controller
         switch ($childLessonType) {
             case 'course-part':
                 return 'course';
+            case 'pack-bundle-lesson':
+                return 'pack-bundle';
         }
+
 
         return null;
     }
