@@ -254,6 +254,12 @@ class ContentController extends Controller
 
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
+        if($content['lessons'] && in_array($content['type'],
+                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes',[]))))
+        {
+            unset($content['lessons']);
+        }
+
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'])) {
