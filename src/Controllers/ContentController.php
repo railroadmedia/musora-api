@@ -134,29 +134,30 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
+            $this->contentService->getByChildIdWhereParentTypeIn(
+                $contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
+            )
         );
 
-        $lessons = $content['lessons']??($parent['lessons'] ?? false) ;
+        $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
-        $parentChildren =
-            ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
-                1,
-                10,
-                '-published_on',
-                [$content['type']],
-                [],
-                [],
-                [],
-                [],
-                [],
-                [],
-                false,
-                false,
-                false
-            )['results'];
+        $parentChildren = ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
+            1,
+            10,
+            '-published_on',
+            [$content['type']],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            false,
+            false,
+            false
+        )['results'];
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
@@ -175,9 +176,11 @@ class ContentController extends Controller
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
-        if(array_key_exists('lessons', $content)){
+        if (array_key_exists('lessons', $content)) {
             $content['lessons'] = new Collection($content['lessons']);
-            $content['next_lesson'] = $content['lessons']->where('completed', '=', false)->first();
+            $content['next_lesson'] =
+                $content['lessons']->where('completed', '=', false)
+                    ->first();
         }
 
         //attached comments on the content
@@ -254,15 +257,17 @@ class ContentController extends Controller
 
         $this->stripTagDecorator->decorate(new Collection([$content]));
 
-        if($content['lessons'] && in_array($content['type'],
-                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes',[]))))
-        {
+        //singular content types and shows types should not return assignments as lessons
+        if (!empty($content['lessons'] ?? []) && in_array(
+                $content['type'],
+                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes', []))
+            )) {
             unset($content['lessons']);
         }
 
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
-        if ($isDownload && !empty($content['lessons'])) {
+        if ($isDownload && !empty($content['lessons'] ?? [])) {
 
             $this->downloadService->attachLessonsDataForDownload($content);
 
@@ -553,10 +558,10 @@ class ContentController extends Controller
         }
 
         return ResponseService::array([
-                'success' => true,
-                'title' => 'Thanks for your submission!',
-                'message' => $input['success'],
-            ]);
+            'success' => true,
+            'title' => 'Thanks for your submission!',
+            'message' => $input['success'],
+        ]);
     }
 
     /**
@@ -657,9 +662,9 @@ class ContentController extends Controller
 
         return ResponseService::catalogue(
             new ContentFilterResultsEntity([
-                    'results' => $contentsData['results'],
-                    'total_results' => $contentsData['total_results'],
-                ]),
+                'results' => $contentsData['results'],
+                'total_results' => $contentsData['total_results'],
+            ]),
             $request
         );
     }
