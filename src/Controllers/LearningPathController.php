@@ -202,10 +202,6 @@ class LearningPathController extends Controller
                     $learningPath->fetch('next_lesson', null) : null;
         }
 
-        $level['banner_button_url'] =
-            $level['next_lesson'] && array_key_exists('mobile_app_url', $level['next_lesson']) ?
-                $level['next_lesson']['mobile_app_url'] : '';
-
         $level['xp'] = $level->fetch('total_xp');
 
         $level['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
