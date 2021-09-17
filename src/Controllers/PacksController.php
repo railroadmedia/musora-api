@@ -292,8 +292,8 @@ class PacksController extends Controller
 
     /**
      * @param $packId
+     * @param Request|null $request
      * @return array
-     * @throws NonUniqueResultException
      * @throws Throwable
      */
     public function showPack($packId, Request $request)
@@ -583,7 +583,7 @@ class PacksController extends Controller
      * @throws NonUniqueResultException
      * @throws Throwable
      */
-    public function getDeepLinkForPack($packSlug, $bundleSlug = null, $lessonSlug = null)
+    public function getDeepLinkForPack($packSlug, $bundleSlug = null, $lessonSlug = null, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
 
@@ -600,7 +600,7 @@ class PacksController extends Controller
                 ->first();
 
         if ($pack['bundle_count'] == 1) {
-            return $this->showPack($pack['id'] ?? 0);
+            return $this->showPack($pack['id'] ?? 0, $request);
         }
 
         if ($bundleSlug) {
@@ -608,10 +608,10 @@ class PacksController extends Controller
                 $this->contentService->getBySlugAndType($bundleSlug, 'pack-bundle')
                     ->first();
 
-            return $this->showPack($bundle['id'] ?? 0);
+            return $this->showPack($bundle['id'] ?? 0, $request);
         }
 
-        return $this->showPack($pack['id'] ?? 0);
+        return $this->showPack($pack['id'] ?? 0, $request);
     }
 
     /**
@@ -619,7 +619,7 @@ class PacksController extends Controller
      * @param null $lessonSlug
      * @return mixed
      */
-    public function getDeepLinkForSemesterPack($packSlug, $lessonSlug = null)
+    public function getDeepLinkForSemesterPack($packSlug, $lessonSlug = null, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
 
@@ -635,7 +635,7 @@ class PacksController extends Controller
             $this->contentService->getBySlugAndType($packSlug, 'semester-pack')
                 ->first();
 
-        return $this->showPack($pack['id']);
+        return $this->showPack($pack['id'], $request);
     }
 
     /**
@@ -646,9 +646,9 @@ class PacksController extends Controller
      * @throws NonUniqueResultException
      * @throws Throwable
      */
-    public function getDeepLinkForPianotePack($packSlug, $bundleSlug, $bundleId)
+    public function getDeepLinkForPianotePack($packSlug, $bundleSlug, $bundleId, Request $request)
     {
-        return $this->showPack($bundleId);
+        return $this->showPack($bundleId, $request);
     }
 
     /**
