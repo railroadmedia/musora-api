@@ -72,9 +72,10 @@ class DownloadService
             //attach comments for each lesson
             CommentRepository::$availableContentId = $lesson['id'];
 
-            $comments = $this->commentService->getComments(1, 'null', '-created_on');
+            // limit only 10 comments for each lesson in offline mode to avoid mobile app freezing when downloading avatars
+            $comments = $this->commentService->getComments(1, 10, '-created_on');
             $content['lessons'][$lessonIndex]['comments'] = (new CommentTransformer())->transform($comments['results']);
-            $content['lessons'][$lessonIndex]['total_comments'] = $comments['total_comments_and_results'];
+            $content['lessons'][$lessonIndex]['total_comments'] = 10;
         }
 
         return $content;
