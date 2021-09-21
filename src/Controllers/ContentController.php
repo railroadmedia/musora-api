@@ -134,13 +134,20 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn(
-                $contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
-            )
+            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
+
+        ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
+
+        //related lessons for a coach stream should be specific to the current coach
+        $requiredFields = [];
+        if ($content['type'] == 'coach-stream') {
+            $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
+            $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
+        }
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren = ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
@@ -150,7 +157,7 @@ class ContentController extends Controller
             [$content['type']],
             [],
             [],
-            [],
+            $requiredFields,
             [],
             [],
             [],
