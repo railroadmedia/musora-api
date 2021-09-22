@@ -142,6 +142,9 @@ class ContentController extends Controller
 
         ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
 
+        $pullFutureContent = ContentRepository::$pullFutureContent;
+        ContentRepository::$pullFutureContent = $request->has('future');
+
         //related lessons for a coach stream should be specific to the current coach
         $requiredFields = [];
         if ($content['type'] == 'coach-stream') {
@@ -166,6 +169,7 @@ class ContentController extends Controller
             false
         )['results'];
 
+        ContentRepository::$pullFutureContent = $pullFutureContent;
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         // attach next and previous lessons to content
