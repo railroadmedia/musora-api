@@ -160,7 +160,7 @@ class ContentController extends Controller
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren = ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
             1,
-            10,
+            20,
             '-published_on',
             [$content['type']],
             [],
