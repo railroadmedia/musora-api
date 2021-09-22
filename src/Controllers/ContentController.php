@@ -147,9 +147,14 @@ class ContentController extends Controller
 
         //related lessons for a coach stream should be specific to the current coach
         $requiredFields = [];
+        $includedFields = [];
+
         if ($content['type'] == 'coach-stream') {
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
+        } elseif($content['type'] == 'song'){
+            $includedFields[] = 'artist,' . $content->fetch('fields.artist');
+            $includedFields[] = 'style,' . $content->fetch('fields.style');
         }
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
@@ -161,7 +166,7 @@ class ContentController extends Controller
             [],
             [],
             $requiredFields,
-            [],
+            $includedFields,
             [],
             [],
             false,
