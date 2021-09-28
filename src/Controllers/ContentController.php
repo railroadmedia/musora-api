@@ -153,8 +153,61 @@ class ContentController extends Controller
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
         } elseif($content['type'] == 'song'){
-            $includedFields[] = 'artist,' . $content->fetch('fields.artist');
-            $includedFields[] = 'style,' . $content->fetch('fields.style');
+            $songsFromSameArtist = $this->contentService->getFiltered(
+                $request->get('page', 1),
+                $request->get('limit', 10),
+                '-published_on',
+                [$content['type']],
+                [],
+                [],
+                ['artist,' . $content->fetch('fields.artist')]
+            )['results'];
+
+            // remove requested song if in related lessons, part one of two
+            foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
+                if ($content['id'] == $songFromSameArtist['id']) {
+                    unset($songsFromSameArtist[$songFromSameArtistIndex]);
+                }
+            }
+
+            $songsFromSameArtist = $songsFromSameArtist->sortByFieldValue('title');
+
+            $songsFromSameStyle = new Collection();
+
+            if (count($songsFromSameArtist) < 10) {
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,' . $content->fetch('fields.style')]
+                )['results'];
+
+                // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
+                foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
+                    if ($content['id'] == $songFromSameStyle['id']) {
+                        unset($songsFromSameStyle[$songFromSameStyleIndex]);
+                    }
+                }
+
+                $songsFromSameStyle = $songsFromSameStyle->sortByFieldValue('title');
+
+                foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
+                    foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
+                        if ($songFromSameStyle['id'] == $songFromSameArtist['id']) {
+                            unset($songsFromSameStyle[$songFromSameStyleIndex]);
+                        }
+                    }
+                }
+            }
+
+            $lessons = array_slice(
+                array_merge($songsFromSameArtist->toArray(), $songsFromSameStyle->toArray()),
+                0,
+                10
+            );
         }
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
