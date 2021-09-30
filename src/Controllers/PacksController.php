@@ -200,9 +200,13 @@ class PacksController extends Controller
                 $moreProducts[$slug]['google_product_id'] = $this->productProvider->getGoogleProductId($slug);
 
                 $packPrice = $this->productProvider->getPackPrice($slug);
+
+                //Return only the packs that have the price defined in the config file.
                 if (!empty($packPrice)) {
                     $moreProducts[$slug]['full_price'] = $packPrice['full_price'];
                     $moreProducts[$slug]['price'] = $packPrice['price'];
+                }else{
+                    unset($moreProducts[$slug]);
                 }
             }
         }
