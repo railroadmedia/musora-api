@@ -152,16 +152,14 @@ class ContentController extends Controller
         if ($content['type'] == 'coach-stream') {
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
-        } elseif($content['type'] == 'song'){
-            $songsFromSameArtist = $this->contentService->getFiltered(
-                $request->get('page', 1),
+        } elseif ($content['type'] == 'song') {
+            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
                 [$content['type']],
                 [],
                 [],
-                ['artist,' . $content->fetch('fields.artist')]
-            )['results'];
+                ['artist,' . $content->fetch('fields.artist')])['results'];
 
             // remove requested song if in related lessons, part one of two
             foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
@@ -175,15 +173,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,' . $content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                        19,
+                        '-published_on',
+                        [$content['type']],
+                        [],
+                        [],
+                        ['style,' . $content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -210,11 +207,16 @@ class ContentController extends Controller
             );
         }
 
+        $sorted = '-published_on';
+        if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
+            $sorted = config('railcontent.cataloguesMetadata')[$content['type']]['sortBy'] ?? $sorted;
+        }
+
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         $parentChildren = ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
             1,
-            20,
-            '-published_on',
+            10,
+            $sorted,
             [$content['type']],
             [],
             [],
@@ -354,11 +356,20 @@ class ContentController extends Controller
     private function getParentChildTrimmed($parentChildren, $content)
     : array {
         $parentChildrenTrimmed = [];
+        $matched = false;
 
         foreach ($parentChildren as $parentChildIndex => $parentChild) {
-            if (((count($parentChildren) - $parentChildIndex) <= 10 && count($parentChildrenTrimmed) < 10) &&
-                ($parentChild['id'] != $content['id'])) {
+
+            if ((count($parentChildren) - $parentChildIndex) <= 10 &&
+                count($parentChildrenTrimmed) < 10 &&
+                $parentChild['id'] != $content['id']) {
                 $parentChildrenTrimmed[] = $parentChild;
+            } elseif ($matched && count($parentChildrenTrimmed) < 10) {
+                $parentChildrenTrimmed[] = $parentChild;
+            }
+
+            if ($parentChild['id'] == $content['id']) {
+                $matched = true;
             }
         }
 
