@@ -134,8 +134,10 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
+            $this->contentService->getByChildIdWhereParentTypeIn(
+                $contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
+            )
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -153,13 +155,15 @@ class ContentController extends Controller
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
         } elseif ($content['type'] == 'song') {
-            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
+            $songsFromSameArtist = $this->contentService->getFiltered(
+                $request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
                 [$content['type']],
                 [],
                 [],
-                ['artist,' . $content->fetch('fields.artist')])['results'];
+                ['artist,' . $content->fetch('fields.artist')]
+            )['results'];
 
             // remove requested song if in related lessons, part one of two
             foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
@@ -173,14 +177,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                        19,
-                        '-published_on',
-                        [$content['type']],
-                        [],
-                        [],
-                        ['style,' . $content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,' . $content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -213,37 +218,55 @@ class ContentController extends Controller
         }
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
-        $parentChildren = ($lessons ?? false) ? (new Collection($lessons)) : $this->contentService->getFiltered(
-            1,
-            10,
-            $sorted,
-            [$content['type']],
-            [],
-            [],
-            $requiredFields,
-            $includedFields,
-            [],
-            [],
-            false,
-            false,
-            false
-        )['results'];
+        // attach next and previous lessons to content
+        if (!$parent && !$lessons) {
+            $orderByDirection = substr($sorted, 0, 1) !== '-' ? 'asc' : 'desc';
+            $orderByColumn = trim($sorted, '-');
+            $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
+                $content['type'],
+                $orderByColumn,
+                $orderByColumn == 'sort' ? $content['sort'] : $content['published_on'],
+                1,
+                $orderByColumn,
+                $orderByDirection
+            );
+
+            $content['next_lesson'] = $neighbourSiblings['before']->first();
+            $content['previous_lesson'] = $neighbourSiblings['after']->first();
+
+            $parentChildren = $this->contentService->getFiltered(
+                1,
+                10,
+                $sorted,
+                [$content['type']],
+                [],
+                [],
+                $requiredFields,
+                $includedFields,
+                [],
+                [],
+                false,
+                false,
+                false
+            )['results'];
+        } else {
+            $parentChildren = new Collection($lessons);
+
+            $currentContentIterator =
+                $parentChildren->where('id', '=', $content['id'])
+                    ->keys()
+                    ->first() ?? 1;
+
+            $content['next_lesson'] =
+                $parentChildren->only($currentContentIterator + 1)
+                    ->first();
+            $content['previous_lesson'] =
+                $parentChildren->only($currentContentIterator - 1)
+                    ->first();
+        }
 
         ContentRepository::$pullFutureContent = $pullFutureContent;
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
-
-        // attach next and previous lessons to content
-        $currentContentIterator =
-            $parentChildren->where('id', '=', $content['id'])
-                ->keys()
-                ->first() ?? 1;
-
-        $content['next_lesson'] =
-            $parentChildren->only($currentContentIterator + 1)
-                ->first();
-        $content['previous_lesson'] =
-            $parentChildren->only($currentContentIterator - 1)
-                ->first();
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
