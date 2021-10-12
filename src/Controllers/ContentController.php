@@ -147,6 +147,11 @@ class ContentController extends Controller
         $pullFutureContent = ContentRepository::$pullFutureContent;
         ContentRepository::$pullFutureContent = $request->has('future');
 
+        $sorted = '-published_on';
+        if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
+            $sorted = config('railcontent.cataloguesMetadata')[$content['type']]['sortBy'] ?? $sorted;
+        }
+
         //related lessons for a coach stream should be specific to the current coach
         $requiredFields = [];
         $includedFields = [];
@@ -154,6 +159,22 @@ class ContentController extends Controller
         if ($content['type'] == 'coach-stream') {
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
+
+            $lessons = $this->contentService->getFiltered(
+                1,
+                10,
+                $sorted,
+                [$content['type']],
+                [],
+                [],
+                $requiredFields,
+                $includedFields,
+                [],
+                [],
+                false,
+                false,
+                false
+            )['results'];
         } elseif ($content['type'] == 'song') {
             $songsFromSameArtist = $this->contentService->getFiltered(
                 $request->get('page', 1),
@@ -210,11 +231,6 @@ class ContentController extends Controller
                 0,
                 10
             );
-        }
-
-        $sorted = '-published_on';
-        if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
-            $sorted = config('railcontent.cataloguesMetadata')[$content['type']]['sortBy'] ?? $sorted;
         }
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
