@@ -247,8 +247,8 @@ class ContentController extends Controller
                 $orderByDirection
             );
 
-            $content['next_lesson'] = $neighbourSiblings['before']->first();
-            $content['previous_lesson'] = $neighbourSiblings['after']->first();
+            $content['next_lesson'] = $neighbourSiblings['after']->first();
+            $content['previous_lesson'] = $neighbourSiblings['before']->first();
 
             $parentChildren = $this->contentService->getFiltered(
                 1,
