@@ -238,6 +238,14 @@ class ContentController extends Controller
         if (!$parent && !$lessons) {
             $orderByDirection = substr($sorted, 0, 1) !== '-' ? 'asc' : 'desc';
             $orderByColumn = trim($sorted, '-');
+
+            // reverse the next/prev show's buttons to be same as on the website
+            if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
+                $content['type'] == 'diy-drum-experiments' ||
+                $content['type'] == 'in-rhythm') {
+                $orderByDirection = 'desc';
+            }
+
             $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
                 $content['type'],
                 $orderByColumn,
@@ -247,8 +255,8 @@ class ContentController extends Controller
                 $orderByDirection
             );
 
-            $content['next_lesson'] = $neighbourSiblings['after']->first();
-            $content['previous_lesson'] = $neighbourSiblings['before']->first();
+            $content['next_lesson'] = $neighbourSiblings['before']->first();
+            $content['previous_lesson'] = $neighbourSiblings['after']->first();
 
             $parentChildren = $this->contentService->getFiltered(
                 1,
