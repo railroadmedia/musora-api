@@ -235,7 +235,10 @@ class ContentController extends Controller
 
         //neighbour siblings will be used as related lessons (for top level content should have lessons with the same type)
         // attach next and previous lessons to content
-        if (!$parent && !$lessons) {
+        if ($parent && !$lessons) {
+            $parentChildren = $this->contentService->getByParentId($parent['id']);
+        }
+        elseif (!$parent && !$lessons) {
             $orderByDirection = substr($sorted, 0, 1) !== '-' ? 'asc' : 'desc';
             $orderByColumn = trim($sorted, '-');
 
