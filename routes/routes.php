@@ -263,6 +263,11 @@ Route::group(
                 'uses' => ContentController::class . '@getDeepLinkForCoach',
             ]
         );
+
+        Route::get(
+            '/members/followed-lessons',
+            ContentController::class . '@getLessonsForFollowedCoaches'
+        )->name('mobile.musora-api.followed.lessons');
     }
 );
 

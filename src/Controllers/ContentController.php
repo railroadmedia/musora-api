@@ -32,6 +32,7 @@ use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ConfigService;
+use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Support\Collection;
@@ -86,6 +87,11 @@ class ContentController extends Controller
     private $downloadService;
 
     /**
+     * @var ContentFollowsService
+     */
+    private $contentFollowsService;
+
+    /**
      * ContentController constructor.
      *
      * @param ContentService $contentService
@@ -107,7 +113,8 @@ class ContentController extends Controller
         ContentHierarchyRepository $contentHierarchyRepository,
         FullTextSearchService $fullTextSearchService,
         StripTagDecorator $stripTagDecorator,
-        DownloadService $downloadService
+        DownloadService $downloadService,
+        ContentFollowsService $contentFollowsService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -118,6 +125,7 @@ class ContentController extends Controller
         $this->fullTextSearchService = $fullTextSearchService;
         $this->stripTagDecorator = $stripTagDecorator;
         $this->downloadService = $downloadService;
+        $this->contentFollowsService = $contentFollowsService;
     }
 
     /**
@@ -134,10 +142,8 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn(
-                $contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
-            )
+            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -176,15 +182,13 @@ class ContentController extends Controller
                 false
             )['results'];
         } elseif ($content['type'] == 'song') {
-            $songsFromSameArtist = $this->contentService->getFiltered(
-                $request->get('page', 1),
+            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
                 [$content['type']],
                 [],
                 [],
-                ['artist,' . $content->fetch('fields.artist')]
-            )['results'];
+                ['artist,' . $content->fetch('fields.artist')])['results'];
 
             // remove requested song if in related lessons, part one of two
             foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
@@ -198,15 +202,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,' . $content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                        19,
+                        '-published_on',
+                        [$content['type']],
+                        [],
+                        [],
+                        ['style,' . $content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -237,8 +240,7 @@ class ContentController extends Controller
         // attach next and previous lessons to content
         if ($parent && !$lessons) {
             $parentChildren = $this->contentService->getByParentId($parent['id']);
-        }
-        elseif (!$parent && !$lessons) {
+        } elseif (!$parent && !$lessons) {
             $orderByDirection = substr($sorted, 0, 1) !== '-' ? 'asc' : 'desc';
             $orderByColumn = trim($sorted, '-');
 
@@ -818,6 +820,24 @@ class ContentController extends Controller
         ]);
 
         return $this->getContent($content->first()['id'], $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getLessonsForFollowedCoaches(Request $request)
+    {
+        $contentData = $this->contentFollowsService->getLatestLessons(
+            $request->get('brand', config('railcontent.brand')),
+            $request->get('content_type'),
+            $request->get('statuses', [ContentService::STATUS_PUBLISHED]),
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            $request->get('sort', '-published_on')
+        );
+
+        return ResponseService::catalogue($contentData, $request);
     }
 
 }
