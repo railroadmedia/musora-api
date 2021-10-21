@@ -275,6 +275,11 @@ Route::group(
         )->name('mobile.musora-api.content.unfollow');
 
         Route::get(
+            '/members/followed-content',
+            ContentController::class . '@getFollowedContent'
+        )->name('mobile.musora-api.followed.content');
+
+        Route::get(
             '/members/followed-lessons',
             ContentController::class . '@getLessonsForFollowedCoaches'
         )->name('mobile.musora-api.followed.lessons');

@@ -868,4 +868,25 @@ class ContentController extends Controller
         return ResponseService::catalogue($contentData, $request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getFollowedContent(Request $request)
+    {
+        $followedContents = $this->contentFollowsService->getUserFollowedContent(
+            auth()->id(),
+            $request->get('brand', config('railcontent.brand')),
+            $request->get('content_type')
+        );
+
+        return ResponseService::catalogue(
+            new ContentFilterResultsEntity([
+                'results' => $followedContents,
+                'total_results' => count($followedContents),
+            ]),
+            $request
+        );
+    }
+
 }
