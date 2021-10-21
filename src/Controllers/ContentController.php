@@ -30,6 +30,7 @@ use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
+use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
@@ -823,12 +824,39 @@ class ContentController extends Controller
     }
 
     /**
+     * @param ContentFollowRequest $request
+     * @return mixed
+     */
+    public function followContent(ContentFollowRequest $request)
+    {
+        $response = $this->contentFollowsService->follow(
+            $request->input('content_id'),
+            auth()->id()
+        );
+
+        return ResponseService::array($response, ($response)?200:500);
+    }
+
+    /**
+     * @param ContentFollowRequest $request
+     * @return mixed
+     */
+    public function unfollowContent(ContentFollowRequest $request)
+    {
+        $this->contentFollowsService->unfollow(
+            $request->input('content_id'),
+            auth()->id()
+        );
+
+        return ResponseService::empty(204);
+    }
+    /**
      * @param Request $request
      * @return JsonResponse
      */
     public function getLessonsForFollowedCoaches(Request $request)
     {
-        $contentData = $this->contentFollowsService->getLatestLessons(
+        $contentData = $this->contentFollowsService->getLessonsForFollowedCoaches(
             $request->get('brand', config('railcontent.brand')),
             $request->get('content_type'),
             $request->get('statuses', [ContentService::STATUS_PUBLISHED]),
