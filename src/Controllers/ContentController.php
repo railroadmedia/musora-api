@@ -877,14 +877,13 @@ class ContentController extends Controller
         $followedContents = $this->contentFollowsService->getUserFollowedContent(
             auth()->id(),
             $request->get('brand', config('railcontent.brand')),
-            $request->get('content_type')
+            $request->get('content_type'),
+            $request->get('page'),
+            $request->get('limit')
         );
 
         return ResponseService::catalogue(
-            new ContentFilterResultsEntity([
-                'results' => $followedContents,
-                'total_results' => count($followedContents),
-            ]),
+            $followedContents,
             $request
         );
     }
