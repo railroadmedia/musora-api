@@ -323,9 +323,13 @@ class ContentController extends Controller
          * content with 'coach' type have lessons saved in different table, so we need to call getFilter method in order to pull them
          */
         if ($content['type'] == 'coach') {
-            $requestRequiredFields = $request->get('required_fields', []);
-            $requiredFields = array_merge($requestRequiredFields, ['instructor,' . $content['id']]);
-            $includedFields = $request->get('included_fields', []);
+            $includedFields[] = 'instructor,' . $content['id'];
+            if(array_key_exists($contentId, config('railcontent.coach_id_instructor_id_mapping'))){
+                $includedFields[] = 'instructor,' . config('railcontent.coach_id_instructor_id_mapping.'.$contentId);
+            }
+
+            $requiredFields = $request->get('required_fields', []);
+            $includedFields = array_merge($request->get('included_fields', []), $includedFields);
             $requiredUserState = $request->get('required_user_states', []);
             $includedUserState = $request->get('included_user_states', []);
 
@@ -337,18 +341,18 @@ class ContentController extends Controller
                 $request->get('page', 1),
                 $request->get('limit', 'null'),
                 '-published_on',
-                ['coach-stream'],
+                [],
                 [],
                 [],
                 $requiredFields,
                 $includedFields,
                 $requiredUserState,
                 $includedUserState,
-                false
+                true
             );
 
             $content['lessons'] = $lessons->results();
-            $content['lessons_filter_options'] = ['content_type' => ['coach-stream']];
+            $content['lessons_filter_options'] = $lessons->filterOptions();
 
             $duration = 0;
             $totalXp = 0;
@@ -491,6 +495,7 @@ class ContentController extends Controller
                 $request->get('included_user_states', []),
                 ($types == ['coach-stream']) ? false : true
             );
+
         }
 
         return ResponseService::catalogue($results, $request);

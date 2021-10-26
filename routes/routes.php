@@ -265,22 +265,22 @@ Route::group(
         );
 
         Route::put(
-            '/members/follow',
+            '/follow',
             ContentController::class . '@followContent'
         )->name('mobile.musora-api.content.follow');
 
         Route::put(
-            '/members/unfollow',
+            '/unfollow',
             ContentController::class . '@unfollowContent'
         )->name('mobile.musora-api.content.unfollow');
 
         Route::get(
-            '/members/followed-content',
+            '/followed-content',
             ContentController::class . '@getFollowedContent'
         )->name('mobile.musora-api.followed.content');
 
         Route::get(
-            '/members/followed-lessons',
+            '/followed-lessons',
             ContentController::class . '@getLessonsForFollowedCoaches'
         )->name('mobile.musora-api.followed.lessons');
     }
