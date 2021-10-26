@@ -58,8 +58,8 @@ class DownloadService
             $parentChildren = $this->getParentChildTrimmed($content['lessons'], $lesson);
 
             $content['lessons'][$lessonIndex]['related_lessons'] = $parentChildren;
-            $content['lessons'][$lessonIndex]['previous_lesson'] = $parentChildren[$lessonIndex - 1] ?? null;
-            $content['lessons'][$lessonIndex]['next_lesson'] = $parentChildren[$lessonIndex + 1] ?? null;
+            $content['lessons'][$lessonIndex]['previous_lesson'] = $content['lessons'][$lessonIndex - 1] ?? null;
+            $content['lessons'][$lessonIndex]['next_lesson'] = $content['lessons'][$lessonIndex + 1] ?? null;
 
             $content['lessons'][$lessonIndex]['resources'] =
                 array_merge($lesson['resources'] ?? [], $parent['resources'] ?? []);
