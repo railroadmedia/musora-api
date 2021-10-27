@@ -143,8 +143,10 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
+            $this->contentService->getByChildIdWhereParentTypeIn(
+                $contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
+            )
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -183,13 +185,15 @@ class ContentController extends Controller
                 false
             )['results'];
         } elseif ($content['type'] == 'song') {
-            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
+            $songsFromSameArtist = $this->contentService->getFiltered(
+                $request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
                 [$content['type']],
                 [],
                 [],
-                ['artist,' . $content->fetch('fields.artist')])['results'];
+                ['artist,' . $content->fetch('fields.artist')]
+            )['results'];
 
             // remove requested song if in related lessons, part one of two
             foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
@@ -203,14 +207,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                        19,
-                        '-published_on',
-                        [$content['type']],
-                        [],
-                        [],
-                        ['style,' . $content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,' . $content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -323,9 +328,13 @@ class ContentController extends Controller
          * content with 'coach' type have lessons saved in different table, so we need to call getFilter method in order to pull them
          */
         if ($content['type'] == 'coach') {
+            $includedFields = [];
             $includedFields[] = 'instructor,' . $content['id'];
-            if(array_key_exists($contentId, config('railcontent.coach_id_instructor_id_mapping'))){
-                $includedFields[] = 'instructor,' . config('railcontent.coach_id_instructor_id_mapping.'.$contentId);
+            $instructor =
+                $this->contentService->getBySlugAndType($content['slug'], 'instructor')
+                    ->first();
+            if ($instructor) {
+                $includedFields[] = 'instructor,' . $instructor['id'];
             }
 
             $requiredFields = $request->get('required_fields', []);
@@ -339,7 +348,7 @@ class ContentController extends Controller
 
             $lessons = $this->contentService->getFiltered(
                 $request->get('page', 1),
-                $request->get('limit', 'null'),
+                $request->get('limit', 10),
                 '-published_on',
                 [],
                 [],
@@ -353,6 +362,7 @@ class ContentController extends Controller
 
             $content['lessons'] = $lessons->results();
             $content['lessons_filter_options'] = $lessons->filterOptions();
+            $content['total_lessons'] = $lessons->totalResults();
 
             $duration = 0;
             $totalXp = 0;
@@ -839,7 +849,7 @@ class ContentController extends Controller
             auth()->id()
         );
 
-        return ResponseService::array($response, ($response)?200:500);
+        return ResponseService::array($response, ($response) ? 200 : 500);
     }
 
     /**
@@ -855,6 +865,7 @@ class ContentController extends Controller
 
         return ResponseService::empty(204);
     }
+
     /**
      * @param Request $request
      * @return JsonResponse
@@ -863,13 +874,35 @@ class ContentController extends Controller
     {
         $contentData = $this->contentFollowsService->getLessonsForFollowedCoaches(
             $request->get('brand', config('railcontent.brand')),
-            $request->get('content_type'),
+            $request->get('content_type', []),
             $request->get('statuses', [ContentService::STATUS_PUBLISHED]),
             $request->get('page', 1),
             $request->get('limit', 10),
             $request->get('sort', '-published_on')
         );
 
+        if ($contentData->totalResults() == 1) {
+            ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
+            ContentRepository::$pullFutureContent = false;
+            $contentData = $this->contentService->getFiltered(
+                1,
+                6,
+                '-published_on',
+                array_merge(
+                    config('railcontent.showTypes'),
+                    config('railcontent.homeNewContentTypes')
+                ),
+                [],
+                [],
+                ['show_in_new_feed,1'],
+                [],
+                [],
+                [],
+                false,
+                false,
+                false
+            );
+        }
         return ResponseService::catalogue($contentData, $request);
     }
 
