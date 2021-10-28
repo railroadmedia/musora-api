@@ -916,8 +916,8 @@ class ContentController extends Controller
             auth()->id(),
             $request->get('brand', config('railcontent.brand')),
             $request->get('content_type'),
-            $request->get('page'),
-            $request->get('limit')
+            $request->get('page',1),
+            $request->get('limit', 10)
         );
 
         return ResponseService::catalogue(

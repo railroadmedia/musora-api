@@ -105,6 +105,8 @@ API Endpoints
 | [Add default lessons to user's list](docs/AddDefaultLesson.md)                   | `/musora-api/add-lessons`                                       |
 | &nbsp;                      | &nbsp;
 | [Get featured coaches](docs/FeaturedCoach.md)                   | `/musora-api/all`                                       |
+| [Get active coaches](docs/ActiveCoach.md)                   | `/musora-api/all`                                       |
+| [Get subscribed coaches](docs/FollowedCoach.md)                   | `/musora-api/followed-content`                                       |
 
 
 
