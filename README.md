@@ -103,6 +103,8 @@ API Endpoints
 | [Update user profile](docs/UpdateUserProfile.md)                   | `/musora-api/profile/update`                                       |
 | &nbsp;                      | &nbsp;
 | [Add default lessons to user's list](docs/AddDefaultLesson.md)                   | `/musora-api/add-lessons`                                       |
+| &nbsp;                      | &nbsp;
+| [Get featured coaches](docs/FeaturedCoach.md)                   | `/musora-api/all`                                       |
 
 
 
