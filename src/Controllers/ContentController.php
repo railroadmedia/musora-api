@@ -481,6 +481,8 @@ class ContentController extends Controller
                 'topic',
                 'difficulty',
                 'style',
+                'focus',
+                'genre'
             ];
 
             if ($types == ['song']) {
