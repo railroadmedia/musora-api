@@ -39,7 +39,7 @@ $.ajax({
         'page=1' + '&' +
         'limit=1' + '&' +
         'included_types[]=coach' + '&' +
-        'required_fields[]=active,1',
+        'required_fields[]=is_active,1',
     type: 'get',
     dataType: 'json',
     success: function(response) {
