@@ -7,7 +7,7 @@ The results are paginated and respect the response structure defined in musora-a
 </a>
 
 ### HTTP Request
-`GET musora-api/all?brand={brand}&limit={limit}&statuses[]={status}&required_fields[]=active,1&included_types[]=coach&sort=-published_on&page={page}`
+`GET musora-api/all?brand={brand}&limit={limit}&statuses[]={status}&required_fields[]=is_active,1&included_types[]=coach&sort=-published_on&page={page}`
 
 
 ### Permissions
