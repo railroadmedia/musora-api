@@ -505,7 +505,10 @@ class ContentController extends Controller
                 $request->get('included_fields', []),
                 $request->get('required_user_states', []),
                 $request->get('included_user_states', []),
-                ($types == ['coach-stream']) ? false : true
+                ($types == ['coach-stream']) ? false : true,
+                false,
+                true,
+                $request->get('only_subscribed', false)
             );
 
         }
