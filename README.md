@@ -107,7 +107,8 @@ API Endpoints
 | [Get featured coaches](docs/FeaturedCoach.md)                   | `/musora-api/all`                                       |
 | [Get active coaches](docs/ActiveCoach.md)                   | `/musora-api/all`                                       |
 | [Get subscribed coaches](docs/FollowedCoaches.md)                   | `/musora-api/followed-content`                                       |
-| [Get latest lessons](docs/LatestLessons.md)                   | `/musora-api/followed-lessons`                                       |
+| [Get latest subscribed lessons](docs/LatestLessons.md)                   | `/musora-api/followed-lessons`                                       |
+| [Get latest featured lessons](docs/LatestFeaturedLessons.md)                   | `/musora-api/followed-lessons`                                       |
 
 
 

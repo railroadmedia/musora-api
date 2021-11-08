@@ -283,6 +283,11 @@ Route::group(
             '/followed-lessons',
             ContentController::class . '@getLessonsForFollowedCoaches'
         )->name('mobile.musora-api.followed.lessons');
+
+        Route::get(
+            '/featured-lessons',
+            ContentController::class . '@getFeaturedLessons'
+        )->name('mobile.musora-api.featured.lessons');
     }
 );
 

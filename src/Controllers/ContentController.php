@@ -928,4 +928,49 @@ class ContentController extends Controller
         );
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getFeaturedLessons(Request $request)
+    {
+        $featuredCoaches = $this->contentService->getFiltered(1, 'null', 'slug', ['coach'], [], [],[], ['is_featured,1']);
+
+        $includedFields = [];
+        foreach ($featuredCoaches->results() as $featuredCoache) {
+            $includedFields[] = 'instructor,' . $featuredCoache['id'];
+            $instructor =
+                $this->contentService->getBySlugAndType($featuredCoache['slug'], 'instructor')
+                    ->first();
+            if ($instructor) {
+                $includedFields[] = 'instructor,' . $instructor['id'];
+            }
+        }
+
+        //latest featured lessons - Show the latest lessons from all the featured coaches.
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
+        ContentRepository::$pullFutureContent = false;
+
+        $latestLessons = $this->contentService->getFiltered(
+            $request->get('page',1),
+            $request->get('limit', 10),
+            '-published_on',
+            $request->get('included_types', []),
+            [],
+            [],
+            [],
+            $includedFields,
+            [],
+            [],
+            false,
+            false,
+            true
+        );
+
+        return ResponseService::catalogue(
+            $latestLessons,
+            $request
+        );
+    }
+
 }
