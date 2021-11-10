@@ -373,6 +373,29 @@ class ContentController extends Controller
 
             $content['duration_in_seconds'] = $duration;
             $content['total_xp'] = $totalXp;
+
+            //attach coach's featured lessons
+            $includedFields = [];
+            $includedFields[] = 'instructor,' . $content['id'];
+            $instructor =
+                $this->contentService->getBySlugAndType($content['slug'], 'instructor')
+                    ->first();
+            if ($instructor) {
+                $includedFields[] = 'instructor,' . $instructor['id'];
+            }
+
+            $content['featured_lessons'] =  $this->contentService->getFiltered(
+                1,
+                4,
+                '-published_on',
+                [],
+                [],
+                [],
+                ['is_featured,1'],
+                $includedFields,
+                [],
+                []
+            )->results();
         }
 
         //add parent's instructors and resources to content
@@ -886,28 +909,6 @@ class ContentController extends Controller
             $request->get('sort', '-published_on')
         );
 
-        if ($contentData->totalResults() == 1) {
-            ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
-            ContentRepository::$pullFutureContent = false;
-            $contentData = $this->contentService->getFiltered(
-                1,
-                6,
-                '-published_on',
-                array_merge(
-                    config('railcontent.showTypes'),
-                    config('railcontent.homeNewContentTypes')
-                ),
-                [],
-                [],
-                ['show_in_new_feed,1'],
-                [],
-                [],
-                [],
-                false,
-                false,
-                false
-            );
-        }
         return ResponseService::catalogue($contentData, $request);
     }
 
