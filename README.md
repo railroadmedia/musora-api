@@ -111,7 +111,7 @@ API Endpoints
 | [Get latest featured lessons](docs/LatestFeaturedLessons.md)                   | `/musora-api/followed-lessons`                                       |
 | [Get all coaches](docs/AllCoaches.md)   | `/musora-api/all`                                       |
 | [Subscribe to/follow coach](docs/FollowContent.md)   | `/musora-api/follow`                                       |
-| [Unsubscribe/unfollow coach](docs/AllCoaches.md)   | `/musora-api/unfollow`                                       |
+| [Unsubscribe/unfollow coach](docs/UnFollowContent.md)   | `/musora-api/unfollow`                                       |
 
 
 
