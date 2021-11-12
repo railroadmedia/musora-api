@@ -345,7 +345,7 @@ class ContentController extends Controller
                 $request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
-                [],
+                $request->get('included_types', []),
                 [],
                 [],
                 $requiredFields,
