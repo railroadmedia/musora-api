@@ -477,14 +477,14 @@ class ContentController extends Controller
         }
 
         $sortedBy = '-published_on';
-        $sorted = $request->get('sort', $sortedBy);
 
         foreach ($types as $type) {
             if (array_key_exists($type, config('railcontent.cataloguesMetadata'))) {
-                $sorted = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sorted;
+                $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
             }
         }
 
+        $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
 
         if (!empty($types)) {
