@@ -148,10 +148,9 @@ class ContentController extends Controller
         ContentRepository::$pullFutureContent = $request->has('future');
 
         $sorted = '-published_on';
-        // will be deployed with the unified app
-//        if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
-//            $sorted = config('railcontent.cataloguesMetadata')[$content['type']]['sortBy'] ?? $sorted;
-//        }
+        if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
+            $sorted = config('railcontent.cataloguesMetadata')[$content['type']]['sortBy'] ?? $sorted;
+        }
 
         //related lessons for a coach stream should be specific to the current coach
         $requiredFields = [];
@@ -243,12 +242,12 @@ class ContentController extends Controller
             $orderByDirection = substr($sorted, 0, 1) !== '-' ? 'asc' : 'desc';
             $orderByColumn = trim($sorted, '-');
 
-            // reverse the next/prev show's buttons to be same as on the website - will be deployed with the unified app
-//            if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
-//                $content['type'] == 'diy-drum-experiments' ||
-//                $content['type'] == 'in-rhythm') {
-//                $orderByDirection = 'desc';
-//            }
+            // reverse the next/prev show's buttons to be same as on the website
+            if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
+                $content['type'] == 'diy-drum-experiments' ||
+                $content['type'] == 'in-rhythm') {
+                $orderByDirection = 'desc';
+            }
 
             $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
                 $content['type'],
