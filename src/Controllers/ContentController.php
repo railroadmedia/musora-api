@@ -396,6 +396,11 @@ class ContentController extends Controller
                 ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
             );
 
+            $content['coaches'] = array_merge(
+                $content['coaches'] ?? [],
+                $parent['coaches'] ?? []
+            );
+
             $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
             $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
             $content['parent'] = $parent;
