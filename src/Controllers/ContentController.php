@@ -933,13 +933,13 @@ class ContentController extends Controller
     public function getFeaturedLessons(Request $request)
     {
         $featuredCoaches =
-            $this->contentService->getFiltered(1, 'null', 'slug', ['coach'], [], [], [], ['is_featured,1']);
+            $this->contentService->getFiltered(1, 'null', 'slug', ['instructor'], [], [], [], ['is_featured,1']);
 
         $includedFields = [];
         foreach ($featuredCoaches->results() as $featuredCoache) {
             $includedFields[] = 'instructor,' . $featuredCoache['id'];
             $instructor =
-                $this->contentService->getBySlugAndType($featuredCoache['slug'], 'instructor')
+                $this->contentService->getBySlugAndType($featuredCoache['slug'], 'coach')
                     ->first();
             if ($instructor) {
                 $includedFields[] = 'instructor,' . $instructor['id'];
