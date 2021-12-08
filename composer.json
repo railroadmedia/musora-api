@@ -9,7 +9,7 @@
     "tymon/jwt-auth": "1.0.0-rc.2",
     "vimeo/vimeo-api": "^1.2",
     "railroad/railtracker": "^3.2",
-    "railroad/mailora": "0.0.*",
+    "railroad/mailora": "^2.0",
     "railroad/usora": "2.0.*",
     "railroad/permissions": "^1.0",
     "intervention/image": "^2.3"
