@@ -322,11 +322,11 @@ class ContentController extends Controller
         /**
          * content with 'coach' type have lessons saved in different table, so we need to call getFilter method in order to pull them
          */
-        if ($content['type'] == 'coach') {
+        if ($content['type'] == 'coach' || $content['type'] == 'instructor') {
             $includedFields = [];
             $includedFields[] = 'instructor,' . $content['id'];
             $instructor =
-                $this->contentService->getBySlugAndType($content['slug'], 'instructor')
+                $this->contentService->getBySlugAndType($content['slug'], 'coach')
                     ->first();
             if ($instructor) {
                 $includedFields[] = 'instructor,' . $instructor['id'];
@@ -375,7 +375,7 @@ class ContentController extends Controller
             $includedFields = [];
             $includedFields[] = 'instructor,' . $content['id'];
             $instructor =
-                $this->contentService->getBySlugAndType($content['slug'], 'instructor')
+                $this->contentService->getBySlugAndType($content['slug'], 'coach')
                     ->first();
             if ($instructor) {
                 $includedFields[] = 'instructor,' . $instructor['id'];
