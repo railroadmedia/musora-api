@@ -946,6 +946,9 @@ class ContentController extends Controller
             }
         }
 
+        $includedTypes = $request->get('included_types',
+            array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes', [])));
+
         //latest featured lessons - Show the latest lessons from all the featured coaches.
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
@@ -954,7 +957,7 @@ class ContentController extends Controller
             $request->get('page', 1),
             $request->get('limit', 10),
             '-published_on',
-            $request->get('included_types', []),
+            $includedTypes,
             [],
             [],
             [],
