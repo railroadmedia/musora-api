@@ -363,7 +363,10 @@ class ContentController extends Controller
 
             $duration = 0;
             $totalXp = 0;
-            foreach ($content['lessons'] as $courseLesson) {
+            foreach ($content['lessons'] as $courseLessonIndex => $courseLesson) {
+                if($courseLesson['type'] == 'song'){
+                    $content['lessons'][$courseLessonIndex]['lesson_count'] = $this->contentService->countByParentIdWhereTypeIn($courseLesson['id'],['song-part']);
+                }
                 $duration += $courseLesson->fetch('fields.video.fields.length_in_seconds', 0);
                 $totalXp += $courseLesson->fetch('fields.xp', 0);
             }
