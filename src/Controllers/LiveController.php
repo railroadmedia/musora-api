@@ -75,19 +75,35 @@ class LiveController extends Controller
             $currentEvent['isLive'] = false;
             $youtubeId = '36YnV9STBqc';
         } else {
-
             if (config('railcontent.appUpcomingEventPriorMinutes')) {
                 LiveStreamEventService::$upcomingPriorMinutes = config('railcontent.appUpcomingEventPriorMinutes');
             }
 
-            $currentEvent = $this->liveStreamEventService->getCurrentOrNextLiveEvent();
+            //get current or next live event for selected instructor
+            $fieldIds = [];
+            if ($request->has('coach_id')) {
+                $coach = $this->contentService->getById($request->get('coach_id'));
+
+                if ($coach) {
+                    $fieldIds[] = $coach['id'];
+                    $instructor =
+                        $this->contentService->getBySlugAndType($coach['slug'], 'coach')
+                            ->first();
+                    if ($instructor) {
+                        $fieldIds[] = $instructor['id'];
+                    }
+                }
+            }
+
+            $currentEvent = $this->liveStreamEventService->getCurrentOrNextLiveEvent(null, $fieldIds);
         }
 
         if (!$currentEvent) {
             return ResponseService::array([]);
         }
 
-        $currentEvent['instructor_head_shot_picture_url'] = $currentEvent->fetch('fields.instructor.data.head_shot_picture_url');
+        $currentEvent['instructor_head_shot_picture_url'] =
+            $currentEvent->fetch('fields.instructor.data.head_shot_picture_url');
 
         $currentEvent['youtube_video_id'] = $youtubeId ?? $currentEvent->fetch(
                 'fields.live_event_youtube_id',
@@ -97,7 +113,9 @@ class LiveController extends Controller
         $currentEvent['chatRollViewersNumberClass'] = '.chat-online-count';
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
-        $currentEvent['userId'] = $this->userProvider->getCurrentUser()->getId();
+        $currentEvent['userId'] =
+            $this->userProvider->getCurrentUser()
+                ->getId();
 
         $railchatDataArray = $this->chatProvider->getRailchatData();
 

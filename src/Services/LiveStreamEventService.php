@@ -33,10 +33,11 @@ class LiveStreamEventService
     }
 
     /**
-     * @param null|array $types
-     * @return ContentEntity|null
+     * @param null $types
+     * @param array $instructorIds
+     * @return mixed|ContentEntity|null
      */
-    public function getCurrentOrNextLiveEvent($types = null)
+    public function getCurrentOrNextLiveEvent($types = null, $instructorIds = [])
     {
         if (!empty(self::$internalCache[__FUNCTION__])) {
             return self::$internalCache[__FUNCTION__];
@@ -52,6 +53,7 @@ class LiveStreamEventService
 
         ContentRepository::$pullFutureContent = true;
 
+        $requiredInstructor = !empty($instructorIds) ? ['key' => 'instructor', 'value' => $instructorIds] : [];
         $liveEvents = $this->contentService->getWhereTypeInAndStatusAndPublishedOnOrdered(
             $types ?? config('railcontent.liveContentTypes', []),
             ContentService::STATUS_SCHEDULED,
@@ -60,7 +62,8 @@ class LiveStreamEventService
                 ->toDateTimeString(),
             '>',
             'published_on',
-            'asc'
+            'asc',
+            $requiredInstructor
         );
 
         $liveEvents = $liveEvents->sort(
