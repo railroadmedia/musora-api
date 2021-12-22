@@ -366,6 +366,9 @@ class ContentController extends Controller
             foreach ($content['lessons'] as $courseLessonIndex => $courseLesson) {
                 if($courseLesson['type'] == 'song'){
                     $content['lessons'][$courseLessonIndex]['lesson_count'] = $this->contentService->countByParentIdWhereTypeIn($courseLesson['id'],['song-part']);
+                    if($content['lessons'][$courseLessonIndex]['lesson_count'] == 1) {
+                        $content['lessons'][$courseLessonIndex]['lessons'] = $this->contentService->getByParentId($courseLesson['id']);
+                    }
                 }
                 $duration += $courseLesson->fetch('fields.video.fields.length_in_seconds', 0);
                 $totalXp += $courseLesson->fetch('fields.xp', 0);
@@ -472,7 +475,7 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
