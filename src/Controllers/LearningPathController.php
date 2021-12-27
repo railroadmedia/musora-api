@@ -93,7 +93,7 @@ class LearningPathController extends Controller
         ContentRepository::$availableContentStatues = false;
         ContentRepository::$pullFutureContent = true;
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $learningPath =
             $this->contentService->getBySlugAndType($learningPathSlug, 'learning-path')
@@ -164,7 +164,7 @@ class LearningPathController extends Controller
 
         throw_if(!$level, new NotFoundException('Level not found.'));
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $learningPath =
             $this->contentService->getBySlugAndType($learningPathSlug, 'learning-path')
@@ -234,7 +234,7 @@ class LearningPathController extends Controller
         $course = $this->contentService->getById($courseId);
         throw_if(!$course, new NotFoundException('Course not found.'));
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $level =
             $this->contentService->getByChildIdWhereParentTypeIn($courseId, ['learning-path-level'])
@@ -295,7 +295,7 @@ class LearningPathController extends Controller
                 ->first();
         throw_if(!$course, new NotFoundException('Course not found.'));
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $level =
             $this->contentService->getByChildIdWhereParentTypeIn($course['id'], ['learning-path-level'])
@@ -397,7 +397,7 @@ class LearningPathController extends Controller
             return response()->json($thisLesson);
         }
 
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $unit =
             $this->contentService->getByChildIdWhereParentTypeIn($unitPartId, ['unit'])
