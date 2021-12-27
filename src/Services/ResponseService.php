@@ -33,7 +33,9 @@ class ResponseService
     public static function catalogue($data, $request)
     {
         $filters = $data->filterOptions();
-        $filters['showSkillLevel'] = true;
+        if(!in_array('instructor', $request->get('included_types', []))) {
+            $filters['showSkillLevel'] = true;
+        }
 
         if ($request->get('included_types', []) == ['coach-stream']) {
             $filters = ['content_type' => ['coach-stream']];

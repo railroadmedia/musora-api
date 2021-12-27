@@ -7,7 +7,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
+use Railroad\Railcontent\Decorators\DecoratorInterface;
+use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
@@ -15,7 +16,6 @@ use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\MethodService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
-use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
@@ -92,6 +92,8 @@ class LearningPathController extends Controller
         ContentRepository::$bypassPermissions = true;
         ContentRepository::$availableContentStatues = false;
         ContentRepository::$pullFutureContent = true;
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $learningPath =
             $this->contentService->getBySlugAndType($learningPathSlug, 'learning-path')

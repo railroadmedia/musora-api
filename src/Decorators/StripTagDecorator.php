@@ -48,7 +48,7 @@ class StripTagDecorator extends ModeDecoratorBase
                 }
 
                 //coach biography
-                if($entity['type'] == 'coach') {
+                if($entity['type'] == 'coach' && array_key_exists('biography', $entity)) {
                     $entities[$entityIndex]['biography'] = strip_tags(html_entity_decode($entity['biography']));
                 }
             }

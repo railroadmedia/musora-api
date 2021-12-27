@@ -263,6 +263,31 @@ Route::group(
                 'uses' => ContentController::class . '@getDeepLinkForCoach',
             ]
         );
+
+        Route::put(
+            '/follow',
+            ContentController::class . '@followContent'
+        )->name('mobile.musora-api.content.follow');
+
+        Route::put(
+            '/unfollow',
+            ContentController::class . '@unfollowContent'
+        )->name('mobile.musora-api.content.unfollow');
+
+        Route::get(
+            '/followed-content',
+            ContentController::class . '@getFollowedContent'
+        )->name('mobile.musora-api.followed.content');
+
+        Route::get(
+            '/followed-lessons',
+            ContentController::class . '@getLessonsForFollowedCoaches'
+        )->name('mobile.musora-api.followed.lessons');
+
+        Route::get(
+            '/featured-lessons',
+            ContentController::class . '@getFeaturedLessons'
+        )->name('mobile.musora-api.featured.lessons');
     }
 );
 
