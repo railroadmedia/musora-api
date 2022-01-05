@@ -854,13 +854,15 @@ class ContentController extends Controller
      */
     public function getDeepLinkForCoach($slug)
     {
-        $content = $this->contentService->getBySlugAndType($slug, 'coach');
+        $content = $this->contentService->getBySlugAndType($slug, 'instructor');
         throw_if($content->isEmpty(), new NotFoundException('Content not exists.'));
 
         $request = new Request();
         $request->merge([
-            'statuses' => [ContentService::STATUS_PUBLISHED],
+            'statuses' => [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED],
             'future' => true,
+            'limit' => 10,
+            'page' => 1
         ]);
 
         return $this->getContent($content->first()['id'], $request);
