@@ -345,7 +345,7 @@ class ContentController extends Controller
                 $request->get('page', 1),
                 $request->get('limit', 10),
                 $request->get('sort','-published_on'),
-                $request->get('included_types', []),
+                $request->get('included_types', config('railcontent.coachContentTypes')),
                 [],
                 [],
                 $requiredFields,
