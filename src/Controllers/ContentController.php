@@ -345,7 +345,8 @@ class ContentController extends Controller
                 $request->get('page', 1),
                 $request->get('limit', 10),
                 $request->get('sort','-published_on'),
-                $request->get('included_types', config('railcontent.coachContentTypes')),
+                $request->get('included_types',
+                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))),
                 [],
                 [],
                 $requiredFields,
@@ -826,11 +827,16 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', ContentRepository::$availableContentStatues);
 
+        $types = $request->get('included_types', []);
+        if (in_array('shows', $types)) {
+            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+        }
+
         $contentsData = $this->fullTextSearchService->search(
             $request->get('term', null),
             $request->get('page', 1),
             $request->get('limit', 10),
-            $request->get('included_types', []),
+            $types,
             $request->get('statuses', []),
             $request->get('sort', '-score'),
             $request->get('date_time_cutoff', null),
