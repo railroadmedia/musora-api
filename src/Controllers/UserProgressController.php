@@ -280,8 +280,8 @@ class UserProgressController extends Controller
                     'media_length_seconds' => 'numeric',
                     'media_type' => 'required|string',
                     'media_category' => 'required|string',
-                    'current_second' => 'numeric',
-                    'seconds_played' => 'numeric',
+                    'current_second' => 'numeric|min:0',
+                    'seconds_played' => 'numeric|min:0',
                 ]
             );
         } catch (ValidationException $exception) {
