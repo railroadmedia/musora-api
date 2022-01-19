@@ -910,7 +910,7 @@ class ContentController extends Controller
     {
         $contentData = $this->contentFollowsService->getLessonsForFollowedCoaches(
             $request->get('brand', config('railcontent.brand')),
-            $request->get('content_type', []),
+            $request->get('content_type', config('railcontent.coachContentTypes')),
             $request->get('statuses', [ContentService::STATUS_PUBLISHED]),
             $request->get('page', 1),
             $request->get('limit', 10),
