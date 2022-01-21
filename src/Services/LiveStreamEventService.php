@@ -66,12 +66,10 @@ class LiveStreamEventService
             $requiredInstructor
         );
 
-        $liveEvents = $liveEvents->sort(
-            function ($a, $b) {
-                return strtotime($a->fetch('fields.live_event_start_time')) -
-                    strtotime($b->fetch('fields.live_event_start_time'));
-            }
-        )
+        $liveEvents = $liveEvents->sort(function ($a, $b) {
+            return strtotime($a->fetch('fields.live_event_start_time')) -
+                strtotime($b->fetch('fields.live_event_start_time'));
+        })
             ->slice(0, 10)
             ->values();
 
@@ -169,8 +167,7 @@ class LiveStreamEventService
                 return true;
             }
         } else {
-            if (Carbon::now() > $startTimeUtc->subMinutes(5) &&
-                Carbon::now() < $endTimeUtc->addMinutes(5)) {
+            if (Carbon::now() > $startTimeUtc->subMinutes(5) && Carbon::now() < $endTimeUtc->addMinutes(5)) {
                 return true;
             }
         }
@@ -184,15 +181,18 @@ class LiveStreamEventService
     public function getCurrentOrNextYoutubeEventId()
     {
         try {
-            $cacheStore = cache()->store(config('cache.default'))->getStore();
-
+            $cacheStore =
+                cache()
+                    ->store(config('cache.default'))
+                    ->getStore();
+            $brand = config('railcontent.brand');
             if (method_exists($cacheStore, 'setPrefix')) {
                 $oldPrefix = $cacheStore->getPrefix();
                 $cacheStore->setPrefix(config('cache.prefix'));
             }
 
-            if (cache()->has('drumeo_next_youtube_live_embed_id')) {
-                return cache()->get('drumeo_next_youtube_live_embed_id');
+            if (cache()->has($brand . '_next_youtube_live_embed_id')) {
+                return cache()->get($brand . '_next_youtube_live_embed_id');
             }
 
             // get the youtube id from their API
@@ -200,34 +200,31 @@ class LiveStreamEventService
             $client = new Google_Client();
             $youtube = new Google_Service_YouTube($client);
 
-            if (cache()->has('drumeo-yt-access-token-data')) {
-                $tokenData = cache()->pull('drumeo-yt-access-token-data');
+            if (cache()->has($brand . '-yt-access-token-data')) {
+                $tokenData = cache()->pull($brand . '-yt-access-token-data');
             } else {
-                $client->setClientId('683254068611-hiu3uvl4jin69dlph9r99nb3fi8038ev.apps.googleusercontent.com');
-                $client->setClientSecret('4v0tNoGGLTWlKR-Hv5-mrlkG');
+                $client->setClientId(config('railcontent.video_sync.youtube_client_api.client_id'));
+                $client->setClientSecret(config('railcontent.video_sync.youtube_client_api.client_secret'));
 
                 $client->setScopes(['https://www.googleapis.com/auth/youtube']);
                 $client->setAccessType("offline");
+                $client->setApprovalPrompt('force');
 
-                $tokenData = $client->refreshToken('1/h1359_cGfwzIhVsQ1nqQ8s0h5W-k10gcknszkfnbcOM');
+                $tokenData = $client->refreshToken(config('railcontent.video_sync.youtube_client_api.refresh_token'));
 
-                cache()->set('drumeo-yt-access-token-data', $tokenData, $tokenData['expires_in'] - 500);
+                cache()->set($brand . '-yt-access-token-data', $tokenData, $tokenData['expires_in'] - 500);
             }
 
             $client->setAccessToken($tokenData['access_token']);
 
-            $data = $youtube->liveBroadcasts->listLiveBroadcasts(
-                'id,snippet,contentDetails',
-                [
+            $data = $youtube->liveBroadcasts->listLiveBroadcasts('id,snippet,contentDetails', [
                     'mine' => true,
-                    'maxResults' => 25
-                ]
-            );
+                    'maxResults' => 25,
+                ]);
 
             $liveBroadcastItems = $data->getItems();
 
-            usort($liveBroadcastItems, function($a, $b)
-            {
+            usort($liveBroadcastItems, function ($a, $b) {
                 $t1 = strtotime($a->snippet->scheduledStartTime);
                 $t2 = strtotime($b->snippet->scheduledStartTime);
 
@@ -242,13 +239,17 @@ class LiveStreamEventService
                 // on the fly with 'scheduledStartTime' = '1970-01-01T00:00:00Z' and no actual end time.
                 // This has been fucking up and overriding all our scheduled events so we must skip them using this
                 // check. We only want to show scheduled events, not 'live now' ones.
-                if (Carbon::parse($broadcastItem->snippet->scheduledStartTime) < Carbon::now()->subDay()) {
+                if (Carbon::parse($broadcastItem->snippet->scheduledStartTime) <
+                    Carbon::now()
+                        ->subDay()) {
                     continue;
                 }
 
                 if (!empty($broadcastItem->snippet->scheduledStartTime) &&
                     (empty($broadcastItem->snippet->actualEndTime) ||
-                        Carbon::parse($broadcastItem->snippet->actualEndTime) > Carbon::now()->subMinutes(15))) { // this is how long the old event will hang around
+                        Carbon::parse($broadcastItem->snippet->actualEndTime) >
+                        Carbon::now()
+                            ->subMinutes(15))) { // this is how long the old event will hang around
 
                     if (empty($broadcastToRender) ||
                         Carbon::parse($broadcastItem->snippet->scheduledStartTime) < Carbon::parse(
@@ -260,7 +261,7 @@ class LiveStreamEventService
             }
 
             cache()->put(
-                'drumeo_next_youtube_live_embed_id',
+                $brand . '_next_youtube_live_embed_id',
                 $broadcastToRender->id ?? null,
                 2
             );
