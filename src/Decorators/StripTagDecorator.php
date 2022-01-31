@@ -11,8 +11,16 @@ class StripTagDecorator extends ModeDecoratorBase
     public function decorate(Collection $entities)
     {
         foreach ($entities as $entityIndex => $entity) {
-
             if ($entity instanceof ContentEntity) {
+
+                if (array_key_exists('long_bio', $entity)) {
+                    $entities[$entityIndex]['long_bio'] = strip_tags(html_entity_decode($entity['long_bio']));
+                }
+
+                if (array_key_exists('short_bio', $entity)) {
+                    $entities[$entityIndex]['short_bio'] = strip_tags(html_entity_decode($entity['short_bio']));
+                }
+
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
                     if  (in_array($data['key'] ,[ 'description','short_description','long_description'])) {
@@ -31,13 +39,12 @@ class StripTagDecorator extends ModeDecoratorBase
                     }
                 }
 
-                $instructors = $entity['instructor'] ?? $entity->fetch('*fields.instructor',[]);
+                $instructors = $entity['instructor'] ?? $entity->fetch('*fields.instructor', []);
 
                 foreach ($instructors as $index => $item) {
                     $entities[$entityIndex]['instructor'][$index] = $item;
 
                     if ($item instanceof ContentEntity) {
-
                         foreach ($item['data'] as $indexData => $data) {
                             if ($data['key'] == 'biography') {
                                 $entities[$entityIndex]['instructor'][$index]['data'][$indexData]['value'] =
@@ -48,7 +55,7 @@ class StripTagDecorator extends ModeDecoratorBase
                 }
 
                 //coach biography
-                if($entity['type'] == 'coach' && array_key_exists('biography', $entity)) {
+                if ($entity['type'] == 'coach' && array_key_exists('biography', $entity)) {
                     $entities[$entityIndex]['biography'] = strip_tags(html_entity_decode($entity['biography']));
                 }
             }
