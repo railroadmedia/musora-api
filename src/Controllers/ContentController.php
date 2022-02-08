@@ -143,8 +143,10 @@ class ContentController extends Controller
 
         //get content's parent for related lessons and resources
         $parent = array_first(
-            $this->contentService->getByChildIdWhereParentTypeIn($contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle'])
+            $this->contentService->getByChildIdWhereParentTypeIn(
+                $contentId,
+                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
+            )
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -183,13 +185,15 @@ class ContentController extends Controller
                 false
             )['results'];
         } elseif ($content['type'] == 'song') {
-            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
+            $songsFromSameArtist = $this->contentService->getFiltered(
+                $request->get('page', 1),
                 $request->get('limit', 10),
                 '-published_on',
                 [$content['type']],
                 [],
                 [],
-                ['artist,' . $content->fetch('fields.artist')])['results'];
+                ['artist,' . $content->fetch('fields.artist')]
+            )['results'];
 
             // remove requested song if in related lessons, part one of two
             foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
@@ -203,14 +207,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                        19,
-                        '-published_on',
-                        [$content['type']],
-                        [],
-                        [],
-                        ['style,' . $content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,' . $content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -344,9 +349,11 @@ class ContentController extends Controller
             $lessons = $this->contentService->getFiltered(
                 $request->get('page', 1),
                 $request->get('limit', 10),
-                $request->get('sort','-published_on'),
-                $request->get('included_types',
-                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))),
+                $request->get('sort', '-published_on'),
+                $request->get(
+                    'included_types',
+                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+                ),
                 [],
                 [],
                 $requiredFields,
@@ -365,10 +372,12 @@ class ContentController extends Controller
             $duration = 0;
             $totalXp = 0;
             foreach ($content['lessons'] as $courseLessonIndex => $courseLesson) {
-                if($courseLesson['type'] == 'song'){
-                    $content['lessons'][$courseLessonIndex]['lesson_count'] = $this->contentService->countByParentIdWhereTypeIn($courseLesson['id'],['song-part']);
-                    if($content['lessons'][$courseLessonIndex]['lesson_count'] == 1) {
-                        $content['lessons'][$courseLessonIndex]['lessons'] = $this->contentService->getByParentId($courseLesson['id']);
+                if ($courseLesson['type'] == 'song') {
+                    $content['lessons'][$courseLessonIndex]['lesson_count'] =
+                        $this->contentService->countByParentIdWhereTypeIn($courseLesson['id'], ['song-part']);
+                    if ($content['lessons'][$courseLessonIndex]['lesson_count'] == 1) {
+                        $content['lessons'][$courseLessonIndex]['lessons'] =
+                            $this->contentService->getByParentId($courseLesson['id']);
                     }
                 }
                 $duration += $courseLesson->fetch('fields.video.fields.length_in_seconds', 0);
@@ -388,10 +397,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,' . $instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                    $includedFields, [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -430,7 +441,6 @@ class ContentController extends Controller
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'] ?? [])) {
-
             $this->downloadService->attachLessonsDataForDownload($content);
 
             return ResponseService::contentForDownload($content);
@@ -450,7 +460,6 @@ class ContentController extends Controller
         $matched = false;
 
         foreach ($parentChildren as $parentChildIndex => $parentChild) {
-
             if ((count($parentChildren) - $parentChildIndex) <= 10 &&
                 count($parentChildrenTrimmed) < 10 &&
                 $parentChild['id'] != $content['id']) {
@@ -534,7 +543,6 @@ class ContentController extends Controller
                 true,
                 $request->get('only_subscribed', false)
             );
-
         }
 
         return ResponseService::catalogue($results, $request);
@@ -736,10 +744,10 @@ class ContentController extends Controller
         }
 
         return ResponseService::array([
-            'success' => true,
-            'title' => 'Thanks for your submission!',
-            'message' => $input['success'],
-        ]);
+                                          'success' => true,
+                                          'title' => 'Thanks for your submission!',
+                                          'message' => $input['success'],
+                                      ]);
     }
 
     /**
@@ -845,9 +853,9 @@ class ContentController extends Controller
 
         return ResponseService::catalogue(
             new ContentFilterResultsEntity([
-                'results' => $contentsData['results'],
-                'total_results' => $contentsData['total_results'],
-            ]),
+                                               'results' => $contentsData['results'],
+                                               'total_results' => $contentsData['total_results'],
+                                           ]),
             $request
         );
     }
@@ -865,11 +873,11 @@ class ContentController extends Controller
 
         $request = new Request();
         $request->merge([
-            'statuses' => [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED],
-            'future' => true,
-            'limit' => 10,
-            'page' => 1
-        ]);
+                            'statuses' => [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED],
+                            'future' => true,
+                            'limit' => 10,
+                            'page' => 1,
+                        ]);
 
         return $this->getContent($content->first()['id'], $request);
     }
@@ -960,8 +968,10 @@ class ContentController extends Controller
             }
         }
 
-        $includedTypes = $request->get('included_types',
-            array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', [])));
+        $includedTypes = $request->get(
+            'included_types',
+            array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+        );
 
         //latest featured lessons - Show the latest lessons from all the featured coaches.
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
@@ -987,6 +997,22 @@ class ContentController extends Controller
             $latestLessons,
             $request
         );
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public function getUpcomingCoaches()
+    {
+        $upcomingCoaches = config('coaches.upcoming_coaches', []);
+
+        foreach ($upcomingCoaches as $index => $coach) {
+            foreach ($coach as $coachFieldIndex => $coachField) {
+                $upcomingCoaches[$index][$coachFieldIndex] = strip_tags(html_entity_decode($coachField));
+            }
+        }
+
+        return ResponseService::array($upcomingCoaches);
     }
 
 }

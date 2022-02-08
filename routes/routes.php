@@ -288,6 +288,14 @@ Route::group(
             '/featured-lessons',
             ContentController::class . '@getFeaturedLessons'
         )->name('mobile.musora-api.featured.lessons');
+
+        Route::get(
+            '/upcoming-coaches',
+            [
+                'as' => 'mobile.musora-api.upcoming.coaches',
+                'uses' => ContentController::class . '@getUpcomingCoaches',
+            ]
+        );
     }
 );
 
