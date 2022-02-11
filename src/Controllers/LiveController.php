@@ -2,7 +2,6 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
-use Carbon\Carbon;
 use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -98,33 +97,9 @@ class LiveController extends Controller
 
             $currentEvent = $this->liveStreamEventService->getCurrentOrNextLiveEvent(null, $fieldIds);
         }
-$extraContitions = (empty($fieldIds)) ?[]: ['key'=>'instructor', 'value'=>$fieldIds];
 
-        $nextScheduleContentRelease = $this->contentService->getWhereTypeInAndStatusAndPublishedOnOrdered(
-            ['course-part'],
-            ContentService::STATUS_PUBLISHED,
-            Carbon::now()
-                ->toDateTimeString(),
-            '>',
-            'published_on',
-            'asc',
-            $extraContitions
-        );
-
-        if (!$currentEvent && $nextScheduleContentRelease->isEmpty()) {
+        if (!$currentEvent) {
             return ResponseService::array([]);
-        }
-
-        if (!$currentEvent || ($currentEvent && (!$currentEvent->fetch('isLive')) &&
-            ($nextScheduleContentRelease->first()
-                    ->fetch('published_on') < $currentEvent->fetch('published_on')))) {
-            $currentEvent = $nextScheduleContentRelease->first();
-            $currentEvent['live_event_start_time'] =
-                $nextScheduleContentRelease->first()
-                    ->fetch('published_on');
-            $currentEvent['live_event_end_time'] =
-                $nextScheduleContentRelease->first()
-                    ->fetch('published_on');
         }
 
         $currentEvent['instructor_head_shot_picture_url'] =
