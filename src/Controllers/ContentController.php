@@ -409,15 +409,15 @@ class ContentController extends Controller
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
         if ($parent) {
-            $content['instructor'] = array_merge(
+            $content['instructor'] = array_unique(array_merge(
                 $content['instructor'] ?? [],
                 ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
-            );
+                                                  ), SORT_REGULAR);
 
-            $content['coaches'] = array_merge(
+            $content['coaches'] = array_unique(array_merge(
                 $content['coaches'] ?? [],
                 $parent['coaches'] ?? []
-            );
+            ), SORT_REGULAR);
 
             $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
             $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
