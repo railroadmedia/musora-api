@@ -508,6 +508,10 @@ class ContentController extends Controller
         $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
 
+        if($request->has('brand')){
+            ConfigService::$availableBrands = [$request->get('brand')];
+        }
+
         if (!empty($types)) {
             ConfigService::$fieldOptionList = [
                 'instructor',
