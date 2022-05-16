@@ -4,12 +4,14 @@ namespace Railroad\MusoraApi\Tests\Content;
 
 use Carbon\Carbon;
 use Railroad\MusoraApi\Tests\TestCase;
+use Railroad\MusoraApi\Tests\UnitTest;
 use Railroad\Railcontent\Factories\ContentContentFieldFactory;
 use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Services\ContentService;
 
-class ContentControllerTest extends TestCase
+class ContentControllerTest extends UnitTest
 {
+
     /**
      * @var ContentFactory
      */
@@ -20,12 +22,12 @@ class ContentControllerTest extends TestCase
      */
     protected $contentFieldFactory;
 
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
 
         $this->contentFactory = $this->app->make(ContentFactory::class);
-        $this->contentFieldFactory = $this->app->make(ContentContentFieldFactory::class);
+//        $this->contentFieldFactory = $this->app->make(ContentContentFieldFactory::class);
     }
 
     public function test_first()
@@ -36,7 +38,7 @@ class ContentControllerTest extends TestCase
     public function test_pull_not_existing_content_endpoint()
     {
         $response =
-            $this->actingAs()
+            $this
                 ->get(
                     '/musora-api/content/' . rand()
                 );
@@ -66,7 +68,7 @@ class ContentControllerTest extends TestCase
                 ->get(
                     '/musora-api/content/' . $content['id']
                 );
-
+dd($response);
         $response->assertStatus(200);
 
         $this->assertEquals(

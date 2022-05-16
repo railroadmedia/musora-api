@@ -3,6 +3,7 @@
 namespace Railroad\MusoraApi\Tests\Resources\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * User
@@ -10,8 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property integer $id
  * @property string $email
  */
-class User extends Authenticatable implements \Tymon\JWTAuth\Contracts\JWTSubject
+class User extends Authenticatable
 {
+    use HasApiTokens;
+
     protected $table = 'users';
 
     public function getJWTIdentifier()

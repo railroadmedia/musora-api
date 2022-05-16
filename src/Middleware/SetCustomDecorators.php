@@ -23,7 +23,7 @@ class SetCustomDecorators
     public function handle($request, Closure $next)
     {
         $allDecoratorsForContent = array_merge(config('railcontent.decorators')['content'], [
-                TimezoneDecorator::class,
+             //   TimezoneDecorator::class,
                 DateFormatDecorator::class,
                 StripTagDecorator::class,
                 MobileAppUrlDecorator::class,

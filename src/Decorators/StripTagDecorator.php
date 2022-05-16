@@ -13,11 +13,11 @@ class StripTagDecorator extends ModeDecoratorBase
         foreach ($entities as $entityIndex => $entity) {
             if ($entity instanceof ContentEntity) {
 
-                if (array_key_exists('long_bio', $entity)) {
+                if (isset($entity['long_bio'])) {
                     $entities[$entityIndex]['long_bio'] = strip_tags(html_entity_decode($entity['long_bio']));
                 }
 
-                if (array_key_exists('short_bio', $entity)) {
+                if (isset($entity['short_bio'])) {
                     $entities[$entityIndex]['short_bio'] = strip_tags(html_entity_decode($entity['short_bio']));
                 }
 

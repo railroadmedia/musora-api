@@ -11,7 +11,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Railroad\Mailora\Services\MailService;
+//use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
@@ -39,6 +39,7 @@ use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
+use Illuminate\Support\Arr;
 
 class ContentController extends Controller
 {
@@ -65,7 +66,7 @@ class ContentController extends Controller
     /**
      * @var MailService
      */
-    private $mailoraMailService;
+//    private $mailoraMailService;
 
     /**
      * @var ContentHierarchyRepository
@@ -99,7 +100,7 @@ class ContentController extends Controller
      * @param CommentService $commentService
      * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
      * @param UserProviderInterface $userProvider
-     * @param MailService $mailoraMailService
+//     * @param MailService $mailoraMailService
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
      * @param StripTagDecorator $stripTagDecorator
@@ -110,7 +111,7 @@ class ContentController extends Controller
         CommentService $commentService,
         VimeoVideoSourcesDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
-        MailService $mailoraMailService,
+//        MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
         FullTextSearchService $fullTextSearchService,
         StripTagDecorator $stripTagDecorator,
@@ -121,7 +122,7 @@ class ContentController extends Controller
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
         $this->userProvider = $userProvider;
-        $this->mailoraMailService = $mailoraMailService;
+//        $this->mailoraMailService = $mailoraMailService;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->fullTextSearchService = $fullTextSearchService;
         $this->stripTagDecorator = $stripTagDecorator;
@@ -142,7 +143,7 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         //get content's parent for related lessons and resources
-        $parent = array_first(
+        $parent = Arr::first(
             $this->contentService->getByChildIdWhereParentTypeIn(
                 $contentId,
                 ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
@@ -305,7 +306,7 @@ class ContentController extends Controller
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
-        if (array_key_exists('lessons', $content)) {
+        if (isset($content['lessons'])) {
             $content['lessons'] = new Collection($content['lessons']);
             $content['next_lesson'] =
                 $content['lessons']->where('completed', '=', false)
@@ -319,7 +320,7 @@ class ContentController extends Controller
         $content['total_comments'] = $comments['total_comments_and_results'];
 
         //attached lessons to the content if not exists already
-        if (!array_key_exists('lessons', $content) &&
+        if (!isset( $content['lessons']) &&
             !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
             $content['lessons'] = $this->contentService->getByParentId($content['id']);
         }
@@ -737,6 +738,7 @@ class ContentController extends Controller
      */
     public function sendSecure($input)
     {
+        return '';
         try {
             $this->mailoraMailService->sendSecure($input);
         } catch (Exception $exception) {

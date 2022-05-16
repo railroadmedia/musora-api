@@ -2,7 +2,8 @@
 
 return [
     'auth-middleware' => [
-        \Railroad\MusoraApi\Middleware\MobileAppTokenAuth::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
         \Railroad\MusoraApi\Middleware\SetCustomDecorators::class,
     ],
     'user-middleware' => [

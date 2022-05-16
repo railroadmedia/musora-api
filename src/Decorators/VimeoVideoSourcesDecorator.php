@@ -46,8 +46,7 @@ class VimeoVideoSourcesDecorator extends ModeDecoratorBase
         $contentResults = $contents->toArray();
 
         foreach ($contentResults as $contentIndex => $content) {
-            if (array_key_exists('fields', $content)) {
-                foreach ($content['fields'] as $field) {
+                foreach ($content['fields']??[] as $field) {
 
                     if ($field['key'] === 'video' && $field['value']['type'] == 'vimeo-video') {
 
@@ -154,7 +153,7 @@ class VimeoVideoSourcesDecorator extends ModeDecoratorBase
                     }
                 }
 
-            }
+
         }
 
         return new Collection($contentResults);
