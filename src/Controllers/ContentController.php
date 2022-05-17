@@ -14,7 +14,6 @@ use Illuminate\Routing\Controller;
 //use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
-use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
@@ -25,6 +24,7 @@ use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
+use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -94,22 +94,20 @@ class ContentController extends Controller
     private $contentFollowsService;
 
     /**
-     * ContentController constructor.
-     *
      * @param ContentService $contentService
      * @param CommentService $commentService
-     * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
+     * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
      * @param UserProviderInterface $userProvider
-//     * @param MailService $mailoraMailService
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
      * @param StripTagDecorator $stripTagDecorator
      * @param DownloadService $downloadService
+     * @param ContentFollowsService $contentFollowsService
      */
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
-        VimeoVideoSourcesDecorator $vimeoVideoDecorator,
+        ContentVimeoVideoDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
 //        MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
@@ -442,8 +440,8 @@ class ContentController extends Controller
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'] ?? [])) {
-            $this->downloadService->attachLessonsDataForDownload($content);
 
+            $this->downloadService->attachLessonsDataForDownload($content);
             return ResponseService::contentForDownload($content);
         }
 
