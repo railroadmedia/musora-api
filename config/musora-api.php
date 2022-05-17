@@ -2,12 +2,11 @@
 
 return [
     'auth-middleware' => [
-        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
+//        \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
         \Railroad\MusoraApi\Middleware\SetCustomDecorators::class,
     ],
     'user-middleware' => [
-        \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
+//        \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
     ],
     'response-structure' => [
         'catalogues' => [
