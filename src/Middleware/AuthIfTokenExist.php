@@ -7,17 +7,17 @@ use Exception;
 use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
 use Tymon\JWTAuth\JWTAuth;
 
-class AuthIfTokenExist extends BaseMiddleware
+class AuthIfTokenExist
 {
     /**
      * TokenAuth constructor.
      *
      * @param JWTAuth $auth
      */
-    public function __construct(JWTAuth $auth)
-    {
-        parent::__construct($auth);
-    }
+//    public function __construct(JWTAuth $auth)
+//    {
+//        parent::__construct($auth);
+//    }
 
     /**
      * @param $request

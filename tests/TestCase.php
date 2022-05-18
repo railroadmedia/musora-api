@@ -33,8 +33,8 @@ use Railroad\Railcontent\Factories\UserContentProgressFactory;
 use Railroad\Railcontent\Middleware\ContentPermissionsMiddleware;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
 use Railroad\Response\Providers\ResponseServiceProvider;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Providers\LaravelServiceProvider;
+
+//use Railroad\Response\Providers\ResponseServiceProvider;
 
 class TestCase extends BaseTestCase
 {
@@ -83,14 +83,13 @@ class TestCase extends BaseTestCase
 
     protected $jwtAuth;
 
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
 
         error_reporting(E_ALL);
 
         $this->artisan('migrate:fresh');
-
         $this->artisan('cache:clear', []);
 
         $this->databaseManager = $this->app->make(DatabaseManager::class);
@@ -102,14 +101,6 @@ class TestCase extends BaseTestCase
         $this->permissionFactory = $this->app->make(PermissionsFactory::class);
         $this->contentPermissionFactory = $this->app->make(ContentPermissionsFactory::class);
         $this->authManager = $this->app->make(AuthManager::class);
-
-        //call the MobileAppTokenAuth
-        $middleware = $this->app->make(AuthIfTokenExist::class);
-        $middleware->handle(
-            request(),
-            function () {
-            }
-        );
 
         $middleware = $this->app->make(ContentPermissionsMiddleware::class);
         $middleware->handle(
@@ -133,20 +124,20 @@ class TestCase extends BaseTestCase
                     );
         }
 
-        $this->appleStoreKitGatewayMock =
-            $this->getMockBuilder(AppleStoreKitGateway::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-        $this->app->instance(AppleStoreKitGateway::class, $this->appleStoreKitGatewayMock);
+//        $this->appleStoreKitGatewayMock =
+//            $this->getMockBuilder(AppleStoreKitGateway::class)
+//                ->disableOriginalConstructor()
+//                ->getMock();
+//        $this->app->instance(AppleStoreKitGateway::class, $this->appleStoreKitGatewayMock);
 
         $chatProvider = new ChatProvider();
         $this->app->instance(ChatProviderInterface::class, $chatProvider);
-
+//
         $userProvider = new UserProvider();
         $this->app->instance(UserProviderInterface::class, $userProvider);
-
-        $productProvider = new ProductProvider();
-        $this->app->instance(ProductProviderInterface::class, $productProvider);
+//
+//        $productProvider = new ProductProvider();
+//        $this->app->instance(ProductProviderInterface::class, $productProvider);
 
         \Railroad\Railcontent\Repositories\RepositoryBase::$connectionMask = null;
     }
@@ -184,6 +175,9 @@ class TestCase extends BaseTestCase
         $app['config']->set('railcontent.appUpcomingEventPriorMinutes', $defaultConfig['appUpcomingEventPriorMinutes']);
 
         $app['config']->set('railcontent.validation', $defaultConfig['validation']);
+        // vimeo
+        $app['config']->set('railcontent.video_sync', $defaultConfig['video_sync']);
+
         $app['config']->set(
             'railcontent.comment_assignation_owner_ids',
             $defaultConfig['comment_assignation_owner_ids']
@@ -210,9 +204,10 @@ class TestCase extends BaseTestCase
             'railcontent.administrator_routes_middleware',
             $defaultConfig['administrator_routes_middleware']
         );
+        $app['config']->set('railcontent.contentColumnNamesForFields', $defaultConfig['contentColumnNamesForFields']);
 
-        $app['config']->set('database_connection_name', 'testbench');
-        $app['config']->set('database.default', 'testbench');
+        $app['config']->set('database_connection_name', 'mysql');
+        $app['config']->set('database.default', 'mysql');
         $app['config']->set(
             'database.connections.testbench',
             [
@@ -221,34 +216,50 @@ class TestCase extends BaseTestCase
                 'prefix' => '',
             ]
         );
-
         $app['config']->set(
-            'database.redis',
+            'database.connections.mysql',
             [
-                'client' => 'predis',
-                'default' => [
-                    'host' => env('REDIS_HOST', 'redis'),
-                    'password' => env('REDIS_PASSWORD', null),
-                    'port' => env('REDIS_PORT', 6379),
-                    'database' => 0,
-                ],
+                'driver' => 'mysql',
+                'host' => 'mysql8',
+                'port' => env('MYSQL_PORT', '3306'),
+                'database' => env('MYSQL_DB', 'railcontent'),
+                'username' => 'root',
+                'password' => 'root',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_general_ci',
+                'prefix' => '',
+                'options' => [
+                    \PDO::ATTR_PERSISTENT => true,
+                ]
             ]
         );
-        $app['config']->set('railcontent.database.default', 'testbench');
+//        $app['config']->set(
+//            'database.redis',
+//            [
+//                'client' => 'predis',
+//                'default' => [
+//                    'host' => env('REDIS_HOST', 'redis'),
+//                    'password' => env('REDIS_PASSWORD', null),
+//                    'port' => env('REDIS_PORT', 6379),
+//                    'database' => 0,
+//                ],
+//            ]
+//        );
+        $app['config']->set('railcontent.database.default', 'mysql');
 
-        $app['config']->set(
-            'railcontent.database.redis',
-            [
-                'client' => 'predis',
-                'default' => [
-                    'host' => env('REDIS_HOST', 'redis'),
-                    'password' => env('REDIS_PASSWORD', null),
-                    'port' => env('REDIS_PORT', 6379),
-                    'database' => 0,
-                ],
-            ]
-        );
-        $app['config']->set('cache.default', env('CACHE_DRIVER', 'redis'));
+//        $app['config']->set(
+//            'railcontent.database.redis',
+//            [
+//                'client' => 'predis',
+//                'default' => [
+//                    'host' => env('REDIS_HOST', 'redis'),
+//                    'password' => env('REDIS_PASSWORD', null),
+//                    'port' => env('REDIS_PORT', 6379),
+//                    'database' => 0,
+//                ],
+//            ]
+//        );
+        $app['config']->set('cache.default', env('CACHE_DRIVER', 'array'));
         $app['config']->set('railcontent.cache_prefix', $defaultConfig['cache_prefix']);
         $app['config']->set('railcontent.cache_driver', $defaultConfig['cache_driver']);
 
@@ -258,15 +269,9 @@ class TestCase extends BaseTestCase
         $musoraApiConfig = require(__DIR__ . '/../config/musora-api.php');
         $app['config']->set('musora-api.response-structure', $musoraApiConfig['response-structure']);
 
-        $jwtConfig = require(__DIR__ . '/../config/jwt.php');
-        $app['config']->set('jwt', $jwtConfig);
-
         $app->register(MusoraApiServiceProvider::class);
-
-        $app->register(LaravelServiceProvider::class);
         $app->register(ResponseServiceProvider::class);
         $app->register(RailcontentServiceProvider::class);
-
     }
 
     /**
@@ -281,8 +286,6 @@ class TestCase extends BaseTestCase
         if (!$user) {
             $user = $this->createUser();
         }
-
-        $this->withHeader('Authorization', "Bearer " . $user['token']);
 
         parent::actingAs($user);
 
@@ -306,8 +309,6 @@ class TestCase extends BaseTestCase
         $user =
             User::query()
                 ->find($userId);
-
-        $user['token'] = JWTAuth::fromUser($user);
 
         return $user;
     }
@@ -384,10 +385,8 @@ class TestCase extends BaseTestCase
         return $contentPermissionData;
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
-        Redis::flushDB();
-
         parent::tearDown();
     }
 }

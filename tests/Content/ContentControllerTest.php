@@ -4,77 +4,65 @@ namespace Railroad\MusoraApi\Tests\Content;
 
 use Carbon\Carbon;
 use Railroad\MusoraApi\Tests\TestCase;
-use Railroad\MusoraApi\Tests\UnitTest;
 use Railroad\Railcontent\Factories\ContentContentFieldFactory;
-use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Services\ContentService;
 
-class ContentControllerTest extends UnitTest
+class ContentControllerTest extends TestCase
 {
-
-    /**
-     * @var ContentFactory
-     */
-    protected $contentFactory;
 
     /**
      * @var ContentContentFieldFactory
      */
     protected $contentFieldFactory;
 
-    protected function setUp():void
+    protected function setUp()
+    : void
     {
         parent::setUp();
 
-        $this->contentFactory = $this->app->make(ContentFactory::class);
-//        $this->contentFieldFactory = $this->app->make(ContentContentFieldFactory::class);
+        $this->contentFieldFactory = $this->app->make(ContentContentFieldFactory::class);
     }
 
-    public function test_first()
+    public function _test_first()
     {
         $this->assertTrue(true);
     }
 
-    public function test_pull_not_existing_content_endpoint()
-    {
-        $response =
-            $this
-                ->get(
-                    '/musora-api/content/' . rand()
-                );
-
-        $response->assertStatus(404);
-    }
-
     public function test_pull_existing_content_endpoint()
     {
-        $content = $this->contentFactory->create(null, 'course');
-
-        $this->contentFactory->create(
+        $content = $this->contentFactory->create(
             null,
-            'course-part',
+            'course',
             ContentService::STATUS_PUBLISHED,
             null,
             config('railcontent.brand'),
             null,
             Carbon::now()
                 ->subDays(3)
-                ->toDateTimeString(),
-            $content['id']
+                ->toDateTimeString()
         );
 
         $response =
             $this->actingAs()
                 ->get(
-                    '/musora-api/content/' . $content['id']
+                    '/musora-api/content/'.$content['id']
                 );
-dd($response);
+
         $response->assertStatus(200);
 
         $this->assertEquals(
             $content['id'],
             $response->decodeResponseJson()['id']
         );
+    }
+
+    public function test_pull_not_existing_content_endpoint()
+    {
+        $response = $this->get(
+            '/musora-api/content/'.rand()
+        );
+
+        $response->assertStatus(404);
     }
 
     public function test_pull_content_for_download_endpoint()
@@ -101,7 +89,7 @@ dd($response);
         $response =
             $this->actingAs()
                 ->get(
-                    '/musora-api/content/' . $content['id'] . '?download=true'
+                    '/musora-api/content/'.$content['id'].'?download=true'
                 );
 
         $response->assertStatus(200);
@@ -129,17 +117,16 @@ dd($response);
 
         $response =
             $this->actingAs()
-                ->call(
-                    'GET',
-                    '/musora-api/all',
-                    [
-                        'included_types' => [$includedTypes[0]],
-                    ]
-                );
+                ->call('GET', '/musora-api/all', [
+                    'included_types' => [$includedTypes[0]],
+                ]);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') as $content) {
+        foreach (
+            $response->decodeResponseJson()
+                ->json('data') as $content
+        ) {
             $this->assertEquals($includedTypes[0], $content['type']);
         }
     }
@@ -176,18 +163,17 @@ dd($response);
 
         $response =
             $this->actingAs()
-                ->call(
-                    'GET',
-                    '/musora-api/all',
-                    [
-                        'included_types' => [$includedTypes[0]],
-                        'required_fields' => ['instructor,' . $instructor['id']],
-                    ]
-                );
+                ->call('GET', '/musora-api/all', [
+                    'included_types' => [$includedTypes[0]],
+                    'required_fields' => ['instructor,'.$instructor['id']],
+                ]);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') as $content) {
+        foreach (
+            $response->decodeResponseJson()
+                ->json('data') as $content
+        ) {
             $this->assertTrue(in_array($content['id'], array_pluck(array_slice($contents, 0, 7), 'id')));
         }
     }
@@ -197,8 +183,17 @@ dd($response);
         $includedType = 'course-part';
 
         for ($i = 0; $i < 3; $i++) {
-            $contents[] =
-                $this->contentFactory->create($this->faker->text, $includedType, ContentService::STATUS_PUBLISHED, null, config('railcontent.brand'),null,Carbon::now()->subDays(3)->toDateTimeString());
+            $contents[] = $this->contentFactory->create(
+                $this->faker->text,
+                $includedType,
+                ContentService::STATUS_PUBLISHED,
+                null,
+                config('railcontent.brand'),
+                null,
+                Carbon::now()
+                    ->subDays(3)
+                    ->toDateTimeString()
+            );
         }
 
         $user = $this->createUser();
@@ -207,7 +202,6 @@ dd($response);
             $this->actingAs($user)
                 ->call(
                     'GET',
-
                     '/musora-api/in-progress',
                     [
                         'included_types' => [$includedType],
@@ -217,32 +211,44 @@ dd($response);
         $response->assertStatus(200);
 
         //assert we have empty data if not exists content in progress
-        $this->assertTrue(empty($response->decodeResponseJson('data')));
+        $this->assertTrue(
+            empty(
+            $response->decodeResponseJson()
+                ->json('data')
+            )
+        );
+        $this->userProgressFactory->startContent($contents[0]['id'], $user['id']);
+        //        dd($this->userProgressFactory->startContent($contents[0]['id'], 1));
+        //        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id'], true);
 
-      //  $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id'], true);
+        //            $this->actingAs($user)
+        //                ->call(
+        //                    'PUT',
+        //                    '/railcontent/progress',
+        //                    [
+        //                        'content_id' => $contents[0]['id'],
+        //                        'progress_percent' => 12
+        //                    ]
+        //                );
 
-            $this->actingAs($user)
-                ->call(
-                    'PUT',
-                    '/railcontent/progress',
-                    [
-                        'content_id' => $contents[0]['id'],
-                        'progress_percent' => 12
-                    ]
-                );
         $response =
             $this->actingAs($user)
-                ->call(
-                    'GET',
-                    '/musora-api/in-progress',
-                    [
-                        'included_types' => [$includedType],
-                    ]
-                );
+                ->call('GET', '/musora-api/in-progress', [
+                    'included_types' => [$includedType],
+                ]);
 
-       $response->assertStatus(200);
+        $response->assertStatus(200);
 
-        $this->assertEquals($contents[0]['id'], $response->decodeResponseJson('data')[0]['id']);
+        $this->assertEquals(
+            1,
+            $response->decodeResponseJson()
+                ->json('meta')['totalResults']
+        );
+        $this->assertEquals(
+            $contents[0]['id'],
+            $response->decodeResponseJson()
+                ->json('data')[0]['id']
+        );
     }
 
     public function test_get_live_event()
@@ -264,7 +270,7 @@ dd($response);
         $startTime = [
             'key' => 'live_event_start_time',
             'value' => Carbon::now()
-                ->subHour(5),
+                ->subHour(5)->toDateTimeString(),
             'type' => 'datetime',
         ];
 
@@ -341,7 +347,10 @@ dd($response);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') ?? [] as $result) {
+        foreach (
+            $response->decodeResponseJson()
+                ->json('data') ?? [] as $result
+        ) {
             $this->assertEquals($content['id'], $result['id']);
             $this->assertTrue($content['isLive']);
         }
@@ -445,7 +454,10 @@ dd($response);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') ?? [] as $result) {
+        foreach (
+            $response->decodeResponseJson()
+                ->json('data') ?? [] as $result
+        ) {
             $this->assertEquals($content['id'], $result['id']);
             $this->assertFalse($content['isLive']);
         }
@@ -473,7 +485,7 @@ dd($response);
             'type' => 'datetime',
         ];
 
-        $this->contentFieldFactory->create(
+       $this->contentFieldFactory->create(
             $forcedContent['id'],
             $startTime['key'],
             $startTime['value'],
@@ -539,15 +551,11 @@ dd($response);
 
         $response =
             $this->actingAs()
-                ->call(
-                    'GET',
-                    '/musora-api/live-event',
-                    ['forced-content-id' => $forcedContent['id']]
-                );
+                ->call('GET', '/musora-api/live-event', ['forced-content-id' => $forcedContent['id']]);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson('data') ?? [] as $result) {
+        foreach ($response->decodeResponseJson()->json('data') ?? [] as $result) {
             $this->assertEquals($forcedContent['id'], $result['id']);
             $this->assertFalse($forcedContent['isLive']);
         }

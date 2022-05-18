@@ -14,10 +14,10 @@ class MobileAppTokenAuth extends BaseMiddleware
      *
      * @param JWTAuth $auth
      */
-    public function __construct(JWTAuth $auth)
-    {
-        parent::__construct($auth);
-    }
+//    public function __construct(JWTAuth $auth)
+//    {
+//        parent::__construct($auth);
+//    }
 
     /**
      * @param $request
@@ -29,10 +29,10 @@ class MobileAppTokenAuth extends BaseMiddleware
     {
         try {
 
-            $user =
-                JWTFacade::setRequest($request)->parseToken()
-                    ->getPayload()
-                    ->get('sub');
+//            $user =
+//                JWTFacade::setRequest($request)->parseToken()
+//                    ->getPayload()
+//                    ->get('sub');
 
             auth()->loginUsingId($user, false);
 

@@ -13,9 +13,12 @@ use Railroad\MusoraApi\Providers\MusoraApiServiceProvider;
 use Railroad\MusoraApi\Tests\Decorators\NewDecorator;
 use Railroad\MusoraApi\Tests\Decorators\PackDecorator;
 use Railroad\MusoraApi\Tests\Resources\Models\User;
+use Railroad\Railcontent\Factories\CommentFactory;
+use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Providers\RailcontentServiceProvider;
 use Railroad\MusoraApi\Tests\Fixtures\UserProvider;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
+use Railroad\Response\Providers\ResponseServiceProvider;
 
 class UnitTest extends \Orchestra\Testbench\TestCase
 {
@@ -31,6 +34,14 @@ class UnitTest extends \Orchestra\Testbench\TestCase
      * @var AuthManager
      */
     protected $authManager;
+    /**
+     * @var ContentFactory
+     */
+    protected $contentFactory;
+    /**
+     * @var CommentFactory
+     */
+    protected $commentFactory;
 
     protected function setUp(): void
     {
@@ -44,6 +55,9 @@ class UnitTest extends \Orchestra\Testbench\TestCase
         $this->databaseManager = $this->app->make(DatabaseManager::class);
         $this->faker = $this->app->make(Generator::class);
         $this->authManager = $this->app->make(AuthManager::class);
+
+        $this->contentFactory = $this->app->make(ContentFactory::class);
+        $this->commentFactory = $this->app->make(CommentFactory::class);
 
         //call the MobileAppTokenAuth
 //                $middleware = $this->app->make(AuthIfTokenExist::class);
@@ -139,6 +153,24 @@ class UnitTest extends \Orchestra\Testbench\TestCase
         );
 
         $app['config']->set(
+            'database.connections.mysql8',
+            [
+                'driver' => 'mysql',
+                'host' => 'mysql8',
+                'port' => env('MYSQL_PORT', '3306'),
+                'database' => env('MYSQL_DB', 'railcontent'),
+                'username' => 'root',
+                'password' => 'root',
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_general_ci',
+                'prefix' => '',
+                'options' => [
+                    \PDO::ATTR_PERSISTENT => true,
+                ]
+            ]
+        );
+
+        $app['config']->set(
             'database.redis',
             [
                 'client' => 'predis',
@@ -179,8 +211,8 @@ class UnitTest extends \Orchestra\Testbench\TestCase
         $app->register(MusoraApiServiceProvider::class);
 
 
-        //  $app->register(ResponseServiceProvider::class);
-        $app->register(SanctumServiceProvider::class);
+        $app->register(ResponseServiceProvider::class);
+       // $app->register(SanctumServiceProvider::class);
         $app->register(RailcontentServiceProvider::class);
     }
 
@@ -192,18 +224,9 @@ class UnitTest extends \Orchestra\Testbench\TestCase
 
     public function actingAs($user = null, $driver = null)
     {
-        $user = Sanctum::actingAs(
-            $this->createUser(),
-            []
-        );
-      //  dd($user->currentAccessToken());
-//        if (!$user) {
-//            $user = $this->createUser();
-//        }
-//
-//        $this->withHeader('Authorization', "Bearer " . $user['token']);
-//
-//        parent::actingAs($user);
+            $user = $this->createUser();
+
+        parent::actingAs($user);
 
         return $this;
 
@@ -225,4 +248,11 @@ class UnitTest extends \Orchestra\Testbench\TestCase
 
         return $user;
     }
+
+//    protected function tearDown()
+//    {
+//        // Redis::flushDB();
+//
+//       // parent::tearDown();
+//    }
 }

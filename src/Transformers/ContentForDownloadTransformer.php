@@ -6,7 +6,7 @@ class ContentForDownloadTransformer extends ContentTransformer
 {
     public function transform($content, $responseStructure = [])
     {
-        if (array_key_exists('type', $content)) {
+        if (isset( $content['type'])) {
             $type = (in_array($content['type'], config('railcontent.showTypes'))) ? 'show-lesson' : $content['type'];
 
             $responseStructure = array_merge(

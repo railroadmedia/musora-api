@@ -4,17 +4,18 @@ namespace Railroad\MusoraApi\Tests\Content;
 
 use Carbon\Carbon;
 use Railroad\MusoraApi\Tests\TestCase;
+use Railroad\MusoraApi\Tests\UnitTest;
 use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Services\ContentService;
 
-class DeepLinksTest extends TestCase
+class DeepLinksTest extends UnitTest
 {
     /**
      * @var ContentFactory
      */
     protected $contentFactory;
 
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
 
@@ -23,6 +24,7 @@ class DeepLinksTest extends TestCase
 
     public function test_deep_link_pack_with_two_bundles()
     {
+
         $pack = $this->fakeContent(
             [
                 'type' => 'pack',

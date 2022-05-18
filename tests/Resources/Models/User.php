@@ -3,7 +3,6 @@
 namespace Railroad\MusoraApi\Tests\Resources\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens;
 
 /**
  * User
@@ -13,8 +12,6 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens;
-
     protected $table = 'users';
 
     public function getJWTIdentifier()

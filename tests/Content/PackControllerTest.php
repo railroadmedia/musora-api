@@ -3,17 +3,18 @@
 namespace Railroad\MusoraApi\Tests\Content;
 
 use Railroad\MusoraApi\Tests\TestCase;
+use Railroad\MusoraApi\Tests\UnitTest;
 use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Services\ContentService;
 
-class PackControllerTest extends TestCase
+class PackControllerTest extends UnitTest
 {
     /**
      * @var ContentFactory
      */
    protected $contentFactory;
 
-    protected function setUp()
+    protected function setUp():void
     {
         parent::setUp();
 
