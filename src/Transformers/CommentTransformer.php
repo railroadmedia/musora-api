@@ -22,7 +22,7 @@ class CommentTransformer extends TransformerAbstract
 
                         $response[$index][$key][$it] = $comment[$key][$it] ?? false;
                     }
-                } elseif (array_key_exists($item, $comment)) {
+                } elseif (isset($comment[$item])) {
                     $response[$index][$item] = $comment[$item];
                 }
             }
