@@ -2,8 +2,9 @@
 
 namespace Railroad\MusoraApi\Services;
 
-use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+
 use Railroad\MusoraApi\Transformers\CommentTransformer;
+use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Services\CommentService;
 use Railroad\Railcontent\Services\ContentService;
@@ -29,12 +30,12 @@ class DownloadService
      *
      * @param ContentService $contentService
      * @param CommentService $commentService
-     * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
+     * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
      */
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
-        VimeoVideoSourcesDecorator $vimeoVideoDecorator
+        ContentVimeoVideoDecorator $vimeoVideoDecorator
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
