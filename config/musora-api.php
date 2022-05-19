@@ -4,6 +4,7 @@ return [
     'auth-middleware' => [
         \Railroad\MusoraApi\Middleware\MobileAppTokenAuth::class,
         \Railroad\MusoraApi\Middleware\SetCustomDecorators::class,
+        \Railroad\MusoraApi\Middleware\BrandMiddleware::class,
     ],
     'user-middleware' => [
         \Railroad\MusoraApi\Middleware\AuthIfTokenExist::class,
