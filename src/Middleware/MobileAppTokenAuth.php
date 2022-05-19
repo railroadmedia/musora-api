@@ -46,7 +46,7 @@ class MobileAppTokenAuth extends BaseMiddleware
                 case \Tymon\JWTAuth\Exceptions\TokenExpiredException::class:
                     return response()->json(['error' => 'TOKEN_EXPIRED']);
                 case \Tymon\JWTAuth\Exceptions\TokenInvalidException::class:
-                    return response()->json(['error' => 'TOKEN_INVALID']);
+                    return response()->json(['error' => 'TOKEN_EXPIRED']);
                 case \Tymon\JWTAuth\Exceptions\TokenBlacklistedException::class:
                     return response()->json(['error' => 'TOKEN_BLACKLISTED']);
                 case \Tymon\JWTAuth\Exceptions\JWTException::class:
