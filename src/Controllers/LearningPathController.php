@@ -10,7 +10,7 @@ use Illuminate\Routing\Controller;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
-use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\MethodService;
@@ -34,7 +34,7 @@ class LearningPathController extends Controller
      */
     private $commentService;
     /**
-     * @var VimeoVideoSourcesDecorator
+     * @var ContentVimeoVideoDecorator
      */
     private $vimeoVideoDecorator;
     /**
@@ -59,7 +59,7 @@ class LearningPathController extends Controller
      *
      * @param ContentService $contentService
      * @param CommentService $commentService
-     * @param VimeoVideoSourcesDecorator $vimeoVideoDecorator
+     * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param MethodService $methodService
      * @param DownloadService $downloadService
@@ -68,7 +68,7 @@ class LearningPathController extends Controller
     public function __construct(
         ContentService $contentService,
         CommentService $commentService,
-        VimeoVideoSourcesDecorator $vimeoVideoDecorator,
+        ContentVimeoVideoDecorator $vimeoVideoDecorator,
         ContentHierarchyRepository $contentHierarchyRepository,
         MethodService $methodService,
         DownloadService $downloadService,

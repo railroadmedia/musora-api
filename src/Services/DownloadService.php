@@ -21,7 +21,7 @@ class DownloadService
      */
     private $commentService;
     /**
-     * @var VimeoVideoSourcesDecorator
+     * @var ContentVimeoVideoDecorator
      */
     private $vimeoVideoDecorator;
 

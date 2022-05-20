@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
-use Railroad\MusoraApi\Decorators\VimeoVideoSourcesDecorator;
+use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
@@ -52,7 +52,7 @@ class PacksController extends Controller
     private $productProvider;
 
     /**
-     * @var VimeoVideoSourcesDecorator
+     * @var ContentVimeoVideoDecorator
      */
     private $vimeoVideoDecorator;
 
@@ -72,7 +72,7 @@ class PacksController extends Controller
      * @param ContentHierarchyService $contentHierarchyService
      * @param ProductProviderInterface $productProvider
      * @param ContentRepository $contentRepository
-     * @param VimeoVideoSourcesDecorator $videoSourcesDecorator
+     * @param ContentVimeoVideoDecorator $videoSourcesDecorator
      * @param UserProgressService $userProgressService
      * @param DownloadService $downloadService
      */
@@ -82,7 +82,7 @@ class PacksController extends Controller
         ContentHierarchyService $contentHierarchyService,
         ProductProviderInterface $productProvider,
         ContentRepository $contentRepository,
-        VimeoVideoSourcesDecorator $videoSourcesDecorator,
+        ContentVimeoVideoDecorator $videoSourcesDecorator,
         UserProgressService $userProgressService,
         DownloadService $downloadService
     ) {

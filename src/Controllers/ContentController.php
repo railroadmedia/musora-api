@@ -54,7 +54,7 @@ class ContentController extends Controller
     private $commentService;
 
     /**
-     * @var VimeoVideoSourcesDecorator
+     * @var ContentVimeoVideoDecorator
      */
     private $vimeoVideoDecorator;
 
