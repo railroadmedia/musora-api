@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
+use Railroad\MusoraApi\Contracts\RailTrackerProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\ModeDecoratorBase;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
@@ -22,7 +23,6 @@ use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\UserContentProgressService;
-use Railroad\Railtracker\Trackers\MediaPlaybackTracker;
 use Illuminate\Validation\ValidationException;
 
 class UserProgressController extends Controller
@@ -40,9 +40,9 @@ class UserProgressController extends Controller
     private $userContentProgressService;
 
     /**
-     * @var MediaPlaybackTracker
+     * @var RailTrackerProviderInterface
      */
-    private $mediaPlaybackTracker;
+    private $mediaTrackerProvider;
 
     /**
      * @var UserProviderInterface
@@ -59,11 +59,9 @@ class UserProgressController extends Controller
     private $productProvider;
 
     /**
-     * UserProgressController constructor.
-     *
      * @param ContentService $contentService
      * @param UserContentProgressService $userContentProgressService
-     * @param MediaPlaybackTracker $mediaPlaybackTracker
+     * @param RailTrackerProviderInterface $mediaPlaybackTracker
      * @param UserProviderInterface $userProvider
      * @param SubscriptionRepository $subscriptionRepository
      * @param ProductProviderInterface $productProvider
@@ -71,14 +69,14 @@ class UserProgressController extends Controller
     public function __construct(
         ContentService $contentService,
         UserContentProgressService $userContentProgressService,
-        MediaPlaybackTracker $mediaPlaybackTracker,
+        RailTrackerProviderInterface $mediaPlaybackTracker,
         UserProviderInterface $userProvider,
         SubscriptionRepository $subscriptionRepository,
         ProductProviderInterface $productProvider
     ) {
         $this->contentService = $contentService;
         $this->userContentProgressService = $userContentProgressService;
-        $this->mediaPlaybackTracker = $mediaPlaybackTracker;
+        $this->mediaTrackerProvider = $mediaPlaybackTracker;
         $this->userProvider = $userProvider;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->productProvider = $productProvider;
@@ -296,12 +294,12 @@ class UserProgressController extends Controller
         }
 
         if (!$sessionId) {
-            $mediaTypeId = $this->mediaPlaybackTracker->trackMediaType(
+            $mediaTypeId = $this->mediaTrackerProvider->trackMediaType(
                 $request->get('media_type', 'video'),
                 $request->get('media_category', 'vimeo')
             );
 
-            $sessionId = $this->mediaPlaybackTracker->trackMediaPlaybackStart(
+            $sessionId = $this->mediaTrackerProvider->trackMediaPlaybackStart(
                 $request->get('media_id'),
                 $request->get('media_length_seconds'),
                 auth()->id(),
@@ -316,7 +314,7 @@ class UserProgressController extends Controller
                 );
             }
         } else {
-            $this->mediaPlaybackTracker->trackMediaPlaybackProgress(
+            $this->mediaTrackerProvider->trackMediaPlaybackProgress(
                 $sessionId,
                 $request->get('seconds_played'),
                 $request->get('current_second')
