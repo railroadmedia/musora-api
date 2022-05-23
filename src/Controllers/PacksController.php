@@ -412,7 +412,7 @@ class PacksController extends Controller
 
         $thisLesson['total_xp'] = $thisLesson['xp'] ?? 0;
 
-        if (array_key_exists('resources', $thisLesson)) {
+        if (isset($thisLesson['resources'])) {
             $thisLesson['resources'] = array_values($thisLesson['resources']);
         }
 
