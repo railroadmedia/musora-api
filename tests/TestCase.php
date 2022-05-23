@@ -132,12 +132,12 @@ class TestCase extends BaseTestCase
 
         $chatProvider = new ChatProvider();
         $this->app->instance(ChatProviderInterface::class, $chatProvider);
-//
+
         $userProvider = new UserProvider();
         $this->app->instance(UserProviderInterface::class, $userProvider);
-//
-//        $productProvider = new ProductProvider();
-//        $this->app->instance(ProductProviderInterface::class, $productProvider);
+
+        $productProvider = new ProductProvider();
+        $this->app->instance(ProductProviderInterface::class, $productProvider);
 
         \Railroad\Railcontent\Repositories\RepositoryBase::$connectionMask = null;
     }
@@ -206,8 +206,8 @@ class TestCase extends BaseTestCase
         );
         $app['config']->set('railcontent.contentColumnNamesForFields', $defaultConfig['contentColumnNamesForFields']);
 
-        $app['config']->set('database_connection_name', 'mysql');
-        $app['config']->set('database.default', 'mysql');
+        $app['config']->set('database_connection_name', 'testbench');
+        $app['config']->set('database.default', 'testbench');
         $app['config']->set(
             'database.connections.testbench',
             [
@@ -233,32 +233,21 @@ class TestCase extends BaseTestCase
                 ]
             ]
         );
-//        $app['config']->set(
-//            'database.redis',
-//            [
-//                'client' => 'predis',
-//                'default' => [
-//                    'host' => env('REDIS_HOST', 'redis'),
-//                    'password' => env('REDIS_PASSWORD', null),
-//                    'port' => env('REDIS_PORT', 6379),
-//                    'database' => 0,
-//                ],
-//            ]
-//        );
-        $app['config']->set('railcontent.database.default', 'mysql');
 
-//        $app['config']->set(
-//            'railcontent.database.redis',
-//            [
-//                'client' => 'predis',
-//                'default' => [
-//                    'host' => env('REDIS_HOST', 'redis'),
-//                    'password' => env('REDIS_PASSWORD', null),
-//                    'port' => env('REDIS_PORT', 6379),
-//                    'database' => 0,
-//                ],
-//            ]
-//        );
+        $app['config']->set('railcontent.database.default', 'testbench');
+
+        $app['config']->set(
+            'railcontent.database.redis',
+            [
+                'client' => 'predis',
+                'default' => [
+                    'host' => env('REDIS_HOST', 'redis'),
+                    'password' => env('REDIS_PASSWORD', null),
+                    'port' => env('REDIS_PORT', 6379),
+                    'database' => 0,
+                ],
+            ]
+        );
         $app['config']->set('cache.default', env('CACHE_DRIVER', 'array'));
         $app['config']->set('railcontent.cache_prefix', $defaultConfig['cache_prefix']);
         $app['config']->set('railcontent.cache_driver', $defaultConfig['cache_driver']);
@@ -383,6 +372,81 @@ class TestCase extends BaseTestCase
         $contentPermissionData['id'] = $permissionId;
 
         return $contentPermissionData;
+    }
+
+    public function fakeChild($contentData = [])
+    {
+        $parentId = $contentData['parent_id'];
+        unset($contentData['parent_id']);
+        $contentData += [
+            'slug' => $this->faker->slug,
+            'type' => $this->faker->text,
+            'brand' => config('railcontent.brand'),
+            'language' => $this->faker->text,
+            'status' => 'published',
+            'published_on' => Carbon::now()
+                ->subDays(1)
+                ->toDateTimeString(),
+            'created_on' => Carbon::now()
+                ->toDateTimeString(),
+        ];
+
+        $contentId =
+            $this->databaseManager->table('railcontent_content')
+                ->insertGetId($contentData);
+
+        if(isset($parentId)){
+            $this->databaseManager->table('railcontent_content_hierarchy')
+                ->insertGetId([
+                    'parent_id' => $parentId,
+                    'child_id' => $contentId,
+                    'child_position' => 1,
+                    'created_on' => Carbon::now()->toDateTimeString()
+                              ]);
+        }
+
+        $contentData['id'] = $contentId;
+
+        return $contentData;
+    }
+
+    public function fakeContentProgress($contentProgressData = [])
+    {
+        $contentProgressData += [
+            'content_id' => rand(1, 10),
+            'user_id' => rand(1, 10),
+            'state' => 'started',
+            'progress_percent' => rand(1, 10),
+            'updated_on' => Carbon::now()->toDateTimeString(),
+        ];
+
+        $progressId =
+            $this->databaseManager->table('railcontent_user_content_progress')
+                ->insertGetId($contentProgressData);
+
+        $contentProgressData['id'] = $progressId;
+
+        return $contentProgressData;
+    }
+
+    public function fakeComment($commentData = [])
+    {
+        $commentData += [
+            'content_id' => rand(1,10),
+            'user_id' => rand(1,10),
+            'comment' => $this->faker->text,
+            'temporary_display_name' => $this->faker->text,
+            'created_on' => Carbon::now()
+                ->toDateTimeString(),
+        ];
+
+        $commentId =
+            $this->databaseManager->table('railcontent_comments')
+                ->insertGetId($commentData);
+
+        $commentData['id'] = $commentId;
+
+        return $commentData;
     }
 
     protected function tearDown(): void

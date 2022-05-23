@@ -23,23 +23,22 @@ class ContentControllerTest extends TestCase
         $this->contentFieldFactory = $this->app->make(ContentContentFieldFactory::class);
     }
 
-    public function _test_first()
+    public function test_first()
     {
         $this->assertTrue(true);
     }
 
     public function test_pull_existing_content_endpoint()
     {
-        $content = $this->contentFactory->create(
-            null,
-            'course',
-            ContentService::STATUS_PUBLISHED,
-            null,
-            config('railcontent.brand'),
-            null,
-            Carbon::now()
-                ->subDays(3)
-                ->toDateTimeString()
+        $content = $this->fakeContent(
+            [
+                'type' =>  'course',
+                'slug' => $this->faker->slug,
+                'status' => ContentService::STATUS_PUBLISHED,
+                'published_on' => Carbon::now()
+                    ->subDay(3)
+                    ->toDateTimeString(),
+            ]
         );
 
         $response =
@@ -67,24 +66,33 @@ class ContentControllerTest extends TestCase
 
     public function test_pull_content_for_download_endpoint()
     {
-        $content = $this->contentFactory->create(null, 'course');
+        $content = $this->fakeContent(
+            [
+                'type' =>  'course',
+                'slug' => $this->faker->slug,
+                'status' => ContentService::STATUS_PUBLISHED,
+                'published_on' => Carbon::now()
+                    ->subDay(3)
+                    ->toDateTimeString(),
+            ]
+        );
 
         for ($i = 0; $i < 5; $i++) {
-            $lessons[] = $this->contentFactory->create(
-                $this->faker->text,
-                'course-part',
-                ContentService::STATUS_PUBLISHED,
-                null,
-                config('railcontent.brand'),
-                null,
-                Carbon::now()
-                    ->subDays(3)
-                    ->toDateTimeString(),
-                $content['id']
-            );
+            $lessons[] = $this->fakeChild([
+                                              'type' => 'course-part',
+                                              'slug' => $this->faker->slug,
+                                              'status' => ContentService::STATUS_PUBLISHED,
+                                              'published_on' => Carbon::now()
+                                                  ->subDay(3)
+                                                  ->toDateTimeString(),
+                                              'parent_id' => $content['id'],
+                                          ]);
         }
 
-        $comment = $this->commentFactory->create($this->faker->text, $lessons[0]['id']);
+        $comment = $this->fakeComment([
+            'content_id' => $lessons[0]['id']
+                                      ]);
+            //$this->commentFactory->create($this->faker->text, $lessons[0]['id']);
 
         $response =
             $this->actingAs()
@@ -183,17 +191,14 @@ class ContentControllerTest extends TestCase
         $includedType = 'course-part';
 
         for ($i = 0; $i < 3; $i++) {
-            $contents[] = $this->contentFactory->create(
-                $this->faker->text,
-                $includedType,
-                ContentService::STATUS_PUBLISHED,
-                null,
-                config('railcontent.brand'),
-                null,
-                Carbon::now()
-                    ->subDays(3)
-                    ->toDateTimeString()
-            );
+            $contents[] = $this->fakeContent([
+                                                 'type' => $includedType,
+                                                 'slug' => $this->faker->slug,
+                                                 'status' => ContentService::STATUS_PUBLISHED,
+                                                 'published_on' => Carbon::now()
+                                                     ->subDay()
+                                                     ->toDateTimeString(),
+                                             ]);
         }
 
         $user = $this->createUser();
@@ -217,19 +222,11 @@ class ContentControllerTest extends TestCase
                 ->json('data')
             )
         );
-        $this->userProgressFactory->startContent($contents[0]['id'], $user['id']);
-        //        dd($this->userProgressFactory->startContent($contents[0]['id'], 1));
-        //        $this->userProgressFactory->saveContentProgress($contents[0]['id'], 12, $user['id'], true);
 
-        //            $this->actingAs($user)
-        //                ->call(
-        //                    'PUT',
-        //                    '/railcontent/progress',
-        //                    [
-        //                        'content_id' => $contents[0]['id'],
-        //                        'progress_percent' => 12
-        //                    ]
-        //                );
+                $this->fakeContentProgress([
+                                       'content_id' => $contents[0]['id'],
+                                       'user_id' => $user['id'],
+                                   ]);
 
         $response =
             $this->actingAs($user)
@@ -270,7 +267,8 @@ class ContentControllerTest extends TestCase
         $startTime = [
             'key' => 'live_event_start_time',
             'value' => Carbon::now()
-                ->subHour(5)->toDateTimeString(),
+                ->subHour(5)
+                ->toDateTimeString(),
             'type' => 'datetime',
         ];
 
@@ -467,16 +465,14 @@ class ContentControllerTest extends TestCase
     {
         $includedTypes = config('railcontent.liveContentTypes');
 
-        $forcedContent = $this->contentFactory->create(
-            null,
-            $this->faker->randomElement($includedTypes),
-            'scheduled',
-            null,
-            config('railcontent.brand'),
-            null,
-            Carbon::now()
-                ->subHour(5)
-        );
+        $forcedContent = $this->fakeContent([
+                                                'type' => $this->faker->randomElement($includedTypes),
+                                                'slug' => $this->faker->slug,
+                                                'status' => ContentService::STATUS_SCHEDULED,
+                                                'published_on' => Carbon::now()
+                                                    ->subDay()
+                                                    ->toDateTimeString(),
+                                            ]);
 
         $startTime = [
             'key' => 'live_event_start_time',
@@ -485,7 +481,7 @@ class ContentControllerTest extends TestCase
             'type' => 'datetime',
         ];
 
-       $this->contentFieldFactory->create(
+        $this->contentFieldFactory->create(
             $forcedContent['id'],
             $startTime['key'],
             $startTime['value'],
@@ -509,16 +505,14 @@ class ContentControllerTest extends TestCase
         );
 
         //live event
-        $content = $this->contentFactory->create(
-            null,
-            $this->faker->randomElement($includedTypes),
-            'scheduled',
-            null,
-            config('railcontent.brand'),
-            null,
-            Carbon::now()
-                ->subHour(1)
-        );
+        $content = $this->fakeContent([
+                                          'type' => $this->faker->randomElement($includedTypes),
+                                          'slug' => $this->faker->slug,
+                                          'status' => ContentService::STATUS_SCHEDULED,
+                                          'published_on' => Carbon::now()
+                                              ->subHour(1)
+                                              ->toDateTimeString(),
+                                      ]);
 
         $startTime = [
             'key' => 'live_event_start_time',
@@ -549,13 +543,32 @@ class ContentControllerTest extends TestCase
             $endTime['type']
         );
 
+        $instructor = $this->contentFactory->create($this->faker->word, 'instructor', 'published');
+
+        $fieldInstructor = [
+            'key' => 'instructor',
+            'value' => $instructor['id'],
+            'type' => 'content_id',
+        ];
+
+        $this->contentFieldFactory->create(
+            $content['id'],
+            $fieldInstructor['key'],
+            $fieldInstructor['value'],
+            null,
+            $fieldInstructor['type']
+        );
+
         $response =
             $this->actingAs()
                 ->call('GET', '/musora-api/live-event', ['forced-content-id' => $forcedContent['id']]);
 
         $response->assertStatus(200);
 
-        foreach ($response->decodeResponseJson()->json('data') ?? [] as $result) {
+        foreach (
+            $response->decodeResponseJson()
+                ->json('data') ?? [] as $result
+        ) {
             $this->assertEquals($forcedContent['id'], $result['id']);
             $this->assertFalse($forcedContent['isLive']);
         }

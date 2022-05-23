@@ -7,8 +7,9 @@ use Railroad\MusoraApi\Tests\TestCase;
 use Railroad\MusoraApi\Tests\UnitTest;
 use Railroad\Railcontent\Factories\ContentFactory;
 use Railroad\Railcontent\Services\ContentService;
+use Illuminate\Http\Request;
 
-class DeepLinksTest extends UnitTest
+class DeepLinksTest extends TestCase
 {
     /**
      * @var ContentFactory
@@ -131,28 +132,40 @@ class DeepLinksTest extends UnitTest
             ]
         );
 
-        $packBundle1 = $this->contentFactory->create(
-            $this->faker->slug,
-            'pack-bundle',
-            ContentService::STATUS_PUBLISHED,
-            null,
-            config('railcontent.brand'),
-            null,
-            Carbon::now()
-                ->subDays(3)
-                ->toDateTimeString(),
-            $pack['id']
+        $packBundle1 = $this->fakeChild(
+            [
+                'type' => 'pack-bundle',
+                'slug' => $this->faker->slug,
+                'status' => ContentService::STATUS_PUBLISHED,
+                'published_on' => Carbon::now()
+                    ->subDay()
+                    ->toDateTimeString(),
+                'parent_id' => $pack['id']
+            ]
         );
+//            $this->contentFactory->create(
+//            $this->faker->slug,
+//            'pack-bundle',
+//            ContentService::STATUS_PUBLISHED,
+//            null,
+//            config('railcontent.brand'),
+//            null,
+//            Carbon::now()
+//                ->subDays(3)
+//                ->toDateTimeString(),
+//            $pack['id']
+//        );
+$request = new Request();
 
         $response =
             $this->actingAs()
                 ->call(
                     'GET',
-                    '/musora-api/members/packs/' . $pack['slug'] . '/' . $packBundle1['slug']
+                    '/musora-api/members/packs/' . $pack['slug'] . '/' . $packBundle1['slug'].'/'.$request
                 );
 
         $decodedResponse = $response->decodeResponseJson();
-
+dd($decodedResponse);
         $this->assertEquals($packBundle1['id'], $decodedResponse['id']);
         $this->assertEquals($packBundle1['type'], $decodedResponse['type']);
     }
