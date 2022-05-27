@@ -3,6 +3,7 @@
 namespace Railroad\MusoraApi\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Railroad\MusoraApi\Middleware\ApiVersionMiddleware;
 
 class MusoraApiServiceProvider extends ServiceProvider
 {
@@ -23,6 +24,9 @@ class MusoraApiServiceProvider extends ServiceProvider
 
         //load package routes file
         $this->loadRoutesFrom(__DIR__ . '/../../routes/routes.php');
+
+        $router = $this->app['router'];
+        $router->aliasMiddleware('api_version',ApiVersionMiddleware::class);
     }
 
     /**
