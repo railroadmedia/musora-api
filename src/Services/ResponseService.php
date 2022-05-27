@@ -78,11 +78,22 @@ class ResponseService
 
     public static function scheduleContent($data)
     {
-        return Fractal::create()
-            ->collection($data)
-            ->transformWith(ScheduledContentTransformer::class)
-            ->serializeWith(DataSerializer::class)
-            ->toArray();
+        if(!config('musora-api.api.version')) {
+            return Fractal::create()
+                ->collection($data)
+                ->transformWith(ScheduledContentTransformer::class)
+                ->serializeWith(DataSerializer::class)
+                ->toArray();
+        }
+
+        return (new ContentFilterResultsEntity(
+            [
+                'results' => $data,
+                'filter_options' => [],
+                'total_results' => count($data),
+            ]
+        ))->toJsonResponse();
+
     }
 
     public static function live($data)
