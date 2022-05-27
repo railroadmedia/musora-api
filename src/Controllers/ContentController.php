@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use App\Decorators\LessonAssignmentDecorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -140,12 +141,27 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
+        if ($content['type'] == 'learning-path-lesson') {
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
+        } elseif ($content['type'] == 'pack') {
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
+        }
+
         //get content's parent for related lessons and resources
         $parent = Arr::first(
-            $this->contentService->getByChildIdWhereParentTypeIn(
-                $contentId,
-                ['course', 'song', 'learning-path', 'pack', 'pack-bundle']
-            )
+            $this->contentService->getByChildIdWhereParentTypeIn($contentId, [
+                                                                               'course',
+                                                                               'song',
+                                                                               'learning-path',
+                                                                               'pack',
+                                                                               'pack-bundle',
+                                                                           ])
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -166,7 +182,7 @@ class ContentController extends Controller
 
         if ($content['type'] == 'coach-stream') {
             $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
-            $requiredFields = ($instructor) ? ['instructor,' . $instructor['id']] : [];
+            $requiredFields = ($instructor) ? ['instructor,'.$instructor['id']] : [];
 
             $lessons = $this->contentService->getFiltered(
                 1,
@@ -184,14 +200,13 @@ class ContentController extends Controller
                 false
             )['results'];
         } elseif ($content['type'] == 'song') {
-            $songsFromSameArtist = $this->contentService->getFiltered(
-                $request->get('page', 1),
-                $request->get('limit', 10),
-                '-published_on',
-                [$content['type']],
-                [],
-                [],
-                ['artist,' . $content->fetch('fields.artist')]
+            $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
+                                                                      $request->get('limit', 10),
+                                                                      '-published_on',
+                                                                      [$content['type']],
+                                                                      [],
+                                                                      [],
+                                                                      ['artist,'.$content->fetch('fields.artist')]
             )['results'];
 
             // remove requested song if in related lessons, part one of two
@@ -206,15 +221,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,' . $content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -318,7 +332,7 @@ class ContentController extends Controller
         $content['total_comments'] = $comments['total_comments_and_results'];
 
         //attached lessons to the content if not exists already
-        if (!isset( $content['lessons']) &&
+        if (!isset($content['lessons']) &&
             !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
             $content['lessons'] = $this->contentService->getByParentId($content['id']);
         }
@@ -328,12 +342,12 @@ class ContentController extends Controller
          */
         if ($content['type'] == 'coach' || $content['type'] == 'instructor') {
             $includedFields = [];
-            $includedFields[] = 'instructor,' . $content['id'];
+            $includedFields[] = 'instructor,'.$content['id'];
             $instructor =
                 $this->contentService->getBySlugAndType($content['slug'], 'coach')
                     ->first();
             if ($instructor) {
-                $includedFields[] = 'instructor,' . $instructor['id'];
+                $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
             $requiredFields = $request->get('required_fields', []);
@@ -388,35 +402,40 @@ class ContentController extends Controller
 
             //attach coach's featured lessons
             $includedFields = [];
-            $includedFields[] = 'instructor,' . $content['id'];
+            $includedFields[] = 'instructor,'.$content['id'];
             $instructor =
                 $this->contentService->getBySlugAndType($content['slug'], 'coach')
                     ->first();
             if ($instructor) {
-                $includedFields[] = 'instructor,' . $instructor['id'];
+                $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
         if ($parent) {
-            $content['instructor'] = array_unique(array_merge(
-                $content['instructor'] ?? [],
-                ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
-                                                  ), SORT_REGULAR);
+            $content['instructor'] = array_unique(
+                array_merge(
+                    $content['instructor'] ?? [],
+                    ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
+                ),
+                SORT_REGULAR
+            );
 
-            $content['coaches'] = array_unique(array_merge(
-                $content['coaches'] ?? [],
-                $parent['coaches'] ?? []
-            ), SORT_REGULAR);
+            $content['coaches'] = array_unique(
+                array_merge(
+                    $content['coaches'] ?? [],
+                    $parent['coaches'] ?? []
+                ),
+                SORT_REGULAR
+            );
 
             $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
             $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
@@ -440,9 +459,23 @@ class ContentController extends Controller
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
         if ($isDownload && !empty($content['lessons'] ?? [])) {
-
             $this->downloadService->attachLessonsDataForDownload($content);
+
             return ResponseService::contentForDownload($content);
+        }
+
+        if ($content['type'] == 'learning-path-level') {
+            foreach ($content['lessons'] as $index => $course) {
+                $content['lessons'][$index]['level_rank'] = $content['level_number'].'.'.$course['course_position'];
+            }
+            $content['courses'] = $content['lessons'];
+            $content['banner_background_image'] = $parent->fetch('data.header_image_url', '');
+            $content['banner_button_url'] =
+                $content->fetch('next_lesson') ? url()->route('mobile.musora-api.content.show', [
+                    $content->fetch(
+                        'next_lesson'
+                    )['id'],
+                ]) : null;
         }
 
         return ResponseService::content($content);
@@ -493,7 +526,7 @@ class ContentController extends Controller
 
         $requiredFields = $request->get('required_fields', []);
         if ($request->has('show_in_new_feed')) {
-            $requiredFields = array_merge($requiredFields, ['show_in_new_feed,' . $request->get('show_in_new_feed')]);
+            $requiredFields = array_merge($requiredFields, ['show_in_new_feed,'.$request->get('show_in_new_feed')]);
         }
 
         $sortedBy = '-published_on';
@@ -637,26 +670,26 @@ class ContentController extends Controller
         $brand = config('railcontent.brand', '');
 
         $input['subject'] =
-            config('musora-api.submit_question_subject.' . $brand, '') .
-            $currentUser->getDisplayName() .
-            " (" .
-            $currentUser->getEmail() .
+            config('musora-api.submit_question_subject.'.$brand, '').
+            $currentUser->getDisplayName().
+            " (".
+            $currentUser->getEmail().
             ")";
         $input['sender-address'] = $currentUser->getEmail();
         $input['sender-name'] = $currentUser->getDisplayName();
         $input['lines'] = [$input['question']];
         $input['unsubscribeLink'] = '';
         $input['alert'] =
-            config('musora-api.submit_question_subject.' . $brand, '') .
-            $currentUser->getDisplayName() .
-            " (" .
-            $currentUser->getEmail() .
+            config('musora-api.submit_question_subject.'.$brand, '').
+            $currentUser->getDisplayName().
+            " (".
+            $currentUser->getEmail().
             ")";
 
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('musora-api.submit_question_recipient.' . $brand);
-        $input['success'] = config('musora-api.submit_question_success_message.' . $brand);
+        $input['recipient'] = config('musora-api.submit_question_recipient.'.$brand);
+        $input['success'] = config('musora-api.submit_question_success_message.'.$brand);
 
         return $this->sendSecure($input);
     }
@@ -673,22 +706,14 @@ class ContentController extends Controller
         $brand = config('railcontent.brand', '');
 
         $input['subject'] =
-            "Monthly Collaboration submission from: " .
-            $currentUser->getDisplayName() .
-            " (" .
-            $currentUser->getEmail() .
-            ")";
+            "Monthly Collaboration submission from: ".$currentUser->getDisplayName()." (".$currentUser->getEmail().")";
         $input['sender-address'] = $currentUser->getEmail();
         $input['sender-name'] = $currentUser->getDisplayName();
         $input['lines'] = [$input['video']];
 
         $input['alert'] =
-            "Monthly Collaboration submission from: " .
-            $currentUser->getDisplayName() .
-            " (" .
-            $currentUser->getEmail() .
-            ")";
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
+            "Monthly Collaboration submission from: ".$currentUser->getDisplayName()." (".$currentUser->getEmail().")";
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
         $input['success'] =
             "Our team will combine your video with the other student videos to create next months episode. Collaborations are typically released on the first of each month.";
@@ -706,25 +731,25 @@ class ContentController extends Controller
         $currentUser = $this->userProvider->getCurrentUser();
         $brand = config('railcontent.brand', '');
         $lines = [
-            '<strong>student progress info:</strong> ' .
-            'https://' .
-            'www.musora.com/admin/user-progress-info/' .
+            '<strong>student progress info:</strong> '.
+            'https://'.
+            'www.musora.com/admin/user-progress-info/'.
             $currentUser->getId(),
         ];
         $inputLines = $request->all();
         foreach ($inputLines as $key => $inputLine) {
-            $lines[] = '<strong>' . $key . ':</strong> ' . $inputLine;
+            $lines[] = '<strong>'.$key.':</strong> '.$inputLine;
         }
 
         $input['subject'] =
         $input['alert'] =
-            'Student Review Application from:' . $currentUser->getDisplayName() . '(' . $currentUser->getEmail() . ')';
+            'Student Review Application from:'.$currentUser->getDisplayName().'('.$currentUser->getEmail().')';
 
         $input['lines'] = $lines;
-        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('musora_api.submit_student_focus_recipient.' . $brand);
-        $input['success'] = config('musora-api.submit_student_focus_success_message.' . $brand);
+        $input['recipient'] = config('musora_api.submit_student_focus_recipient.'.$brand);
+        $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
 
         return $this->sendSecure($input);
     }
@@ -959,12 +984,12 @@ class ContentController extends Controller
 
         $includedFields = [];
         foreach ($featuredCoaches->results() as $featuredCoache) {
-            $includedFields[] = 'instructor,' . $featuredCoache['id'];
+            $includedFields[] = 'instructor,'.$featuredCoache['id'];
             $instructor =
                 $this->contentService->getBySlugAndType($featuredCoache['slug'], 'coach')
                     ->first();
             if ($instructor) {
-                $includedFields[] = 'instructor,' . $instructor['id'];
+                $includedFields[] = 'instructor,'.$instructor['id'];
             }
         }
 
