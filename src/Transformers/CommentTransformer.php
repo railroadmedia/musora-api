@@ -8,7 +8,12 @@ class CommentTransformer extends TransformerAbstract
 {
     public function transform($comments)
     {
+        $apiVersion = (config('musora-api.api.version'));
         $responseStructure = config('musora-api.response-structure.comment', []);
+        if ($apiVersion) {
+            $responseStructure = config('response.'.$apiVersion.'.comment', []);
+        }
+
         if (!$responseStructure) {
             return $comments;
         }
