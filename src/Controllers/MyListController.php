@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -10,6 +11,7 @@ use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentService;
+use Railroad\Railcontent\Services\UserPlaylistsService;
 
 class MyListController extends Controller
 {
@@ -24,6 +26,11 @@ class MyListController extends Controller
     private $contentRepository;
 
     /**
+     * @var UserPlaylistsService
+     */
+    private $userPlaylistsService;
+
+    /**
      * MyListController constructor.
      *
      * @param ContentService $contentService
@@ -31,10 +38,12 @@ class MyListController extends Controller
      */
     public function __construct(
         ContentService $contentService,
-        ContentRepository $contentRepository
+        ContentRepository $contentRepository,
+        UserPlaylistsService $userPlaylistsService
     ) {
         $this->contentService = $contentService;
         $this->contentRepository = $contentRepository;
+        $this->userPlaylistsService = $userPlaylistsService;
     }
 
     /** Pull my list content
@@ -70,31 +79,24 @@ class MyListController extends Controller
         $includedFields = $request->get('included_fields', []);
 
         if (!$state) {
+            $userPrimaryPlaylist = $this->userPlaylistsService->updateOrCeate(['user_id' => auth()->id()], [
+                'user_id' => auth()->id(),
+                'type' => 'primary-playlist',
+                'brand' => $request->get('brand') ?? config('railcontent.brand'),
+                'created_at' => Carbon::now()->toDateTimeString()
+            ]);
 
-            $usersPrimaryPlaylist = array_first(
-                $this->contentRepository->getByUserIdTypeSlug(auth()->id(), 'user-playlist', 'primary-playlist')
-            );
-
-            if (empty($usersPrimaryPlaylist)) {
-                return (new ContentFilterResultsEntity(
-                    [
-                        'results' => [],
-                    ]
-                ))->toJsonResponse();
+            if (empty($userPrimaryPlaylist)) {
+                return (new ContentFilterResultsEntity([
+                                                           'results' => [],
+                                                       ]))->toJsonResponse();
             }
 
-            $lessons = $this->contentService->getFiltered(
-                $page,
-                $limit,
-                $request->get('sort', '-published_on'),
-                $contentTypes,
-                [],
-                [$usersPrimaryPlaylist['id']],
-                $requiredFields,
-                $includedFields,
-                $request->get('required_user_states', []),
-                $request->get('included_user_states', [])
-            );
+
+            $lessons = new ContentFilterResultsEntity([
+                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylist['id']),
+                                                          'total_results' => $this->userPlaylistsService->countUserPlaylistContents($userPrimaryPlaylist['id']),
+                                                      ]);
         } else {
             $contentTypes = array_diff($contentTypes, ['course-part']);
 
