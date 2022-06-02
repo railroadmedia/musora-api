@@ -37,6 +37,7 @@ use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
+use Railroad\Railcontent\Services\UserPlaylistsService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
@@ -65,9 +66,14 @@ class ContentController extends Controller
     private $userProvider;
 
     /**
+     * @var UserPlaylistsService
+     */
+    private $userPlaylistsService;
+
+    /**
      * @var MailService
      */
-//    private $mailoraMailService;
+    //    private $mailoraMailService;
 
     /**
      * @var ContentHierarchyRepository
@@ -110,23 +116,25 @@ class ContentController extends Controller
         CommentService $commentService,
         ContentVimeoVideoDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
-//        MailService $mailoraMailService,
+        //        MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
         FullTextSearchService $fullTextSearchService,
         StripTagDecorator $stripTagDecorator,
         DownloadService $downloadService,
-        ContentFollowsService $contentFollowsService
+        ContentFollowsService $contentFollowsService,
+        UserPlaylistsService $userPlaylistsService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
         $this->userProvider = $userProvider;
-//        $this->mailoraMailService = $mailoraMailService;
+        //        $this->mailoraMailService = $mailoraMailService;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->fullTextSearchService = $fullTextSearchService;
         $this->stripTagDecorator = $stripTagDecorator;
         $this->downloadService = $downloadService;
         $this->contentFollowsService = $contentFollowsService;
+        $this->userPlaylistsService = $userPlaylistsService;
     }
 
     /**
@@ -142,26 +150,22 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
         $parent = Arr::first(
             $this->contentService->getByChildIdWhereParentTypeIn($contentId, [
-                                                                               'course',
-                                                                               'song',
-                                                                               'learning-path',
-                                                                               'pack',
-                                                                               'pack-bundle',
-                                                                           ])
+                'course',
+                'song',
+                'learning-path',
+                'pack',
+                'pack-bundle',
+            ])
         );
 
         $lessons = $content['lessons'] ?? ($parent['lessons'] ?? false);
@@ -221,14 +225,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -308,6 +313,7 @@ class ContentController extends Controller
             $content['next_lesson'] =
                 $parentChildren->only($currentContentIterator + 1)
                     ->first();
+
             $content['previous_lesson'] =
                 $parentChildren->only($currentContentIterator - 1)
                     ->first();
@@ -318,7 +324,7 @@ class ContentController extends Controller
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
-        if (isset($content['lessons'])) {
+        if (isset($content['lessons']) && !in_array($content['type'], config('railcontent.singularContentTypes', []))) {
             $content['lessons'] = new Collection($content['lessons']);
             $content['next_lesson'] =
                 $content['lessons']->where('completed', '=', false)
@@ -410,11 +416,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -785,6 +792,8 @@ class ContentController extends Controller
      */
     public function addLessonsToUserList(Request $request)
     {
+        $userId = auth()->id();
+
         $input = json_decode($request->getContent(), true);
 
         $skill = $input['skill'] ?? null;
@@ -793,10 +802,6 @@ class ContentController extends Controller
         if (!$skill) {
             $skill = ($topics != ['noTopic']) ? 'beginner' : 'noDifficulty';
         }
-
-        $userId =
-            $this->userProvider->getCurrentUser()
-                ->getId();
 
         $lessons = [];
         foreach ($topics as $topic) {
@@ -808,46 +813,27 @@ class ContentController extends Controller
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
-        $userPrimaryPlaylist =
-            $this->contentService->getByUserIdTypeSlug($userId, 'user-playlist', 'primary-playlist')
-                ->first();
-
-        if (!$userPrimaryPlaylist) {
-            $userPrimaryPlaylist = $this->contentService->create(
-                'primary-playlist',
-                'user-playlist',
-                ContentService::STATUS_PUBLISHED,
-                null,
-                config('railcontent.brand'),
-                $userId,
-                Carbon::now()
-                    ->toDateTimeString()
-            );
-        }
+        $userPrimaryPlaylist = $this->userPlaylistsService->updateOrCeate(['user_id' => $userId], [
+            'user_id' => $userId,
+            'type' => 'primary-playlist',
+            'brand' => $request->get('brand'),
+            'created_at' => Carbon::now()
+                ->toDateTimeString(),
+        ]);
 
         foreach ($lessons as $lesson) {
-            $this->contentHierarchyRepository->updateOrCreateChildToParentLink(
-                $userPrimaryPlaylist['id'],
-                $lesson,
-                null
-            );
+            $this->userPlaylistsService->addContentToUserPlaylist($userPrimaryPlaylist['id'], $lesson);
         }
 
-        $lessons = $this->contentService->getFiltered(
-            1,
-            10,
-            '-published_on',
-            [],
-            [],
-            [$userPrimaryPlaylist['id']],
-            [],
-            [],
-            [],
-            [],
-            false
+        return ResponseService::list(
+            new ContentFilterResultsEntity([
+                                               'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylist['id']),
+                                               'total_results' => $this->userPlaylistsService->countUserPlaylistContents(
+                                                   $userPrimaryPlaylist['id']
+                                               ),
+                                           ]),
+            $request
         );
-
-        return ResponseService::list($lessons, $request);
     }
 
     /**
