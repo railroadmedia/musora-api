@@ -123,19 +123,20 @@ class UserProgressController extends Controller
         ];
 
         if (config('musora-api.shouldDisplayReview', false)) {
-            $user = $this->userProvider->getUsoraCurrentUser();
+            $user = auth()->user();
 
             $userSessions = $this->userContentProgressService->countUserProgress(
-                $user->getId(),
+                $user->id,
                 Carbon::now()
                     ->subDays(30),
                 'completed'
             );
 
             $isPaidSubscription = false;
+
+            //TODO: Need to investigate how should I decide if the user has active and paid membership
             $userActiveSubscription = $this->subscriptionRepository->getUserSubscriptionForProducts(
-                $this->userProvider->getCurrentUser()
-                    ->getId(),
+                auth()->id(),
                 $this->productProvider->getMembershipProductIds(),
                 1
             );
@@ -148,37 +149,38 @@ class UserProgressController extends Controller
                 }
             }
 
+            $isPaidSubscription = true;
             $displayIosReviewModal =
                 $isPaidSubscription &&
-                (is_null($user->getIosLatestReviewDisplayDate()) ||
-                    ($user->getIosCountReviewDisplay() < 3 &&
-                        ($user->getIosLatestReviewDisplayDate() <
+                (is_null($user->ios_latest_review_display_date) ||
+                    ($user->ios_count_review_display < 3 &&
+                        ($user->ios_latest_review_display_date <
                             Carbon::now()
                                 ->subDays(30))) ||
-                    ($user->getIosCountReviewDisplay() == 3 &&
-                        $user->getIosLatestReviewDisplayDate() <=
+                    ($user->ios_count_review_display == 3 &&
+                        $user->ios_latest_review_display_date <=
                         Carbon::now()
                             ->subYear(1))) &&
-                ($userSessions >= ((!$user->getIosLatestReviewDisplayDate()) ? 5 : 10));
+                ($userSessions >= ((!$user->ios_latest_review_display_date) ? 5 : 10));
 
             $displayGoogleReviewModal =
                 $isPaidSubscription &&
-                (is_null($user->getGoogleLatestReviewDisplayDate()) ||
-                    ($user->getGoogleCountReviewDisplay() < 3 &&
-                        ($user->getGoogleLatestReviewDisplayDate() <
+                (is_null($user->google_latest_review_display_date) ||
+                    ($user->google_count_review_display < 3 &&
+                        ($user->google_latest_review_display_date <
                             Carbon::now()
                                 ->subDays(30))) ||
-                    ($user->getGoogleCountReviewDisplay() == 3 &&
-                        $user->getGoogleLatestReviewDisplayDate() <=
+                    ($user->google_count_review_display == 3 &&
+                        $user->google_latest_review_display_date <=
                         Carbon::now()
                             ->subYear(1))) &&
-                ($userSessions >= ((!$user->getGoogleLatestReviewDisplayDate()) ? 5 : 10));
+                ($userSessions >= ((!$user->google_latest_review_display_date) ? 5 : 10));
 
             if ($request->get('device_type') == 'ios' && $displayIosReviewModal) {
-                $count = $user->getIosCountReviewDisplay();
+                $count = $user->ios_count_review_display;
                 $newCountValue =
-                    ($user->getIosCountReviewDisplay() == 3 &&
-                        $user->getIosLatestReviewDisplayDate() <=
+                    ($user->ios_count_review_display == 3 &&
+                        $user->ios_latest_review_display_date <=
                         Carbon::now()
                             ->subYear(1)) ? 1 : ($count + 1);
 
@@ -186,10 +188,10 @@ class UserProgressController extends Controller
             }
 
             if ($request->get('device_type') == 'android' && $displayGoogleReviewModal) {
-                $count = $user->getGoogleCountReviewDisplay();
+                $count = $user->google_count_review_display;
                 $newCountValue =
-                    ($user->getGoogleCountReviewDisplay() == 3 &&
-                        $user->getGoogleLatestReviewDisplayDate() <=
+                    ($user->google_count_review_display == 3 &&
+                        $user->google_latest_review_display_date <=
                         Carbon::now()
                             ->subYear(1)) ? 1 : ($count + 1);
 
