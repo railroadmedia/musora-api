@@ -13,9 +13,10 @@ interface UserProviderInterface
     : ?User;
 
     /**
+     * @param string|null $brand
      * @return array
      */
-    public function getCurrentUserMembershipData()
+    public function getCurrentUserMembershipData(?string $brand)
     : array;
 
     /**
