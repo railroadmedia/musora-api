@@ -79,23 +79,17 @@ class MyListController extends Controller
         $includedFields = $request->get('included_fields', []);
 
         if (!$state) {
-            $userPrimaryPlaylist = $this->userPlaylistsService->updateOrCeate(['user_id' => auth()->id()], [
-                'user_id' => auth()->id(),
-                'type' => 'primary-playlist',
-                'brand' => $request->get('brand') ?? config('railcontent.brand'),
-                'created_at' => Carbon::now()->toDateTimeString()
-            ]);
-
+            $userPrimaryPlaylist = $this->userPlaylistsService->getUserPlaylist(auth()->id(), 'primary-playlist',  $request->get('brand') ?? config('railcontent.brand'));
             if (empty($userPrimaryPlaylist)) {
                 return (new ContentFilterResultsEntity([
                                                            'results' => [],
                                                        ]))->toJsonResponse();
             }
 
-
+            $userPrimaryPlaylistId = $userPrimaryPlaylist[0]['id'];
             $lessons = new ContentFilterResultsEntity([
-                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylist['id']),
-                                                          'total_results' => $this->userPlaylistsService->countUserPlaylistContents($userPrimaryPlaylist['id']),
+                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylistId),
+                                                          'total_results' => $this->userPlaylistsService->countUserPlaylistContents($userPrimaryPlaylistId),
                                                       ]);
         } else {
             $contentTypes = array_diff($contentTypes, ['course-part']);
