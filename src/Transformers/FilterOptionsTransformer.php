@@ -15,7 +15,7 @@ class FilterOptionsTransformer extends TransformerAbstract
             if (is_array($option)) {
                 foreach ($option as $indx => $op) {
                     if (isset($op['id'])) {
-                        $responseStructure = config('musora-api.response-structure-coach-filter', []);
+                        $responseStructure = config('musora-api.response-structure.coach-filter', []);
                         foreach ($responseStructure as $item) {
                             $fields = explode('fields.', $item);
                             $data = explode('data.', $item);
