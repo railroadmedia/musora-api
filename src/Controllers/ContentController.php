@@ -435,14 +435,13 @@ class ContentController extends Controller
                 ),
                 SORT_REGULAR
             );
-
-            $content['coaches'] = array_unique(
-                array_merge(
-                    $content['coaches'] ?? [],
-                    $parent['coaches'] ?? []
-                ),
-                SORT_REGULAR
+            $contentRows =  array_merge(
+                $content['coaches'] ?? [],
+                $parent['coaches'] ?? []
             );
+            $coachIds =  array_unique(array_column($contentRows, 'id'));
+            $content['coaches'] = array_intersect_key($contentRows, $coachIds);
+            $content['instructor'] = array_intersect_key($content['instructor'], $coachIds);
 
             $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
             $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
