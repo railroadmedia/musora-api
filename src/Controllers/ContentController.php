@@ -185,7 +185,7 @@ class ContentController extends Controller
         $includedFields = [];
 
         if ($content['type'] == 'coach-stream') {
-            $instructor = array_first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
+            $instructor = Arr::first(ContentHelper::getFieldValues($content->getArrayCopy(), 'instructor'));
             $requiredFields = ($instructor) ? ['instructor,'.$instructor['id']] : [];
 
             $lessons = $this->contentService->getFiltered(
@@ -547,24 +547,6 @@ class ContentController extends Controller
         $results = new ContentFilterResultsEntity(['results' => []]);
 
         if (!empty($types)) {
-            ConfigService::$fieldOptionList = [
-                'instructor',
-                'topic',
-                'difficulty',
-                'style',
-                'focus',
-                'genre',
-            ];
-
-            if ($types == ['song']) {
-                ConfigService::$fieldOptionList = [
-                    'topic',
-                    'difficulty',
-                    'style',
-                    'artist',
-                ];
-            }
-
             $results = $this->contentService->getFiltered(
                 $request->get('page', 1),
                 $request->get('limit', 10),
