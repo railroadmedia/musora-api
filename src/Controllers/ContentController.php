@@ -142,10 +142,12 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_merge(
+        $lessonContentTypes = array_diff(array_merge(
             config('railcontent.showTypes'),
             config('railcontent.singularContentTypes')
-        );
+        ),['song']);
+
+        $content['resources'] = array_values($content['resources'] ?? []);
 
         if (in_array($content['type'], $lessonContentTypes)) {
             //overview page
@@ -154,80 +156,41 @@ class ContentController extends Controller
                 //add parent's instructors and resources to content
                 $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
-                //related lessons
-                $parentChildren = $this->contentService->getByParentId($parent['id']);
-                $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
-
-                //previous/next lesson
-                $lessonHierarchyContent =
-                    $parentChildren->where('id', $content['id'])
-                        ->first();
-                $content['next_lesson'] = $parentChildren->getMatchOffset($lessonHierarchyContent, 1);
-                $content['previous_lesson'] = $parentChildren->getMatchOffset($lessonHierarchyContent, -1);
-
                 //parent
                 $content['parent'] = $parent;
+
+                $content = $this->attachRelatedLessonsFromParent($parent['id'], $content);
             }else{
-                $sort = 'published_on';
-
-                if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
-                    $content['type'] == 'diy-drum-experiments' ||
-                    $content['type'] == 'in-rhythm') {
-                    $sort = 'sort';
-                }
-
-                $parentChildren = $this->contentService->getFiltered(
-                    $request->get('page', 1),
-                    $request->get('limit', 10),
-                    '-'.$sort,
-                    [$content['type']]
-                )['results'];
-                $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
-
-                // Alter 'availableContentStatues' so next/prev buttons don't link to lessons with different status.
-                // (eg: don't link to archived lessons from non-archived lessons, and vice-versa)
-                if ($content->fetch('status') === ContentService::STATUS_PUBLISHED) {
-                    ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
-                }
-                if ($content->fetch('status') === ContentService::STATUS_ARCHIVED) {
-                    ContentRepository::$availableContentStatues = [ContentService::STATUS_ARCHIVED];
-                }
-
-                $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
-                    $content['type'],
-                    $sort,
-                    $sort == 'sort' ? $content['sort'] : $content['published_on'],
-                    1,
-                    $sort,
-                    'desc'
-                );
-
-                // Revert to previous state
-                ContentRepository::$availableContentStatues =
-                    [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
-
-                $content['next_lesson'] = $neighbourSiblings['before']->first();
-                $content['previous_lesson'] = $neighbourSiblings['after']->first();
+                $content = $this->attachSiblingRelatedLessons($content, $request);
             }
 
-            //attached comments on the content
-            CommentRepository::$availableContentId = $content['id'];
-            $comments = $this->commentService->getComments(1, 10, '-created_on');
-            $content['comments'] = (new CommentTransformer())->transform($comments['results']);
-            $content['total_comments'] = $comments['total_comments_and_results'];
-
-            //vimeo endpoints
-            $content =
-                $this->vimeoVideoDecorator->decorate(new Collection([$content]))
-                    ->first();
-
-            //strip HTML tags
-            $this->stripTagDecorator->decorate(new Collection([$content]));
-
-            return ResponseService::content($content);
         } elseif (in_array($content['type'], ['course', 'learning-path', 'pack', 'semester-pack'])) {
             //first level
+            $content['lessons'] = $content['levels'] =
+                $this->contentService->getByParentIdWhereTypeIn(
+                    $content['id'],
+                    [config('railcontent.content_hierarchy')[$content['type']]]
+                );
+
+        } elseif ($content['type'] == 'song'){
+            $content = $this->attachSongRelatedLessons($request, $content);
         }
+
+        //attached comments on the content
+        CommentRepository::$availableContentId = $content['id'];
+        $comments = $this->commentService->getComments(1, 10, '-created_on');
+        $content['comments'] = (new CommentTransformer())->transform($comments['results']);
+        $content['total_comments'] = $comments['total_comments_and_results'];
+
+        //vimeo endpoints
+        $content =
+            $this->vimeoVideoDecorator->decorate(new Collection([$content]))
+                ->first();
+
+        //strip HTML tags
+        $this->stripTagDecorator->decorate(new Collection([$content]));
+
+        return ResponseService::content($content);
     }
 
     /**
@@ -1102,6 +1065,156 @@ class ContentController extends Controller
         }
 
         return ResponseService::array($upcomingCoaches);
+    }
+
+    /**
+     * @param $id
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachRelatedLessonsFromParent($id, mixed $content)
+    : mixed {
+        //related lessons
+        $parentChildren = $this->contentService->getByParentId($id);
+        $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
+
+        //previous/next lesson
+        $lessonHierarchyContent =
+            $parentChildren->where('id', $content['id'])
+                ->first();
+        $content['next_lesson'] = $parentChildren->getMatchOffset($lessonHierarchyContent, 1);
+        $content['previous_lesson'] = $parentChildren->getMatchOffset($lessonHierarchyContent, -1);
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @param Request $request
+     * @return mixed
+     */
+    private function attachSiblingRelatedLessons(mixed $content, Request $request)
+    : mixed {
+        $sort = 'published_on';
+
+        if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
+            $content['type'] == 'diy-drum-experiments' ||
+            $content['type'] == 'in-rhythm') {
+            $sort = 'sort';
+        }
+
+        $parentChildren =
+            $this->contentService->getFiltered($request->get('page', 1),
+                                               $request->get('limit', 10),
+                                               '-'.$sort,
+                                               [$content['type']])['results'];
+        $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
+
+        // Alter 'availableContentStatues' so next/prev buttons don't link to lessons with different status.
+        // (eg: don't link to archived lessons from non-archived lessons, and vice-versa)
+        if ($content->fetch('status') === ContentService::STATUS_PUBLISHED) {
+            ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
+        }
+        if ($content->fetch('status') === ContentService::STATUS_ARCHIVED) {
+            ContentRepository::$availableContentStatues = [ContentService::STATUS_ARCHIVED];
+        }
+
+        $neighbourSiblings = $this->contentService->getTypeNeighbouringSiblings(
+            $content['type'],
+            $sort,
+            $sort == 'sort' ? $content['sort'] : $content['published_on'],
+            1,
+            $sort,
+            'desc'
+        );
+
+        // Revert to previous state
+        ContentRepository::$availableContentStatues =
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
+
+        $content['next_lesson'] = $neighbourSiblings['before']->first();
+        $content['previous_lesson'] = $neighbourSiblings['after']->first();
+
+        return $content;
+    }
+
+    /**
+     * @param Request $request
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachSongRelatedLessons(Request $request, mixed $content)
+    : mixed {
+        $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
+                                                                  $request->get('limit', 10),
+                                                                  '-published_on',
+                                                                  [$content['type']],
+                                                                  [],
+                                                                  [],
+                                                                  ['artist,'.$content->fetch('fields.artist')]
+        )['results'];
+
+        // remove requested song if in related lessons, part one of two
+        foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
+            if ($content['id'] == $songFromSameArtist['id']) {
+                unset($songsFromSameArtist[$songFromSameArtistIndex]);
+            }
+        }
+
+        $songsFromSameArtist = $songsFromSameArtist->sortByFieldValue('title');
+
+        $songsFromSameStyle = new Collection();
+
+        if (count($songsFromSameArtist) < 10) {
+            $songsFromSameStyle =
+                $this->contentService->getFiltered(1,
+                                                   19,
+                                                   '-published_on',
+                                                   [$content['type']],
+                                                   [],
+                                                   [],
+                                                   ['style,'.$content->fetch('fields.style')])['results'];
+
+            // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
+            foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
+                if ($content['id'] == $songFromSameStyle['id']) {
+                    unset($songsFromSameStyle[$songFromSameStyleIndex]);
+                }
+            }
+
+            $songsFromSameStyle = $songsFromSameStyle->sortByFieldValue('title');
+
+            foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
+                foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
+                    if ($songFromSameStyle['id'] == $songFromSameArtist['id']) {
+                        unset($songsFromSameStyle[$songFromSameStyleIndex]);
+                    }
+                }
+            }
+        }
+
+        $content['related_lessons'] = array_slice(
+            array_merge($songsFromSameArtist->toArray(), $songsFromSameStyle->toArray()),
+            0,
+            10
+        );
+
+        $parentChildren = new Collection($content['related_lessons']);
+
+        $currentContentIterator =
+            $parentChildren->where('id', '=', $content['id'])
+                ->keys()
+                ->first() ?? 1;
+
+        $content['next_lesson'] =
+            $parentChildren->only($currentContentIterator + 1)
+                ->first();
+
+        $content['previous_lesson'] =
+            $parentChildren->only($currentContentIterator - 1)
+                ->first();
+
+        return $content;
     }
 
 }
