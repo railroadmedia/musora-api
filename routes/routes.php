@@ -346,7 +346,7 @@ Route::group(
             '/content/{id}',
             [
                 'as' => 'mobile.musora-api.content.show',
-                'uses' => ContentController::class . '@getContent',
+                'uses' => ContentController::class . '@getContentOptimised',
             ]
         );
 
