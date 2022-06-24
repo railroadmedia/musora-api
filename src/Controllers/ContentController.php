@@ -142,10 +142,13 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(array_merge(
-            config('railcontent.showTypes'),
-            config('railcontent.singularContentTypes')
-        ),['song']);
+        $lessonContentTypes = array_diff(
+            array_merge(
+                config('railcontent.showTypes'),
+                config('railcontent.singularContentTypes')
+            ),
+            ['song']
+        );
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -153,34 +156,26 @@ class ContentController extends Controller
             //overview page
             $parent = Arr::first($this->contentService->getByChildId($content['id']));
             if ($parent) {
-                //add parent's instructors and resources to content
-                $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
-
-                //parent
-                $content['parent'] = $parent;
-
+                $content = $this->attachDataFromParent($content, $parent);
                 $content = $this->attachRelatedLessonsFromParent($parent['id'], $content);
-            }else{
+            } else {
                 $content = $this->attachSiblingRelatedLessons($content, $request);
             }
-
-        } elseif (in_array($content['type'], ['course', 'learning-path', 'pack', 'semester-pack'])) {
-            //first level
-            $content['lessons'] = $content['levels'] =
-                $this->contentService->getByParentIdWhereTypeIn(
-                    $content['id'],
-                    [config('railcontent.content_hierarchy')[$content['type']]]
-                );
-
-        } elseif ($content['type'] == 'song'){
+        } elseif (in_array($content['type'], ['course', 'learning-path', 'learning-path-level','learning-path-course', 'pack', 'semester-pack']
+        )) {
+            $content = $this->attachChildrens($content);
+        } elseif ($content['type'] == 'song') {
             $content = $this->attachSongRelatedLessons($request, $content);
         }
 
+        //attach instructor's lessons
+        $content = $this->attachInstructorLessons($content, $request);
+
+        //attach instructor's featured lessons
+        $content = $this->attachFeaturedLessons($content, $request);
+
         //attached comments on the content
-        CommentRepository::$availableContentId = $content['id'];
-        $comments = $this->commentService->getComments(1, 10, '-created_on');
-        $content['comments'] = (new CommentTransformer())->transform($comments['results']);
-        $content['total_comments'] = $comments['total_comments_and_results'];
+        $content = $this->attachComments($content);
 
         //vimeo endpoints
         $content =
@@ -189,6 +184,14 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
+
+        // we need extra data for offline mode and a different response structure
+        $isDownload = $request->get('download', false);
+        if ($isDownload && !empty($content['lessons'] ?? [])) {
+            $this->downloadService->attachLessonsDataForDownload($content);
+
+            return ResponseService::contentForDownload($content);
+        }
 
         return ResponseService::content($content);
     }
@@ -206,15 +209,11 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
@@ -285,14 +284,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -475,11 +475,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1103,11 +1104,12 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
-        $parentChildren =
-            $this->contentService->getFiltered($request->get('page', 1),
-                                               $request->get('limit', 10),
-                                               '-'.$sort,
-                                               [$content['type']])['results'];
+        $parentChildren = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            '-'.$sort,
+            [$content['type']]
+        )['results'];
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         // Alter 'availableContentStatues' so next/prev buttons don't link to lessons with different status.
@@ -1166,14 +1168,15 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $songsFromSameStyle =
-                $this->contentService->getFiltered(1,
-                                                   19,
-                                                   '-published_on',
-                                                   [$content['type']],
-                                                   [],
-                                                   [],
-                                                   ['style,'.$content->fetch('fields.style')])['results'];
+            $songsFromSameStyle = $this->contentService->getFiltered(
+                1,
+                19,
+                '-published_on',
+                [$content['type']],
+                [],
+                [],
+                ['style,'.$content->fetch('fields.style')]
+            )['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -1213,6 +1216,155 @@ class ContentController extends Controller
         $content['previous_lesson'] =
             $parentChildren->only($currentContentIterator - 1)
                 ->first();
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @param Request $request
+     * @return array
+     * @throws NonUniqueResultException
+     */
+    private function attachInstructorLessons(mixed $content, Request $request)
+    : mixed {
+        if ($content['type'] != 'instructor') {
+            return $content;
+        }
+
+        $includedFields = [];
+        $includedFields[] = 'instructor,'.$content['id'];
+
+        $requiredFields = $request->get('required_fields', []);
+        $includedFields = array_merge($request->get('included_fields', []), $includedFields);
+        $requiredUserState = $request->get('required_user_states', []);
+        $includedUserState = $request->get('included_user_states', []);
+
+        ContentRepository::$availableContentStatues =
+            $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
+        ContentRepository::$pullFutureContent = $request->has('future');
+
+        $lessons = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            $request->get('sort', '-published_on'),
+            $request->get(
+                'included_types',
+                array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+            ),
+            [],
+            [],
+            $requiredFields,
+            $includedFields,
+            $requiredUserState,
+            $includedUserState,
+            true
+        );
+
+        $content['lessons'] = $lessons->results();
+        $content['lessons_filter_options'] = $lessons->filterOptions();
+        $content['lessons_filter_options_v2'] =
+            array_intersect_key($content['lessons_filter_options'], array_flip(['type']));
+        $content['total_lessons'] = $lessons->totalResults();
+
+        $duration = 0;
+        $totalXp = 0;
+        foreach ($content['lessons'] as $courseLessonIndex => $courseLesson) {
+            if ($courseLesson['type'] == 'song') {
+                $content['lessons'][$courseLessonIndex]['lesson_count'] =
+                    $this->contentService->countByParentIdWhereTypeIn($courseLesson['id'], ['song-part']);
+                if ($content['lessons'][$courseLessonIndex]['lesson_count'] == 1) {
+                    $content['lessons'][$courseLessonIndex]['lessons'] =
+                        $this->contentService->getByParentId($courseLesson['id']);
+                }
+            }
+            $duration += $courseLesson->fetch('fields.video.fields.length_in_seconds', 0);
+            $totalXp += $courseLesson->fetch('fields.xp', 0);
+        }
+
+        $content['duration_in_seconds'] = $duration;
+        $content['total_xp'] = $totalXp;
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachFeaturedLessons(mixed $content, Request $request)
+    : mixed {
+        if ($content['type'] != 'instructor') {
+            return $content;
+        }
+
+        $includedFields = [];
+        $includedFields[] = 'instructor,'.$content['id'];
+        $includedFields = array_merge($request->get('included_fields', []), $includedFields);
+        $content['featured_lessons'] =
+            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
+                                               [], [])
+                ->results();
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachComments(mixed $content)
+    : mixed {
+        CommentRepository::$availableContentId = $content['id'];
+        $comments = $this->commentService->getComments(1, 10, '-created_on');
+        $content['comments'] = (new CommentTransformer())->transform($comments['results']);
+        $content['total_comments'] = $comments['total_comments_and_results'];
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @param mixed $parent
+     * @return mixed
+     */
+    private function attachDataFromParent(mixed $content, mixed $parent)
+    : mixed {
+        //add parent's instructors and resources to content
+        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+
+        $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
+        $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
+        $content['parent'] = $parent;
+
+        //parent
+        $content['parent'] = $parent;
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachChildrens(mixed $content)
+    : mixed {
+        //first level
+        $childrenNameMapping = [
+            'learning-path' => 'levels',
+            'learning-path-level' => 'courses',
+            'learning-path-course' => 'lessons',
+            'course' => 'lessons'
+        ];
+        $childrenName = $childrenNameMapping[$content['type']];
+        $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
+            config(
+                'railcontent.content_hierarchy'
+            )[$content['type']],
+        ]);
+        foreach ($content['courses']??[] as $index => $course) {
+            $content['courses'][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
+        }
 
         return $content;
     }

@@ -124,6 +124,14 @@ class LearningPathController extends Controller
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
 
+        $learningPath['levels'] =
+            $this->contentService->getByParentIdWhereTypeIn($learningPath['id'],
+                                                            [
+                                                                config(
+                                                                    'railcontent.content_hierarchy'
+                                                                )[$learningPath['type']],
+                                                            ]);
+
         $levels = $learningPath['units'] ?? $learningPath['levels'];
 
         foreach ($levels ?? [] as $level) {
