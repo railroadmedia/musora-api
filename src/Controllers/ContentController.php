@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 //use Railroad\Mailora\Services\MailService;
+use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
@@ -102,6 +103,11 @@ class ContentController extends Controller
     private $contentFollowsService;
 
     /**
+     * @var ProductProviderInterface
+     */
+    private $productProvider;
+
+    /**
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
@@ -123,7 +129,8 @@ class ContentController extends Controller
         StripTagDecorator $stripTagDecorator,
         DownloadService $downloadService,
         ContentFollowsService $contentFollowsService,
-        UserPlaylistsService $userPlaylistsService
+        UserPlaylistsService $userPlaylistsService,
+        ProductProviderInterface $productProvider,
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -136,6 +143,7 @@ class ContentController extends Controller
         $this->downloadService = $downloadService;
         $this->contentFollowsService = $contentFollowsService;
         $this->userPlaylistsService = $userPlaylistsService;
+        $this->productProvider = $productProvider;
     }
 
     public function getContentOptimised($contentId, Request $request)
@@ -192,6 +200,9 @@ class ContentController extends Controller
 
         //attach instructor's featured lessons
         $content = $this->attachFeaturedLessons($content, $request);
+
+        //attach pack's details
+        $content = $this->attachPackData($content);
 
         //attached comments on the content
         $content = $this->attachComments($content);
@@ -1381,6 +1392,50 @@ class ContentController extends Controller
         }
 
         return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @return mixed
+     */
+    private function attachPackData(mixed $content)
+    {
+        if (!in_array($content['type'], ['pack','semester-pack'])) {
+            return $content;
+        }
+
+        $content = $this->isOwnedOrLocked($content);
+
+        $content['thumbnail'] = $content->fetch('data.header_image_url');
+        $content['pack_logo'] = $content->fetch('data.logo_image_url');
+
+        $content['apple_product_id'] = $this->productProvider->getAppleProductId($content['slug']);
+        $content['google_product_id'] = $this->productProvider->getGoogleProductId($content['slug']);
+
+        $packPrice = $this->productProvider->getPackPrice($content['slug']);
+
+        $content['full_price'] = $packPrice['full_price'] ?? 0;
+        $content['price'] = $packPrice['price'] ?? 0;
+
+        return $content;
+    }
+
+    private function isOwnedOrLocked(&$pack)
+    {
+        $pack['is_owned'] = false;
+        $pack['is_locked'] = true;
+
+        $isOwned = $this->productProvider->currentUserOwnsPack($pack['id']);
+        if ($isOwned) {
+            $pack['is_owned'] = true;
+            $pack['is_locked'] = false;
+        }
+
+        if ($pack['is_new']) {
+            $pack['is_locked'] = false;
+        }
+
+        return $pack;
     }
 
 }
