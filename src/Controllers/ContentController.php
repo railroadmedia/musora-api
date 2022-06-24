@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+
 //use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
@@ -142,10 +143,13 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(array_merge(
-                                             config('railcontent.showTypes'),
-                                             config('railcontent.singularContentTypes')
-                                         ), ['song']);
+        $lessonContentTypes = array_diff(
+            array_merge(
+                config('railcontent.showTypes'),
+                config('railcontent.singularContentTypes')
+            ),
+            ['song']
+        );
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -167,11 +171,14 @@ class ContentController extends Controller
                 'learning-path-course',
                 'pack',
                 'semester-pack',
-            ])) {
+            ]
+        )) {
             $content = $this->attachChildrens($content);
             if (($content['child_count'] ?? 0) == 1) {
+                $childrenNameMapping = config('railcontent.children_name_mapping', []);
+                $childrenName = $childrenNameMapping[$content['type']];
                 $initialContent = clone $content;
-                $content = $content['lessons'][0];
+                $content = $content[$childrenName][0];
                 if (empty($content['data'])) {
                     $content['data'] = $initialContent['data'];
                 }
@@ -221,15 +228,11 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
@@ -300,14 +303,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -490,11 +494,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1118,11 +1123,12 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
-        $parentChildren =
-            $this->contentService->getFiltered($request->get('page', 1),
-                                               $request->get('limit', 10),
-                                               '-'.$sort,
-                                               [$content['type']])['results'];
+        $parentChildren = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            '-'.$sort,
+            [$content['type']]
+        )['results'];
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         // Alter 'availableContentStatues' so next/prev buttons don't link to lessons with different status.
@@ -1181,14 +1187,15 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $songsFromSameStyle =
-                $this->contentService->getFiltered(1,
-                                                   19,
-                                                   '-published_on',
-                                                   [$content['type']],
-                                                   [],
-                                                   [],
-                                                   ['style,'.$content->fetch('fields.style')])['results'];
+            $songsFromSameStyle = $this->contentService->getFiltered(
+                1,
+                19,
+                '-published_on',
+                [$content['type']],
+                [],
+                [],
+                ['style,'.$content->fetch('fields.style')]
+            )['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -1313,12 +1320,10 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                          ['is_featured,1'],
-                                                                          $includedFields, [],
-                                                                          []
-        )
-            ->results();
+        $content['featured_lessons'] =
+            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
+                                               [], [])
+                ->results();
 
         return $content;
     }
@@ -1364,14 +1369,7 @@ class ContentController extends Controller
     private function attachChildrens(mixed $content)
     : mixed {
         //first level
-        $childrenNameMapping = [
-            'learning-path' => 'levels',
-            'learning-path-level' => 'courses',
-            'learning-path-course' => 'lessons',
-            'course' => 'lessons',
-            'pack' => 'bundles',
-            'pack-bundle' => 'lessons'
-        ];
+        $childrenNameMapping = config('railcontent.children_name_mapping', []);
         $childrenName = $childrenNameMapping[$content['type']];
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
             config(
