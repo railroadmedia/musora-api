@@ -11,7 +11,7 @@
     "railroad/ecommerce": "^5.0",
     "railroad/permissions": "^2.0",
     "railroad/response": "2.0.x-dev",
-    "intervention/image": "^3.0"
+    "intervention/image": "^2.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5.10",
