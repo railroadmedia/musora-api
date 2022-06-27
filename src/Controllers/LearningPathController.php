@@ -141,7 +141,7 @@ class LearningPathController extends Controller
                 ]);
         }
 
-        if ($learningPath['slug'] == 'pianote-method') {
+        if (($learningPath['slug'] == 'pianote-method') && (isset($learningPath['units'])) ) {
             $learningPath['levels'] = $learningPath['units'];
             unset($learningPath['units']);
         }
