@@ -170,17 +170,14 @@ class ContentController extends Controller
             } else {
                 $content = $this->attachSiblingRelatedLessons($content, $request);
             }
-        } elseif (in_array(
-            $content['type'],
-            [
-                'course',
-                'learning-path',
-                'learning-path-level',
-                'learning-path-course',
-                'pack',
-                'semester-pack',
-            ]
-        )) {
+        } elseif (in_array($content['type'], [
+            'course',
+            'learning-path',
+            'learning-path-level',
+            'learning-path-course',
+            'pack',
+            'semester-pack',
+        ])) {
             $content = $this->attachChildrens($content);
             if (($content['child_count'] ?? 0) == 1) {
                 $childrenNameMapping = config('railcontent.children_name_mapping', []);
@@ -206,6 +203,11 @@ class ContentController extends Controller
 
         //attached comments on the content
         $content = $this->attachComments($content);
+
+        //next lesson
+        $userProgress = $content['user_progress'][auth()->id()] ?? null;
+        $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
+        $content['next_lesson'] = $this->contentService->getById($nextLessonId);
 
         //vimeo endpoints
         $content =
@@ -1400,7 +1402,7 @@ class ContentController extends Controller
      */
     private function attachPackData(mixed $content)
     {
-        if (!in_array($content['type'], ['pack','semester-pack'])) {
+        if (!in_array($content['type'], ['pack', 'semester-pack'])) {
             return $content;
         }
 

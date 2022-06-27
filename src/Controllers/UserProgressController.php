@@ -114,7 +114,7 @@ class UserProgressController extends Controller
 
         if ($parent->isNotEmpty()) {
             $parentTransformed = new ContentTransformer();
-            $parent = $parentTransformed->transform(array_first($parent));
+            $parent = $parentTransformed->transform(\Arr::first($parent));
         }
 
         $response = [
