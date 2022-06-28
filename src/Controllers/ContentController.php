@@ -205,9 +205,11 @@ class ContentController extends Controller
         $content = $this->attachComments($content);
 
         //next lesson
-        $userProgress = $content['user_progress'][auth()->id()] ?? null;
-        $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
-        $content['next_lesson'] = $this->contentService->getById($nextLessonId);
+        if (!isset($content['parent'])) {
+            $userProgress = $content['user_progress'][auth()->id()] ?? null;
+            $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
+            $content['next_lesson'] = $this->contentService->getById($nextLessonId);
+        }
 
         //vimeo endpoints
         $content =

@@ -146,6 +146,11 @@ class LearningPathController extends Controller
             unset($learningPath['units']);
         }
 
+        //next lesson
+        $userProgress = $learningPath['user_progress'][auth()->id()] ?? null;
+        $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
+        $learningPath['next_lesson'] = $this->contentService->getById($nextLessonId);
+
         return ResponseService::content($learningPath);
     }
 
