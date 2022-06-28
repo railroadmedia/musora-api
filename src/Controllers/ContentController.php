@@ -205,7 +205,7 @@ class ContentController extends Controller
         $content = $this->attachComments($content);
 
         //next lesson
-        if (!isset($content['parent'])) {
+        if (isset($content['parent'])) {
             $userProgress = $content['user_progress'][auth()->id()] ?? null;
             $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
             $content['next_lesson'] = $this->contentService->getById($nextLessonId);
@@ -1144,6 +1144,7 @@ class ContentController extends Controller
             '-'.$sort,
             [$content['type']]
         )['results'];
+
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         // Alter 'availableContentStatues' so next/prev buttons don't link to lessons with different status.
@@ -1389,7 +1390,7 @@ class ContentController extends Controller
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
             config(
                 'railcontent.content_hierarchy'
-            )[$content['type']],
+            )[$content['brand']][$content['type']],
         ]);
         foreach ($content['courses'] ?? [] as $index => $course) {
             $content['courses'][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];

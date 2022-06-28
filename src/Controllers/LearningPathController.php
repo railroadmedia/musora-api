@@ -129,7 +129,7 @@ class LearningPathController extends Controller
                                                             [
                                                                 config(
                                                                     'railcontent.content_hierarchy'
-                                                                )[$learningPath['type']],
+                                                                )[$learningPath['brand']][$learningPath['type']],
                                                             ]);
 
         $levels = $learningPath['units'] ?? $learningPath['levels'];
