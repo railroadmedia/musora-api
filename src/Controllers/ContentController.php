@@ -1384,7 +1384,6 @@ class ContentController extends Controller
      */
     private function attachChildrens(mixed $content)
     : mixed {
-        //first level
         $childrenNameMapping = config('railcontent.children_name_mapping', []);
         $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons' ;
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
@@ -1392,8 +1391,11 @@ class ContentController extends Controller
                 'railcontent.content_hierarchy'
             )[$content['brand']][$content['type']],
         ]);
-        foreach ($content['courses'] ?? [] as $index => $course) {
-            $content['courses'][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
+        foreach ($content["$childrenName"] ?? [] as $index => $course) {
+            $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
+            if(isset($content['level_number']) && isset($course['position'])) {
+                $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
+            }
         }
 
         return $content;
