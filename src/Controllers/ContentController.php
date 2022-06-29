@@ -1386,7 +1386,7 @@ class ContentController extends Controller
     : mixed {
         //first level
         $childrenNameMapping = config('railcontent.children_name_mapping', []);
-        $childrenName = $childrenNameMapping[$content['type']];
+        $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons' ;
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
             config(
                 'railcontent.content_hierarchy'
