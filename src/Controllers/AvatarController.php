@@ -3,36 +3,35 @@
 namespace Railroad\MusoraApi\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
+use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
-use Railroad\Railcontent\Controllers\RemoteStorageJsonController;
-use Railroad\Railcontent\Services\RemoteStorageService;
+use Railroad\MusoraApi\Services\ResponseService;
 
-class AvatarController extends RemoteStorageJsonController
+class AvatarController extends Controller
 {
-    /**
-     * @var RemoteStorageService
-     */
-    private $remoteStorageService;
     /**
      * @var ImageManager
      */
     private $imageManager;
 
     /**
-     * AvatarController constructor.
-     *
-     * @param RemoteStorageService $remoteStorageService
+     * @var UserProviderInterface
+     */
+    private $userProvider;
+
+    /**
      * @param ImageManager $imageManager
+     * @param UserProviderInterface $userProvider
      */
     public function __construct(
-        RemoteStorageService $remoteStorageService,
-        ImageManager $imageManager
+        ImageManager $imageManager,
+        UserProviderInterface $userProvider
     ) {
-        parent::__construct($remoteStorageService);
-
-        $this->remoteStorageService = $remoteStorageService;
         $this->imageManager = $imageManager;
+        $this->userProvider = $userProvider;
     }
 
     /**
@@ -46,15 +45,24 @@ class AvatarController extends RemoteStorageJsonController
 
         $image = $this->imageManager->make($request->file('file'));
 
-        $image->orientate()
+        $image
             ->interlace()
-            ->encode('jpg', 90)
+            ->encode('jpg', 75)
             ->save();
 
-        $target = 'avatars/' . pathinfo($request->get('target'))['filename'] . '-' . time() . '-' . auth()->id() . '.jpg';
+        $target = 'user-profile-pictures/' . pathinfo($request->get('target'))['filename'] . '-' . time() . '-' . auth()->id() . '.jpg';
 
-        $request->attributes->set('target', $target);
+        $success = Storage::disk('musora_web_platform_s3')->put($target, $request->file('file')->getContent());
 
-        return parent::put($request);
+        if ($success) {
+            $this->userProvider->setCurrentUserProfilePictureUrl( config('filesystems.disks.musora_web_platform_s3.cloudfront_access_url').$target);
+
+            $membershipData = $this->userProvider->getCurrentUserMembershipData();
+            $profileData = $this->userProvider->getCurrentUserProfileData();
+            $experienceData = $this->userProvider->getCurrentUserExperienceData();
+            return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
+        }
+
+        return response()->json(['error' => 'Failed to upload avatar.'], 400);
     }
 }
