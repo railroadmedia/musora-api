@@ -203,14 +203,7 @@ class ContentController extends Controller
 
         //attached comments on the content
         $content = $this->attachComments($content);
-
-        //next lesson
-        if (isset($content['parent'])) {
-            $userProgress = $content['user_progress'][auth()->id()] ?? null;
-            $nextLessonId = ($userProgress) ? $userProgress['next_child_content_id'] : null;
-            $content['next_lesson'] = $this->contentService->getById($nextLessonId);
-        }
-
+        
         //vimeo endpoints
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
@@ -1443,6 +1436,21 @@ class ContentController extends Controller
         }
 
         return $pack;
+    }
+
+    /**
+ * @param Request $request
+ * @param $contentId
+ * @return RedirectResponse
+ */
+    public function jumpToContinueContent(
+        Request $request,
+        $contentId
+    ) {
+        $nextContent = $this->contentService->getNextContentForParentContentForUser($contentId, user()->id);
+        throw_if(empty($nextContent), new NotFoundException('Content not exists.'));
+
+        return ResponseService::content($nextContent);
     }
 
 }
