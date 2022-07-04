@@ -82,17 +82,7 @@ class LiveController extends Controller
             //get current or next live event for selected instructor
             $fieldIds = [];
             if ($request->has('coach_id')) {
-                $coach = $this->contentService->getById($request->get('coach_id'));
-
-                if ($coach) {
-                    $fieldIds[] = $coach['id'];
-                    $instructor =
-                        $this->contentService->getBySlugAndType($coach['slug'], 'coach')
-                            ->first();
-                    if ($instructor) {
-                        $fieldIds[] = $instructor['id'];
-                    }
-                }
+                $fieldIds[] = $request->get('coach_id');
             }
 
             $currentEvent = $this->liveStreamEventService->getCurrentOrNextLiveEvent(null, $fieldIds);
@@ -114,8 +104,6 @@ class LiveController extends Controller
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
         $currentEvent['userId'] = auth()->id();
-//            $this->userProvider->getCurrentUser()
-//                ->getId();
 
         $railchatDataArray = $this->chatProvider->getRailchatData();
 

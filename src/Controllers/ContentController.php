@@ -1040,12 +1040,6 @@ class ContentController extends Controller
         $includedFields = [];
         foreach ($featuredCoaches->results() as $featuredCoache) {
             $includedFields[] = 'instructor,'.$featuredCoache['id'];
-            $instructor =
-                $this->contentService->getBySlugAndType($featuredCoache['slug'], 'coach')
-                    ->first();
-            if ($instructor) {
-                $includedFields[] = 'instructor,'.$instructor['id'];
-            }
         }
 
         $includedTypes = $request->get(
