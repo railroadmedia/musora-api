@@ -17,7 +17,7 @@ class ContentTransformer extends TransformerAbstract
         //The response structure should be defined in musora-api config file per content type
         if (empty($responseStructure) && isset($content['type'])) {
 
-            $type = (in_array($content['type'], config('railcontent.showTypes'))) ? 'show-lesson' : $content['type'];
+            $type = (in_array($content['type'], config('railcontent.showTypes')[config('railcontent.brand')] ?? [])) ? 'show-lesson' : $content['type'];
 
             $responseStructure = config('musora-api.response-structure.' . $type);
 

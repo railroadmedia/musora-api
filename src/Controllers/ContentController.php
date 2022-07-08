@@ -153,7 +153,7 @@ class ContentController extends Controller
 
         $lessonContentTypes = array_diff(
             array_merge(
-                config('railcontent.showTypes'),
+                config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
                 config('railcontent.singularContentTypes')
             ),
             ['song']
@@ -457,7 +457,7 @@ class ContentController extends Controller
                 $request->get('sort', '-published_on'),
                 $request->get(
                     'included_types',
-                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
                 ),
                 [],
                 [],
@@ -543,7 +543,7 @@ class ContentController extends Controller
         //singular content types and shows types should not return assignments as lessons
         if (!empty($content['lessons'] ?? []) && in_array(
                 $content['type'],
-                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes', []))
+                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
             )) {
             unset($content['lessons']);
         }
@@ -613,7 +613,7 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $requiredFields = $request->get('required_fields', []);
@@ -666,7 +666,7 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -917,7 +917,7 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes', [])));
+            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $contentsData = $this->fullTextSearchService->search(
@@ -1044,7 +1044,7 @@ class ContentController extends Controller
 
         $includedTypes = $request->get(
             'included_types',
-            array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+            array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
         );
 
         //latest featured lessons - Show the latest lessons from all the featured coaches.
@@ -1272,7 +1272,7 @@ class ContentController extends Controller
             $request->get('sort', '-published_on'),
             $request->get(
                 'included_types',
-                array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes', []))
+                array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
             ),
             [],
             [],
