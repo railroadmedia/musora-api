@@ -178,7 +178,7 @@ class ContentController extends Controller
         ])) {
             $content = $this->attachChildrens($content);
             if (($content['child_count'] ?? 0) == 1) {
-                $childrenNameMapping = config('railcontent.children_name_mapping', []);
+                $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
                 $childrenName = $childrenNameMapping[$content['type']];
                 $initialContent = clone $content;
                 $content = $content[$childrenName][0];
@@ -1386,7 +1386,7 @@ class ContentController extends Controller
      */
     private function attachChildrens(mixed $content)
     : mixed {
-        $childrenNameMapping = config('railcontent.children_name_mapping', []);
+        $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
         $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons';
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
             config(
