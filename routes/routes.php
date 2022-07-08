@@ -238,6 +238,12 @@ Route::group([
 
     Route::get('/jump-to-continue-content/{contentId}', [ContentController::class, 'jumpToContinueContent'])
         ->name('mobile.musora-api.jump-to-continue-content');
+
+    Route::get(
+        '/content-meta',
+        ContentController::class . '@getContentMeta'
+    )
+        ->name('content.meta.data');
 });
 
 //guest user
@@ -503,4 +509,10 @@ Route::group([
 
     Route::get('/jump-to-continue-content/{contentId}', [ContentController::class, 'jumpToContinueContent'])
         ->name('mobile.musora-api.jump-to-continue-content');
+
+    Route::get(
+        '/content-meta',
+        ContentController::class . '@getContentMeta'
+    )
+        ->name('content.meta.data');
 });

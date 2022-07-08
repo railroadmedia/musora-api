@@ -19,6 +19,7 @@ use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
+use Railroad\MusoraApi\Requests\ContentMetaRequest;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
 use Railroad\MusoraApi\Requests\SubmitVideoRequest;
@@ -151,13 +152,10 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(
-            array_merge(
-                config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
-                config('railcontent.singularContentTypes')
-            ),
-            ['song']
-        );
+        $lessonContentTypes = array_diff(array_merge(
+                                             config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
+                                             config('railcontent.singularContentTypes')
+                                         ), ['song']);
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -203,7 +201,7 @@ class ContentController extends Controller
 
         //attached comments on the content
         $content = $this->attachComments($content);
-        
+
         //vimeo endpoints
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
@@ -236,11 +234,15 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
-                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route('mobile.musora-api.pack.show',
-                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
         }
 
         //get content's parent for related lessons and resources
@@ -311,15 +313,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,'.$content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -457,7 +458,10 @@ class ContentController extends Controller
                 $request->get('sort', '-published_on'),
                 $request->get(
                     'included_types',
-                    array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
+                    array_merge(
+                        config('railcontent.coachContentTypes', []),
+                        config('railcontent.showTypes')[config('railcontent.brand')] ?? []
+                    )
                 ),
                 [],
                 [],
@@ -502,12 +506,11 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
@@ -543,7 +546,10 @@ class ContentController extends Controller
         //singular content types and shows types should not return assignments as lessons
         if (!empty($content['lessons'] ?? []) && in_array(
                 $content['type'],
-                array_merge(config('railcontent.singularContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
+                array_merge(
+                    config('railcontent.singularContentTypes', []),
+                    config('railcontent.showTypes')[config('railcontent.brand')] ?? []
+                )
             )) {
             unset($content['lessons']);
         }
@@ -613,7 +619,8 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+            $types =
+                array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $requiredFields = $request->get('required_fields', []);
@@ -666,7 +673,8 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+            $types =
+                array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -917,7 +925,8 @@ class ContentController extends Controller
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
-            $types = array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+            $types =
+                array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
 
         $contentsData = $this->fullTextSearchService->search(
@@ -1044,7 +1053,10 @@ class ContentController extends Controller
 
         $includedTypes = $request->get(
             'included_types',
-            array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
+            array_merge(
+                config('railcontent.coachContentTypes', []),
+                config('railcontent.showTypes')[config('railcontent.brand')] ?? []
+            )
         );
 
         //latest featured lessons - Show the latest lessons from all the featured coaches.
@@ -1125,12 +1137,11 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
-        $parentChildren = $this->contentService->getFiltered(
-            $request->get('page', 1),
-            $request->get('limit', 10),
-            '-'.$sort,
-            [$content['type']]
-        )['results'];
+        $parentChildren =
+            $this->contentService->getFiltered($request->get('page', 1),
+                                               $request->get('limit', 10),
+                                               '-'.$sort,
+                                               [$content['type']])['results'];
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
@@ -1190,15 +1201,14 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $songsFromSameStyle = $this->contentService->getFiltered(
-                1,
-                19,
-                '-published_on',
-                [$content['type']],
-                [],
-                [],
-                ['style,'.$content->fetch('fields.style')]
-            )['results'];
+            $songsFromSameStyle =
+                $this->contentService->getFiltered(1,
+                                                   19,
+                                                   '-published_on',
+                                                   [$content['type']],
+                                                   [],
+                                                   [],
+                                                   ['style,'.$content->fetch('fields.style')])['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -1272,7 +1282,10 @@ class ContentController extends Controller
             $request->get('sort', '-published_on'),
             $request->get(
                 'included_types',
-                array_merge(config('railcontent.coachContentTypes', []), config('railcontent.showTypes')[config('railcontent.brand')] ?? [])
+                array_merge(
+                    config('railcontent.coachContentTypes', []),
+                    config('railcontent.showTypes')[config('railcontent.brand')] ?? []
+                )
             ),
             [],
             [],
@@ -1323,10 +1336,12 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] =
-            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
-                                               [], [])
-                ->results();
+        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                          ['is_featured,1'],
+                                                                          $includedFields, [],
+                                                                          []
+        )
+            ->results();
 
         return $content;
     }
@@ -1372,7 +1387,7 @@ class ContentController extends Controller
     private function attachChildrens(mixed $content)
     : mixed {
         $childrenNameMapping = config('railcontent.children_name_mapping', []);
-        $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons' ;
+        $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons';
         $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
             config(
                 'railcontent.content_hierarchy'
@@ -1380,7 +1395,7 @@ class ContentController extends Controller
         ]);
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
-            if(isset($content['level_number']) && isset($course['position'])) {
+            if (isset($content['level_number']) && isset($course['position'])) {
                 $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
             }
         }
@@ -1433,10 +1448,10 @@ class ContentController extends Controller
     }
 
     /**
- * @param Request $request
- * @param $contentId
- * @return RedirectResponse
- */
+     * @param Request $request
+     * @param $contentId
+     * @return RedirectResponse
+     */
     public function jumpToContinueContent(
         Request $request,
         $contentId
@@ -1445,6 +1460,32 @@ class ContentController extends Controller
         throw_if(empty($nextContent), new NotFoundException('Content not exists.'));
 
         return ResponseService::content($nextContent);
+    }
+
+    /**
+     * @param ContentMetaRequest $request
+     * @return JsonResponse
+     */
+    public function getContentMeta(ContentMetaRequest $request)
+    {
+        $contentMetaData = [];
+        $showType = $request->get('content_type');
+        $brand = $request->get('brand', config('railcontent.brand'));
+
+        $metaData = config('railcontent.cataloguesMetadata')[$brand];
+        if ($request->has('withCount')) {
+            $episodesNumber = $this->contentService->countByTypes(
+                [$showType],
+                'type'
+            );
+        }
+
+        if (array_key_exists($showType, $metaData)) {
+            $contentMetaData = $metaData[$showType] ?? [];
+            $contentMetaData['episodeNumber'] = $episodesNumber[$showType]['total'] ?? '';
+        }
+
+        return ResponseService::array($contentMetaData);
     }
 
 }
