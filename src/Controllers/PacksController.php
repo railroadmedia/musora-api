@@ -6,6 +6,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Railroad\MusoraApi\Collections\PackCollection;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
@@ -107,11 +108,11 @@ class PacksController extends Controller
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
 
-        $packs = (new Collection(
+        $packs = (new PackCollection(
             $this->contentService->getFiltered(
                 1,
                 -1,
-                '-progress',
+                '-published_on',
                 ['pack', 'semester-pack'],
                 [],
                 [],
@@ -121,7 +122,7 @@ class PacksController extends Controller
                 [],
                 false
             )['results']
-        ))->keyBy('slug');
+        ))->sortByUserActivity(auth()->id(),'desc')->keyBy('slug');
 
         ContentRepository::$bypassPermissions = true;
 
