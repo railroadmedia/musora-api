@@ -88,7 +88,7 @@ class MyListController extends Controller
 
             $userPrimaryPlaylistId = $userPrimaryPlaylist[0]['id'];
             $lessons = new ContentFilterResultsEntity([
-                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylistId),
+                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylistId, $contentTypes,$limit, $page),
                                                           'total_results' => $this->userPlaylistsService->countUserPlaylistContents($userPrimaryPlaylistId),
                                                       ]);
         } else {
