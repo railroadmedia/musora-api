@@ -50,6 +50,10 @@ class AuthController extends Controller
             $this->userProvider->setCurrentUserDisplayName($request->get('display_name'));
         }
 
+        if ($request->has('avatar_url')) {
+            $this->userProvider->setCurrentUserProfilePictureUrl($request->get('avatar_url'));
+        }
+
         if ($request->has('firebase_token_ios') || $request->has('firebase_token_android')) {
             $this->userProvider->setCurrentUserFirebaseTokens(
                 $request->get('firebase_token_ios'),

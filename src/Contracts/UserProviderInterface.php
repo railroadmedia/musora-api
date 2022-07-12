@@ -35,7 +35,7 @@ interface UserProviderInterface
      * @param string $profilePictureUrl
      * @return User
      */
-    public function setCurrentUserProfilePictureUrl(string $profilePictureUrl)
+    public function setCurrentUserProfilePictureUrl(?string $profilePictureUrl)
     : User;
 
     /**
