@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use App\Decorators\Content\Types\PackBundleDecorator;
 use App\Decorators\LessonAssignmentDecorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
@@ -1482,6 +1483,51 @@ class ContentController extends Controller
         }
 
         return ResponseService::array($contentMetaData);
+    }
+
+    public function getGuitarQuestMap()
+    {
+        ContentRepository::$pullFutureContent = true;
+
+        $packSlug = 'guitar-quest';
+        $pack =
+            $this->contentService->getBySlugAndType($packSlug, 'pack')
+                ->first();
+        throw_if(empty($pack), new NotFoundException('Content not exists.'));
+
+        //ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        $packBundles = $this->contentService->getByParentId($pack['id']);
+        $totalCompletedLevels = 0;
+        $totalCompletedLessons = 0;
+
+        foreach ($packBundles as $packBundle) {
+            foreach($packBundle['lessons'] as $lesson){
+                if ($lesson->fetch('progress_state') == 'completed') {
+                    $totalCompletedLessons += 1;
+                }
+            }
+            if ($packBundle->fetch('progress_state') == 'completed') {
+                $totalCompletedLevels += 1;
+            }
+        }
+
+        $levels = [];
+        foreach ($packBundles as $index => $packBundle) {
+            $levels[] = [
+                'id' => $packBundle['id'],
+                'thumb_url' => 'https://d122ay5chh2hr5.cloudfront.net/guitarquest/assets/level-'.($index + 1).'.png',
+                'completed' => $packBundle['completed'],
+            ];
+        }
+
+        $response = [
+            'levels' => $levels,
+            'total_completed_challenges' => $totalCompletedLevels,
+            'total_completed_lessons' => $totalCompletedLessons
+        ];
+
+        return ResponseService::array($response);
     }
 
 }

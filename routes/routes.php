@@ -477,31 +477,31 @@ Route::group([
         '/follow',
         ContentController::class . '@followContent'
     )
-        ->name('mobile.musora-api.content.follow');
+        ->name('v1.mobile.musora-api.content.follow');
 
     Route::put(
         '/unfollow',
         ContentController::class . '@unfollowContent'
     )
-        ->name('mobile.musora-api.content.unfollow');
+        ->name('v1.mobile.musora-api.content.unfollow');
 
     Route::get(
         '/followed-content',
         ContentController::class . '@getFollowedContent'
     )
-        ->name('mobile.musora-api.followed.content');
+        ->name('v1.mobile.musora-api.followed.content');
 
     Route::get(
         '/followed-lessons',
         ContentController::class . '@getLessonsForFollowedCoaches'
     )
-        ->name('mobile.musora-api.followed.lessons');
+        ->name('v1.mobile.musora-api.followed.lessons');
 
     Route::get(
         '/featured-lessons',
         ContentController::class . '@getFeaturedLessons'
     )
-        ->name('mobile.musora-api.featured.lessons');
+        ->name('v1.mobile.musora-api.featured.lessons');
 
     Route::get('/upcoming-coaches', [
         'as' => 'mobile.musora-api.upcoming.coaches',
@@ -509,11 +509,17 @@ Route::group([
     ]);
 
     Route::get('/jump-to-continue-content/{contentId}', [ContentController::class, 'jumpToContinueContent'])
-        ->name('mobile.musora-api.jump-to-continue-content');
+        ->name('v1.mobile.musora-api.jump-to-continue-content');
 
     Route::get(
         '/content-meta',
         ContentController::class . '@getContentMeta'
     )
-        ->name('content.meta.data');
+        ->name('v1.content.meta.data');
+
+    Route::get(
+        '/guitar-quest-map',
+        ContentController::class . '@getGuitarQuestMap'
+    )
+        ->name('v1.guitar.quest.map');
 });
