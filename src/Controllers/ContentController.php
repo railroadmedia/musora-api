@@ -1388,11 +1388,7 @@ class ContentController extends Controller
     : mixed {
         $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
         $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons';
-        $content["$childrenName"] = $this->contentService->getByParentIdWhereTypeIn($content['id'], [
-            config(
-                'railcontent.content_hierarchy'
-            )[$content['brand']][$content['type']],
-        ]);
+        $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['position'])) {
