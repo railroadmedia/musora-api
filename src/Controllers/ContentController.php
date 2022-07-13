@@ -1390,12 +1390,15 @@ class ContentController extends Controller
         $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
         $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons';
         $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
+        $duration = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
+            $duration += $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['position'])) {
                 $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
             }
         }
+        $content['length_in_seconds'] = $duration;
 
         return $content;
     }
