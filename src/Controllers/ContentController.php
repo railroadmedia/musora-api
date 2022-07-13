@@ -2,8 +2,6 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
-use App\Decorators\Content\Types\PackBundleDecorator;
-use App\Decorators\LessonAssignmentDecorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -13,8 +11,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-
-//use Railroad\Mailora\Services\MailService;
+use Illuminate\Support\Arr;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
@@ -37,7 +34,6 @@ use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
-use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
@@ -45,7 +41,8 @@ use Railroad\Railcontent\Services\UserPlaylistsService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
-use Illuminate\Support\Arr;
+
+//use Railroad\Mailora\Services\MailService;
 
 class ContentController extends Controller
 {
@@ -202,6 +199,9 @@ class ContentController extends Controller
 
         //attached comments on the content
         $content = $this->attachComments($content);
+
+        //attached low/high/original video ranges
+        $content = $this->attachRanges($content);
 
         //vimeo endpoints
         $content =
@@ -1502,7 +1502,7 @@ class ContentController extends Controller
         $totalCompletedLessons = 0;
 
         foreach ($packBundles as $packBundle) {
-            foreach($packBundle['lessons'] as $lesson){
+            foreach ($packBundle['lessons'] as $lesson) {
                 if ($lesson->fetch('progress_state') == 'completed') {
                     $totalCompletedLessons += 1;
                 }
@@ -1524,10 +1524,31 @@ class ContentController extends Controller
         $response = [
             'levels' => $levels,
             'total_completed_challenges' => $totalCompletedLevels,
-            'total_completed_lessons' => $totalCompletedLessons
+            'total_completed_lessons' => $totalCompletedLessons,
         ];
 
         return ResponseService::array($response);
+    }
+
+    /**
+     * @param $content
+     * @return mixed
+     */
+    public function attachRanges($content)
+    {
+        $ranges = ['low', 'original', 'high'];
+        $rangeIds = [];
+
+        foreach ($ranges as $range) {
+            if ($content[$range.'_video']) {
+                $fetchFieldTemplate = 'fields.%s_video.fields.youtube_video_id';
+                $fetchFieldString = sprintf($fetchFieldTemplate, $range);
+                $rangeIds[$range] = $content->fetch($fetchFieldString);
+            }
+        }
+        $content['ranges'] = $rangeIds;
+
+        return $content;
     }
 
 }
