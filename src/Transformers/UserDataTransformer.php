@@ -10,7 +10,12 @@ class UserDataTransformer extends TransformerAbstract
     {
         $response = [];
 
-        $responseStructure = config('musora-api.response-structure.profile');
+        $apiVersion = (config('musora-api.api.version'));
+        $responseStructure = config('musora-api.response-structure.profile', []);
+        if ($apiVersion) {
+            $responseStructure = config('response.'.$apiVersion.'.profile', []);
+        }
+
         if (!$responseStructure) {
             return $profileData;
         }
