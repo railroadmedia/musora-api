@@ -150,10 +150,13 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(array_merge(
-                                             config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
-                                             config('railcontent.singularContentTypes')
-                                         ), ['song']);
+        $lessonContentTypes = array_diff(
+            array_merge(
+                config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
+                config('railcontent.singularContentTypes')
+            ),
+            ['song']
+        );
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -173,16 +176,21 @@ class ContentController extends Controller
             'learning-path-course',
             'pack',
             'semester-pack',
+            'song',
         ])) {
             $content = $this->attachChildrens($content);
+
+            //attach pack's details
+            $content = $this->attachPackData($content);
+
             if (($content['child_count'] ?? 0) == 1) {
                 $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
                 $childrenName = $childrenNameMapping[$content['type']];
                 $initialContent = clone $content;
                 $content = $content[$childrenName][0];
-                if (empty($content['data'])) {
-                    $content['data'] = $initialContent['data'];
-                }
+                $content = $this->addParentData($content, $initialContent);
+
+                $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
             }
         } elseif ($content['type'] == 'song') {
             $content = $this->attachSongRelatedLessons($request, $content);
@@ -193,9 +201,6 @@ class ContentController extends Controller
 
         //attach instructor's featured lessons
         $content = $this->attachFeaturedLessons($content, $request);
-
-        //attach pack's details
-        $content = $this->attachPackData($content);
 
         //attached comments on the content
         $content = $this->attachComments($content);
@@ -235,15 +240,11 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
@@ -314,14 +315,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -507,11 +509,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1138,11 +1141,12 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
-        $parentChildren =
-            $this->contentService->getFiltered($request->get('page', 1),
-                                               $request->get('limit', 10),
-                                               '-'.$sort,
-                                               [$content['type']])['results'];
+        $parentChildren = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            '-'.$sort,
+            [$content['type']]
+        )['results'];
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
@@ -1202,14 +1206,15 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $songsFromSameStyle =
-                $this->contentService->getFiltered(1,
-                                                   19,
-                                                   '-published_on',
-                                                   [$content['type']],
-                                                   [],
-                                                   [],
-                                                   ['style,'.$content->fetch('fields.style')])['results'];
+            $songsFromSameStyle = $this->contentService->getFiltered(
+                1,
+                19,
+                '-published_on',
+                [$content['type']],
+                [],
+                [],
+                ['style,'.$content->fetch('fields.style')]
+            )['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -1337,12 +1342,10 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                          ['is_featured,1'],
-                                                                          $includedFields, [],
-                                                                          []
-        )
-            ->results();
+        $content['featured_lessons'] =
+            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
+                                               [], [])
+                ->results();
 
         return $content;
     }
@@ -1414,7 +1417,6 @@ class ContentController extends Controller
         }
 
         $content = $this->isOwnedOrLocked($content);
-
         $content['thumbnail'] = $content->fetch('data.header_image_url');
         $content['pack_logo'] = $content->fetch('data.logo_image_url');
 
@@ -1425,6 +1427,44 @@ class ContentController extends Controller
 
         $content['full_price'] = $packPrice['full_price'] ?? 0;
         $content['price'] = $packPrice['price'] ?? 0;
+
+        return $content;
+    }
+
+    /**
+     * @param mixed $content
+     * @param mixed $parent
+     * @return mixed
+     */
+    private function addParentData(mixed $content, mixed $parent)
+    {
+        if (in_array($parent['type'], ['pack', 'semester-pack'])) {
+            $content['is_owned'] = $parent['is_owned'];
+            $content['is_locked'] = $parent['is_locked'];
+
+            $content['thumbnail'] = $parent['thumbnail'];
+            $content['pack_logo'] = $parent['pack_logo'];
+
+            $content['apple_product_id'] = $parent['apple_product_id'];
+            $content['google_product_id'] = $parent['google_product_id'];
+
+            $content['full_price'] = $parent['full_price'] ?? 0;
+            $content['price'] = $parent['price'] ?? 0;
+        }
+
+        //add parent's instructors and resources to content
+        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
+
+        $content['instructor'] = array_unique(
+            array_merge(
+                $content['instructor'] ?? [],
+                ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
+            ),
+            SORT_REGULAR
+        );
+
+        $content['style'] = $content->fetch('fields.style', null) ?? $parent->fetch('fields.style');
+        $content['artist'] = $content->fetch('fields.artist', null) ?? $parent->fetch('fields.artist');
 
         return $content;
     }

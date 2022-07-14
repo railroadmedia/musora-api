@@ -18,8 +18,11 @@ class ContentTransformer extends TransformerAbstract
         if (empty($responseStructure) && isset($content['type'])) {
 
             $type = (in_array($content['type'], config('railcontent.showTypes')[config('railcontent.brand')] ?? [])) ? 'show-lesson' : $content['type'];
-
-            $responseStructure = config('musora-api.response-structure.' . $type);
+            $apiVersion = (config('musora-api.api.version'));
+            $responseStructure = config('musora-api.response-structure.'.$type, []);
+            if ($apiVersion) {
+                $responseStructure = config('response.'.$apiVersion.'.'.$type, []);
+            }
 
         }
 
