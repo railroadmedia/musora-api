@@ -185,12 +185,14 @@ class ContentController extends Controller
 
             if (($content['child_count'] ?? 0) == 1) {
                 $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
-                $childrenName = $childrenNameMapping[$content['type']];
-                $initialContent = clone $content;
-                $content = $content[$childrenName][0];
-                $content = $this->addParentData($content, $initialContent);
+                $childrenName = $childrenNameMapping[$content['type']] ?? null;
+                if($childrenName) {
+                    $initialContent = clone $content;
+                    $content = $content[$childrenName][0];
+                    $content = $this->addParentData($content, $initialContent);
 
-                $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
+                    $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
+                }
             }
         } elseif ($content['type'] == 'song') {
             $content = $this->attachSongRelatedLessons($request, $content);
