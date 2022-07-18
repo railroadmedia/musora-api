@@ -113,9 +113,11 @@ API Endpoints
 | [Subscribe to/follow coach](docs/FollowContent.md)   | `/musora-api/follow`                                       |
 | [Unsubscribe/unfollow coach](docs/UnFollowContent.md)   | `/musora-api/unfollow`                                       |
 
-|                                                           Version 1 Endpoints    |                                           |
+#### Endpoints available starting with v1 
+|                                                          |     Endpoints                                         |
 |:-----------------------------------------------------------------|:----------------------------------------------------------|
 | [Get Routines trailer](docs/RoutinesTrailer.md)   | `/musora-api/v1/routine-trailer`                                       |
+| [Get meta data for specific content type](docs/ContentMetaData.md)  | `/musora-api/v1/content-meta`                                       |
 | [Get next incomplete lesson for course/pack/method](docs/NextLesson.md)   | `/musora-api/v1/jump-to-continue-content/{contentId}`                                       |
-
+| [Get Guitar Quest data](docs/GuitarQuestData.md)  | `/musora-api/v1/guitar-quest-map`                                       |
 
