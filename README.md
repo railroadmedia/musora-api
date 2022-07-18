@@ -113,7 +113,7 @@ API Endpoints
 | [Subscribe to/follow coach](docs/FollowContent.md)   | `/musora-api/follow`                                       |
 | [Unsubscribe/unfollow coach](docs/UnFollowContent.md)   | `/musora-api/unfollow`                                       |
 
-|                                                           Version 1 Endpoints                                               |
+|                                                           Version 1 Endpoints    |                                           |
 |:-----------------------------------------------------------------|:----------------------------------------------------------|
 | [Get Routines trailer](docs/RoutinesTrailer.md)   | `/musora-api/v1/routine-trailer`                                       |
 | [Get next incomplete lesson for course/pack/method](docs/NextLesson.md)   | `/musora-api/v1/jump-to-continue-content/{contentId}`                                       |
