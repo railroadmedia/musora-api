@@ -165,9 +165,9 @@ class ContentController extends Controller
             $parent =
                 $this->contentService->getByChildId($content['id'])
                     ->first();
+            $content = $this->attachDataFromParent($content, $parent);
 
-            if ($parent) {
-                $content = $this->attachDataFromParent($content, $parent);
+            if ($parent && isset($parent['lessons'])) {
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
                 $content = $this->attachSiblingRelatedLessons($content, $request);
