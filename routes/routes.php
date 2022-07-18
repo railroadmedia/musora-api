@@ -522,4 +522,10 @@ Route::group([
         ContentController::class . '@getGuitarQuestMap'
     )
         ->name('v1.guitar.quest.map');
+
+    Route::get(
+        '/routine-trailer',
+        ContentController::class . '@getRoutinesTrailer'
+    )
+        ->name('v1.singeo.routine.trailer');
 });
