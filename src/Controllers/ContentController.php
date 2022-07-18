@@ -1378,6 +1378,10 @@ class ContentController extends Controller
      */
     private function attachDataFromParent(mixed $content, mixed $parent)
     : mixed {
+
+        if(!$parent){
+            return $content;
+        }
         //add parent's instructors and resources to content
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
