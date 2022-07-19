@@ -124,6 +124,15 @@ class AuthController extends Controller
             'drums_gear_photo' => null,
             'biography' => null,
             'piano_gear_photo' => null,
+            'drums_gear_set_brands' => null,
+            'drums_gear_hardware_brands' => null,
+            'drums_gear_stick_brands' => null,
+            'drums_gear_cymbal_brands' => null,
+            'drums_playing_since_year' => null,
+            'piano_gear_piano_brands' => null,
+            'piano_gear_keyboard_brands' => null,
+            'piano_playing_since_year' => null,
+
         ];
 
         $this->userProvider->deleteAccount(auth()->id(), $newAttributes);
