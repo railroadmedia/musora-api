@@ -178,6 +178,7 @@ class ContentController extends Controller
             'learning-path-level',
             'learning-path-course',
             'pack',
+            'pack-bundle',
             'semester-pack',
             'song',
         ])) {
@@ -193,6 +194,7 @@ class ContentController extends Controller
                     $initialContent = clone $content;
                     $content = $content[$childrenName][0];
                     $content = $this->addParentData($content, $initialContent);
+                    $content = $this->attachChildrens($content);
 
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                 }
@@ -1402,7 +1404,9 @@ class ContentController extends Controller
     private function attachChildrens(mixed $content)
     : mixed {
         $childrenNameMapping = config('railcontent.children_name_mapping')[config('railcontent.brand')] ?? [];
+
         $childrenName = $childrenNameMapping[$content['type']] ?? 'lessons';
+
         $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
         $duration = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
