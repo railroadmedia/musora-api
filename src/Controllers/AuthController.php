@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -102,5 +103,33 @@ class AuthController extends Controller
         $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
         return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        $newAttributes = [
+            'email' => 'musora+deleted_'.Carbon::now()->getTimestamp().'@musora.com',
+            'first_name' => null,
+            'last_name' => null,
+            'display_name' => null,
+            'gender' => null,
+            'country' => null,
+            'region' => null,
+            'city' => null,
+            'birthday' => null,
+            'phone_number' => null,
+            'profile_picture_url' => null,
+            'timezone' => null,
+            'permission_level' => null,
+            'drums_gear_photo' => null,
+            'biography' => null,
+            'piano_gear_photo' => null,
+        ];
+
+        $this->userProvider->deleteAccount(auth()->id(), $newAttributes);
+
+        return ResponseService::array([
+                                          'success' => true,
+                                      ]);
     }
 }

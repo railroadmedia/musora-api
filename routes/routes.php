@@ -296,6 +296,13 @@ Route::group(
                 'uses' => ContentController::class . '@getUpcomingCoaches',
             ]
         );
+        Route::put(
+            '/delete-account',
+            [
+                'as' => 'mobile.musora-api.delete.account',
+                'uses' => \Railroad\MusoraApi\Controllers\AuthController::class . '@deleteAccount',
+            ]
+        );
     }
 );
 
