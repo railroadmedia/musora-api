@@ -120,4 +120,5 @@ API Endpoints
 | [Get meta data for specific content type](docs/ContentMetaData.md)  | `/musora-api/v1/content-meta`                                       |
 | [Get next incomplete lesson for course/pack/method](docs/NextLesson.md)   | `/musora-api/v1/jump-to-continue-content/{contentId}`                                       |
 | [Get Guitar Quest data](docs/GuitarQuestData.md)  | `/musora-api/v1/guitar-quest-map`                                       |
+| [Get Homepage banner data](docs/HomepageBannerData.md)  | `/musora-api/v1/homepage-banner`                                       |
 

@@ -1672,7 +1672,7 @@ class ContentController extends Controller
         $response = [
             'method' => [
                 'title' => 'Step by Step Curriculum',
-                'name' => $brand . ' Method',
+                'name' => ucfirst($brand) . ' Method',
                 'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
                 'url' => route('v1.mobile.musora-api.content.show',['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]),
                 'link' => !$hasStartedMethod?'Start Method':'Continue Level '.$nextLearningPathLevel
