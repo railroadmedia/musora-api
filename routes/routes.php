@@ -282,10 +282,11 @@ Route::group([
     'middleware' => array_merge(config('musora-api.auth-middleware', []), ['api_version:v1']),
 ], function () {
     //content
-    Route::get('/content/{id}', [
-        'as' => 'v1.mobile.musora-api.content.show',
-        'uses' => ContentController::class . '@getContentOptimised',
-    ]);
+    Route::get(
+        '/content/{id}',
+        ContentController::class . '@getContentOptimised'
+    )
+        ->name('v1.mobile.musora-api.content.show');
 
     //filter contents
     Route::get('/all', [
