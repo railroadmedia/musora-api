@@ -1635,4 +1635,92 @@ class ContentController extends Controller
         return ResponseService::array($response);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getHomepageBanner(Request $request)
+    {
+        $brand = $request->get('brand', config('railcontent.brand'));
+
+        $coachOfTheMonth = $this->contentService->getFiltered(
+            1,
+            1,
+            '-published_on',
+            ['instructor'],
+            [],
+            [],
+            ['is_coach_of_the_month,1,boolean,='],
+            [],
+            [],
+            [],
+            false,
+            false,
+            false
+        )
+            ->results()->first();
+
+        $methodSlug = $brand .'-method';
+        $methodContent =
+            $this->contentService->getBySlugAndType($methodSlug, 'learning-path')
+                ->first();
+
+        $hasStartedMethod = $methodContent['started'] === true;
+        $nextLearningPathLevel = $methodContent['level_rank'] ?? '1.1';
+        $nextLearningPathLesson = $this->contentService->getNextContentForParentContentForUser($methodContent['id'], auth()->id());
+
+        $response = [
+            'method' => [
+                'title' => 'Step by Step Curriculum',
+                'name' => $brand . ' Method',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
+                'url' => route('v1.mobile.musora-api.content.show',['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]),
+                'link' => !$hasStartedMethod?'Start Method':'Continue Level '.$nextLearningPathLevel
+            ],
+            'featured_coach' => [
+                'title' => 'Featured Coach',
+                'name' => $coachOfTheMonth['name'] ?? '',
+                'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
+                'url' => route('v1.mobile.musora-api.content.show',['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
+                'link' => 'Visit Coach Page',
+            ],
+            'songs' =>[
+                'title' => 'Popular Songs in All Genres',
+                'name' => 'Songs',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/songs.jpg',
+                'url' => route('v1.mobile.musora-api.contents.filter',[
+                    'included_types' => ['song'],
+                    'brand' => $brand,
+                    'page' => 1,
+                    'limit' => 10,
+                    'statuses' => [
+                        'published'
+                    ],
+                    'sort' => '-published_on'
+                ]),
+                'link' => 'See the latest songs'
+            ],
+            'coaches' => [
+                'title' => 'Learn from the legends',
+                'name' => 'Coaches',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/coaches.jpg',
+                'url' => route('v1.mobile.musora-api.contents.filter',[
+                    'included_types' => ['instructor'],
+                    'required_fields' => ['is_coach,1'],
+                    'brand' => $brand,
+                    'page' => 1,
+                    'limit' => 10,
+                    'statuses' => [
+                        'published'
+                    ],
+                    'sort' => '-published_on'
+                ]),
+                'link' => 'See Coaches'
+            ],
+        ];
+
+        return ResponseService::array($response);
+    }
+
+
 }
