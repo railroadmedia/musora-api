@@ -1676,7 +1676,11 @@ class ContentController extends Controller
                 'name' => ucfirst($brand) . ' Method',
                 'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
                 'url' => route('v1.mobile.musora-api.content.show',['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]),
-                'link' => !$hasStartedMethod?'Start Method':'Continue Level '.$nextLearningPathLevel
+                'link' => !$hasStartedMethod?'Start Method':'Continue Level '.$nextLearningPathLevel,
+                'level_rank' => $nextLearningPathLevel,
+                'started' => $methodContent['started'],
+                'completed' => $methodContent['completed'],
+                'user_progress' => $methodContent['user_progress'] ?? []
             ],
             'featured_coach' => [
                 'title' => 'Featured Coach',
@@ -1684,6 +1688,7 @@ class ContentController extends Controller
                 'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
                 'url' => route('v1.mobile.musora-api.content.show',['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
                 'link' => 'Visit Coach Page',
+                'id' => $coachOfTheMonth['id'] ?? null,
             ],
             'songs' =>[
                 'title' => 'Popular Songs in All Genres',

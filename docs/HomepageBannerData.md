@@ -41,14 +41,21 @@ $.ajax({
     "name": "Guitareo Method",
     "thumbnail_url": "https://musora-web-platform.s3.amazonaws.com/carousel/guitareo-method+1.jpg",
     "url": "https://devplatform.musora.com:8443/musora-api/v1/content/333654?brand=guitareo",
-    "link": "Start Method"
+    "link": "Start Method",
+    "level_rank": "1.1",
+    "started": false,
+    "completed": false,
+    "user_progress": {
+      "149628": []
+    }
   },
   "featured_coach": {
     "title": "Featured Coach",
     "name": "Dean Lamb",
     "thumbnail_url": "https://d1923uyy6spedc.cloudfront.net/dean horizontal-1650893231.png",
     "url": "https://devplatform.musora.com:8443/musora-api/v1/content/354026?brand=guitareo",
-    "link": "Visit Coach Page"
+    "link": "Visit Coach Page",
+    "id": 354026
   },
   "songs": {
     "title": "Popular Songs in All Genres",
