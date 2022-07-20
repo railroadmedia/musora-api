@@ -1157,7 +1157,16 @@ class ContentController extends Controller
             $request->get('page', 1),
             $request->get('limit', 10),
             '-'.$sort,
-            [$content['type']]
+            [$content['type']],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            false,
+            false,
+            false
         )['results'];
 
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
