@@ -1202,11 +1202,12 @@ class ContentController extends Controller
 
         $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
                                                                   $request->get('limit', 10),
-                                                                  '-published_on',
+                                                                  'title',
                                                                   [$content['type']],
                                                                   [],
                                                                   [],
-                                                                  ['artist,'.$content->fetch('fields.artist')]
+                                                                  ['artist,'.$content->fetch('fields.artist')],
+            [],[],[],false
         )['results'];
 
         // remove requested song if in related lessons, part one of two
@@ -1216,7 +1217,6 @@ class ContentController extends Controller
             }
         }
 
-        $songsFromSameArtist = $songsFromSameArtist->sortByFieldValue('title');
 
         $songsFromSameStyle = new Collection();
 
@@ -1224,11 +1224,11 @@ class ContentController extends Controller
             $songsFromSameStyle = $this->contentService->getFiltered(
                 1,
                 19,
-                '-published_on',
+                'title',
                 [$content['type']],
                 [],
                 [],
-                ['style,'.$content->fetch('fields.style')]
+                ['style,'.$content->fetch('fields.style')],[],[],[],false
             )['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
@@ -1238,7 +1238,6 @@ class ContentController extends Controller
                 }
             }
 
-            $songsFromSameStyle = $songsFromSameStyle->sortByFieldValue('title');
 
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
                 foreach ($songsFromSameArtist as $songFromSameArtistIndex => $songFromSameArtist) {
