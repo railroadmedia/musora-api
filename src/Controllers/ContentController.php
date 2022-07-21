@@ -203,6 +203,8 @@ class ContentController extends Controller
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                 }
             }
+        }else {
+            $content = $this->attachSiblingRelatedLessons($content, $request);
         }
 
         //attach song related lessons
