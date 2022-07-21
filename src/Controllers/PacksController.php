@@ -372,7 +372,7 @@ class PacksController extends Controller
             $parent =
                 $this->contentService->getByChildIdWhereParentTypeIn($pack['id'], ['pack'])
                     ->first();
-            if ($parent) {
+            if ($parent && $parent['slug'] != 'pianote-classical-method')  {
                 $pack['pack_logo'] = $parent->fetch('data.logo_image_url');
             }
 
