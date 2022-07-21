@@ -133,7 +133,7 @@ class ContentController extends Controller
         DownloadService $downloadService,
         ContentFollowsService $contentFollowsService,
         UserPlaylistsService $userPlaylistsService,
-        ProductProviderInterface $productProvider,
+        ProductProviderInterface $productProvider
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
