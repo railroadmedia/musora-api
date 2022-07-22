@@ -50,7 +50,7 @@ class AvatarController extends Controller
             ->encode('jpg', 75)
             ->save();
 
-        $target = 'user-profile-pictures/' . pathinfo($request->get('target'))['filename'] . '-' . time() . '-' . auth()->id() . '.jpg';
+        $target = 'profile_picture_url/' . pathinfo($request->get('target'))['filename'] . '-' . time() . '-' . auth()->id() . '.jpg';
 
         $success = Storage::disk('musora_web_platform_s3')->put($target, $request->file('file')->getContent());
 
