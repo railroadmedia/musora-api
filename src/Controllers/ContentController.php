@@ -1576,6 +1576,18 @@ class ContentController extends Controller
 
         ContentRepository::$pullFutureContent = true;
 
+        $levelName = [
+            'Song in an hour',
+            'The Jam Session',
+            'Music Video Shoot',
+            'Campfire Chords',
+            'Selling Out',
+            'The Punk Show',
+            'The Recording Studio',
+            'Play Anything',
+            'The Final Boss'
+        ];
+
         $packSlug = 'guitar-quest';
         $pack =
             $this->contentService->getBySlugAndType($packSlug, 'pack')
@@ -1596,6 +1608,7 @@ class ContentController extends Controller
 
             $levels[] = [
                 'id' => $packBundle['id'],
+                'name' => $levelName[$i] ?? '',
                 'thumb_url' => 'https://d122ay5chh2hr5.cloudfront.net/guitarquest/assets/level-'.($index + 1).'.png',
                 'completed' => $packBundle['completed'],
             ];
