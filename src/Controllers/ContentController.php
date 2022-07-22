@@ -1608,7 +1608,7 @@ class ContentController extends Controller
 
             $levels[] = [
                 'id' => $packBundle['id'],
-                'name' => $levelName[$i] ?? '',
+                'name' => $levelName[$index] ?? '',
                 'thumb_url' => 'https://d122ay5chh2hr5.cloudfront.net/guitarquest/assets/level-'.($index + 1).'.png',
                 'completed' => $packBundle['completed'],
             ];
