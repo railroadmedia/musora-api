@@ -46,7 +46,7 @@ use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
 
-//use Railroad\Mailora\Services\MailService;
+use Railroad\Mailora\Services\MailService;
 
 class ContentController extends Controller
 {
@@ -78,7 +78,7 @@ class ContentController extends Controller
     /**
      * @var MailService
      */
-    //    private $mailoraMailService;
+    private $mailoraMailService;
 
     /**
      * @var ContentHierarchyRepository
@@ -126,7 +126,7 @@ class ContentController extends Controller
         CommentService $commentService,
         ContentVimeoVideoDecorator $vimeoVideoDecorator,
         UserProviderInterface $userProvider,
-        //        MailService $mailoraMailService,
+        MailService $mailoraMailService,
         ContentHierarchyRepository $contentHierarchyRepository,
         FullTextSearchService $fullTextSearchService,
         StripTagDecorator $stripTagDecorator,
@@ -139,7 +139,7 @@ class ContentController extends Controller
         $this->commentService = $commentService;
         $this->vimeoVideoDecorator = $vimeoVideoDecorator;
         $this->userProvider = $userProvider;
-        //        $this->mailoraMailService = $mailoraMailService;
+        $this->mailoraMailService = $mailoraMailService;
         $this->contentHierarchyRepository = $contentHierarchyRepository;
         $this->fullTextSearchService = $fullTextSearchService;
         $this->stripTagDecorator = $stripTagDecorator;
@@ -154,10 +154,13 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(array_merge(
-                                             config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
-                                             config('railcontent.singularContentTypes')
-                                         ), ['song']);
+        $lessonContentTypes = array_diff(
+            array_merge(
+                config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
+                config('railcontent.singularContentTypes')
+            ),
+            ['song']
+        );
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -251,15 +254,11 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
@@ -330,14 +329,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -523,11 +523,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -646,7 +647,7 @@ class ContentController extends Controller
         }
 
         if ($request->has('term')) {
-            $requiredFields = array_merge($requiredFields,['name,%' . $request->get('term') . '%,string,like']);
+            $requiredFields = array_merge($requiredFields, ['name,%'.$request->get('term').'%,string,like']);
             if ($request->get('sort') == '-score') {
                 $request->merge(['sort' => 'published_on']);
             }
@@ -773,7 +774,7 @@ class ContentController extends Controller
     {
         $input = $request->all();
         $currentUser = $this->userProvider->getCurrentUser();
-        $brand = config('railcontent.brand', '');
+        $brand = $request->get('brand', config('railcontent.brand', ''));
 
         $input['subject'] =
             config('musora-api.submit_question_subject.'.$brand, '').
@@ -835,7 +836,7 @@ class ContentController extends Controller
     public function submitStudentFocusForm(SubmitStudentFocusFormRequest $request)
     {
         $currentUser = $this->userProvider->getCurrentUser();
-        $brand = config('railcontent.brand', '');
+        $brand = $request->get('brand', config('railcontent.brand', ''));
         $lines = [
             '<strong>student progress info:</strong> '.
             'https://'.
@@ -867,7 +868,6 @@ class ContentController extends Controller
      */
     public function sendSecure($input)
     {
-        return '';
         try {
             $this->mailoraMailService->sendSecure($input);
         } catch (Exception $exception) {
@@ -1218,17 +1218,18 @@ class ContentController extends Controller
             return $content;
         }
 
-        $songsFromSameArtist = $this->contentService->getFiltered($request->get('page', 1),
-                                                                  $request->get('limit', 10),
-                                                                  'title',
-                                                                  [$content['type']],
-                                                                  [],
-                                                                  [],
-                                                                  ['artist,'.$content->fetch('fields.artist')],
-                                                                  [],
-                                                                  [],
-                                                                  [],
-                                                                  false
+        $songsFromSameArtist = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            'title',
+            [$content['type']],
+            [],
+            [],
+            ['artist,'.$content->fetch('fields.artist')],
+            [],
+            [],
+            [],
+            false
         )['results'];
 
         // remove requested song if in related lessons, part one of two
@@ -1241,19 +1242,19 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $songsFromSameStyle =
-                $this->contentService->getFiltered(1,
-                                                   19,
-                                                   'title',
-                                                   [$content['type']],
-                                                   [],
-                                                   [],
-                                                   ['style,'.$content->fetch('fields.style')],
-                                                   [],
-                                                   [],
-                                                   [],
-                                                   false
-                )['results'];
+            $songsFromSameStyle = $this->contentService->getFiltered(
+                1,
+                19,
+                'title',
+                [$content['type']],
+                [],
+                [],
+                ['style,'.$content->fetch('fields.style')],
+                [],
+                [],
+                [],
+                false
+            )['results'];
 
             // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
             foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -1382,12 +1383,10 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                          ['is_featured,1'],
-                                                                          $includedFields, [],
-                                                                          []
-        )
-            ->results();
+        $content['featured_lessons'] =
+            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
+                                               [], [])
+                ->results();
 
         return $content;
     }
@@ -1592,7 +1591,7 @@ class ContentController extends Controller
             'The Punk Show',
             'The Recording Studio',
             'Play Anything',
-            'The Final Boss'
+            'The Final Boss',
         ];
 
         $packSlug = 'guitar-quest';
@@ -1716,11 +1715,11 @@ class ContentController extends Controller
             'method' => [
                 'title' => 'Step by Step Curriculum',
                 'name' => ucfirst($brand).' Method',
-                'thumbnail_url' => ($brand == 'guitareo')?'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg':'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                'url' => route(
-                    'v1.mobile.musora-api.content.show',
-                    ['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]
-                ),
+                'thumbnail_url' => ($brand == 'guitareo') ?
+                    'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
+                    'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
+                'url' => route('v1.mobile.musora-api.content.show',
+                               ['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]),
                 'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
                 'level_rank' => $nextLearningPathLevel,
                 'started' => $methodContent['started'],
@@ -1731,10 +1730,8 @@ class ContentController extends Controller
                 'title' => 'Featured Coach',
                 'name' => $coachOfTheMonth['name'] ?? '',
                 'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                'url' => route(
-                    'v1.mobile.musora-api.content.show',
-                    ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]
-                ),
+                'url' => route('v1.mobile.musora-api.content.show',
+                               ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
                 'link' => 'Visit Coach Page',
                 'id' => $coachOfTheMonth['id'] ?? null,
             ],
