@@ -645,6 +645,13 @@ class ContentController extends Controller
             $requiredFields = array_merge($requiredFields, ['show_in_new_feed,'.$request->get('show_in_new_feed')]);
         }
 
+        if ($request->has('term')) {
+            $requiredFields = array_merge($requiredFields,['name,%' . $request->get('term') . '%,string,like']);
+            if ($request->get('sort') == '-score') {
+                $request->merge(['sort' => 'published_on']);
+            }
+        }
+
         $sortedBy = '-published_on';
 
         foreach ($types as $type) {
@@ -1709,7 +1716,7 @@ class ContentController extends Controller
             'method' => [
                 'title' => 'Step by Step Curriculum',
                 'name' => ucfirst($brand).' Method',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
+                'thumbnail_url' => ($brand == 'guitareo')?'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg':'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
                 'url' => route(
                     'v1.mobile.musora-api.content.show',
                     ['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]
