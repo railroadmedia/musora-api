@@ -140,7 +140,10 @@ class VimeoVideoSourcesDecorator extends ModeDecoratorBase
                                             $contentResults[$contentIndex]['hlsManifestUrl'] = $fileData['link'];
                                         }
 
-                                        $contentResults[$contentIndex]['captions'] = $captions;
+                                        // Removing captions from response due to error on FE.
+                                        // Change back once resolved.
+                                        $contentResults[$contentIndex]['captions'] = null;
+//                                        $contentResults[$contentIndex]['captions'] = $captions;
                                     }
 
                                     $contentResults[$contentIndex]
