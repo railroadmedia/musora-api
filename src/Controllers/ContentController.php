@@ -1134,6 +1134,12 @@ class ContentController extends Controller
     : mixed {
         //related lessons
         $parentChildren = $parent['lessons'] ?? [];
+
+        //add length_in_seconds
+        foreach ($parentChildren as $index=>$child) {
+            $parentChildren[$index]['length_in_seconds'] =
+                $child->fetch('fields.video.fields.length_in_seconds', 0);
+        }
         $content['related_lessons'] = $this->getParentChildTrimmed($parentChildren, $content);
 
         //previous/next lesson
