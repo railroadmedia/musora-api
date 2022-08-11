@@ -1442,6 +1442,7 @@ class ContentController extends Controller
         $duration = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
             $duration += $course->fetch('fields.video.fields.length_in_seconds', 0);
+            $content["$childrenName"][$index]['length_in_seconds'] = $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['position'])) {
                 $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
