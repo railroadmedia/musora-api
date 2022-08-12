@@ -113,35 +113,37 @@ class LearningPathController extends Controller
                     ->lessThanOrEqualTo(Carbon::now()))) {
             if ($learningPath['slug'] != 'foundations-2019') {
                 $learningPath['banner_button_url'] = url()->route('mobile.musora-api.learning-path.lesson.show', [
-                        $learningPathNextLesson['id'],
-                    ]);
+                    $learningPathNextLesson['id'],
+                ]);
             } else {
                 $learningPath['banner_button_url'] = url()->route('mobile.musora-api.learning-paths.unit-part.show', [
-                        $learningPathNextLesson['id'],
-                    ]);
+                    $learningPathNextLesson['id'],
+                ]);
             }
         }
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
-
-        $learningPath['levels'] =
-            $this->contentService->getByParentIdWhereTypeIn($learningPath['id'],
-                                                            [
-                                                                config(
-                                                                    'railcontent.content_hierarchy'
-                                                                )[$learningPath['brand']][$learningPath['type']],
-                                                            ]);
+        if ($learningPath['slug'] == 'foundations-2019') {
+            $learningPath['units'] =
+            $learningPath['levels'] = $this->contentService->getByParentIdWhereTypeIn($learningPath['id'], ['unit',]);
+        } else {
+            $learningPath['levels'] = $this->contentService->getByParentIdWhereTypeIn($learningPath['id'], [
+                config(
+                    'railcontent.content_hierarchy'
+                )[$learningPath['brand']][$learningPath['type']],
+            ]);
+        }
 
         $levels = $learningPath['units'] ?? $learningPath['levels'];
 
         foreach ($levels ?? [] as $level) {
             $level['mobile_app_url'] = url()->route('mobile.musora-api.learning-path.level.show', [
-                    $learningPath['slug'],
-                    $level['slug'],
-                ]);
+                $learningPath['slug'],
+                $level['slug'],
+            ]);
         }
 
-        if (($learningPath['slug'] == 'pianote-method') && (isset($learningPath['units'])) ) {
+        if (($learningPath['slug'] == 'pianote-method') && (isset($learningPath['units']))) {
             $learningPath['levels'] = $learningPath['units'];
             unset($learningPath['units']);
         }
@@ -183,7 +185,7 @@ class LearningPathController extends Controller
         $courses = $this->contentService->getByParentId($level['id']);
         if ($level['type'] == 'learning-path-level') {
             foreach ($courses as $course) {
-                $course['level_rank'] = $level['level_number'] . '.' . $course['position'];
+                $course['level_rank'] = $level['level_number'].'.'.$course['position'];
             }
             $level['courses'] = $courses;
         } else {
@@ -194,8 +196,8 @@ class LearningPathController extends Controller
                 $totalLengthInSeconds += $lesson->fetch('fields.video.fields.length_in_seconds', 0);
                 $totalXp += $lesson->fetch('total_xp', $lesson->fetch('fields.xp', 0));
                 $lesson['mobile_app_url'] = url()->route('mobile.musora-api.learning-paths.unit-part.show', [
-                        $lesson['id'],
-                    ]);
+                    $lesson['id'],
+                ]);
             }
 
             $level['total_length_in_seconds'] = $totalLengthInSeconds;
@@ -344,7 +346,7 @@ class LearningPathController extends Controller
                     ->where('completed', '=', false)
                     ->first();
             $thisLesson['current_course'] = $course;
-            $nextCourse['level_rank'] = $thisLesson['level_position'] . '.' . $nextCourse['position'];
+            $nextCourse['level_rank'] = $thisLesson['level_position'].'.'.$nextCourse['position'];
             $thisLesson['next_course'] = $nextCourse;
         } else {
             if ($thisLesson['is_last_incomplete_course_from_level']) {
@@ -360,9 +362,9 @@ class LearningPathController extends Controller
                 if ($nextLevel) {
                     $nextLevel['level_number'] = $nextLevel['position'];
                     $nextLevel['mobile_app_url'] = url()->route('mobile.musora-api.learning-path.level.show', [
-                            $learningPath['slug'],
-                            $nextLevel['slug'],
-                        ]);
+                        $learningPath['slug'],
+                        $nextLevel['slug'],
+                    ]);
                     $thisLesson['next_level'] = $nextLevel;
                 }
             }
