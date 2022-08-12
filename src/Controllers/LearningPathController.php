@@ -124,8 +124,7 @@ class LearningPathController extends Controller
 
         $learningPath['banner_background_image'] = $learningPath->fetch('data.header_image_url', '');
         if ($learningPath['slug'] == 'foundations-2019') {
-            $learningPath['units'] =
-            $learningPath['levels'] = $this->contentService->getByParentIdWhereTypeIn($learningPath['id'], ['unit',]);
+            $learningPath['units'] = $this->contentService->getByParentIdWhereTypeIn($learningPath['id'], ['unit']);
         } else {
             $learningPath['levels'] = $this->contentService->getByParentIdWhereTypeIn($learningPath['id'], [
                 config(

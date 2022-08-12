@@ -157,7 +157,8 @@ class ContentController extends Controller
         $lessonContentTypes = array_diff(
             array_merge(
                 config('railcontent.showTypes')[config('railcontent.brand')] ?? [],
-                config('railcontent.singularContentTypes')
+                config('railcontent.singularContentTypes',[]),
+                ['unit-part']
             ),
             ['song']
         );
@@ -185,6 +186,7 @@ class ContentController extends Controller
             'pack-bundle',
             'semester-pack',
             'song',
+            'unit'
         ])) {
             $content = $this->attachChildrens($content);
 
