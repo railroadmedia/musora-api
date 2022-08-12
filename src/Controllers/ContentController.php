@@ -1455,6 +1455,7 @@ class ContentController extends Controller
             }
         }
         $content['length_in_seconds'] = $duration;
+        $content['lesson_count'] = $content['child_count'];
 
         return $content;
     }
