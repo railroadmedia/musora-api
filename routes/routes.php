@@ -371,12 +371,12 @@ Route::group([
     //route for live schedule
     Route::get('/live-schedule', [
         'as' => 'mobile.musora-api.live-schedule',
-        'uses' => ContentController::class . '@getLiveSchedule',
+        'uses' => ContentController::class . '@getLiveScheduleOptimised',
     ]);
 
     Route::get('/schedule', [
         'as' => 'mobile.musora-api.content-schedule',
-        'uses' => ContentController::class . '@getAllSchedule',
+        'uses' => ContentController::class . '@getAllScheduleOptimised',
     ]);
 
     //live event

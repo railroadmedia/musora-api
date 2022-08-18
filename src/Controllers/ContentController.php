@@ -768,6 +768,43 @@ class ContentController extends Controller
     }
 
     /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getAllScheduleOptimised(Request $request)
+    {
+        $scheduleEvents =
+            $this->contentService->getScheduledContent($request->get('brand'),  $request->get('limit'), $request->get('page', 1))                ;
+
+        return ResponseService::catalogue($scheduleEvents, $request);
+    }
+
+    public function getLiveScheduleOptimised(Request $request)
+    {
+        ContentRepository::$availableContentStatues = [
+            ContentService::STATUS_PUBLISHED,
+            ContentService::STATUS_SCHEDULED,
+        ];
+
+        ContentRepository::$pullFutureContent = true;
+
+        $liveEvents = $this->contentService->getWhereTypeInAndStatusInAndPublishedOnOrderedAndPaginated(
+            config('railcontent.liveContentTypes'),
+            [ContentService::STATUS_SCHEDULED],
+            Carbon::now()
+                ->subHours(24)
+                ->toDateTimeString(),
+            '>',
+            'live_event_start_time',
+            'asc',
+            [],
+            $request->get('limit'),$request->get('page')
+        );
+
+        return ResponseService::catalogue($liveEvents, $request);
+    }
+
+    /**
      * @param SubmitQuestionRequest $request
      * @return JsonResponse
      * @throws Exception
