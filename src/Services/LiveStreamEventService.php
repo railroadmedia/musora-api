@@ -61,17 +61,11 @@ class LiveStreamEventService
                 ->subHours(24)
                 ->toDateTimeString(),
             '>',
-            'published_on',
+            'live_event_start_time',
             'asc',
-            $requiredInstructor
+            $requiredInstructor,
+            10
         );
-
-        $liveEvents = $liveEvents->sort(function ($a, $b) {
-            return strtotime($a->fetch('fields.live_event_start_time')) -
-                strtotime($b->fetch('fields.live_event_start_time'));
-        })
-            ->slice(0, 10)
-            ->values();
 
         // calculate if there is a current event and the previous/next events
         $showLivePage = false;
