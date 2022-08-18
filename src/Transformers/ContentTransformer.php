@@ -103,7 +103,7 @@ class ContentTransformer extends TransformerAbstract
                        if(count($fields) == 4){
                            $fieldValue = ContentHelper::getFieldValue($content, $fields[1]);
                            if($fieldValue){
-                               $response[$key] = ContentHelper::getFieldValue($fieldValue->getArrayCopy(), $fields[3]);
+                               $response[$key] = ContentHelper::getFieldValue((!is_array($fieldValue))?$fieldValue->getArrayCopy():$fieldValue, $fields[3]);
                            }
                        } else {
                            $response[$key] = ContentHelper::getFieldValue($content, last($fields));
