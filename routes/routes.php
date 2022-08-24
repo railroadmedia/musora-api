@@ -302,7 +302,7 @@ Route::group([
 
     //packs
     Route::get('/packs', [
-        'as' => 'mobile.musora-api.packs.show',
+        'as' => 'mobile.musora-api.packs',
         'uses' => PacksController::class . '@showAllPacks',
     ]);
 
