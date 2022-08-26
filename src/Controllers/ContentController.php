@@ -1486,6 +1486,11 @@ class ContentController extends Controller
         $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
         $duration = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
+
+            if($course['type'] == 'assignment'){
+                unset($content["$childrenName"][$index]);
+                break;
+            }
             $duration += $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['length_in_seconds'] = $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
