@@ -221,6 +221,12 @@ class UserProgressController extends Controller
                 return 'course';
             case 'pack-bundle-lesson':
                 return 'pack-bundle';
+            case 'song-part':
+                return 'song';
+            case 'play-along-part':
+                return 'play-along';
+            case 'unit-part':
+                return 'unit';
         }
 
 
