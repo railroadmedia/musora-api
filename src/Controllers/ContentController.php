@@ -681,9 +681,9 @@ class ContentController extends Controller
                 $request->get('included_fields', []),
                 $request->get('required_user_states', []),
                 $request->get('included_user_states', []),
-                ($types == ['coach-stream']) ? false : true,
+                $request->get('with_filters', true),
                 false,
-                true,
+                $request->get('with_paginations', true),
                 $request->get('only_subscribed', false)
             );
         }
@@ -1488,6 +1488,7 @@ class ContentController extends Controller
 
         $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
         $duration = 0;
+        $totalXp = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
 
             if($course['type'] == 'assignment'){
@@ -1495,6 +1496,7 @@ class ContentController extends Controller
                 break;
             }
             $duration += $course->fetch('fields.video.fields.length_in_seconds', 0);
+            $totalXp += $course->fetch('fields.xp', 0);
             $content["$childrenName"][$index]['length_in_seconds'] = $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['position'])) {
@@ -1504,6 +1506,7 @@ class ContentController extends Controller
 
         $content['length_in_seconds'] = $content->fetch('fields.video.fields.length_in_seconds', $duration);
         $content['lesson_count'] = $content['child_count'];
+        $content['total_xp'] = $totalXp;
 
         return $content;
     }
