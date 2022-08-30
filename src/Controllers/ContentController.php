@@ -160,7 +160,7 @@ class ContentController extends Controller
                 config('railcontent.singularContentTypes',[]),
                 ['unit-part']
             ),
-            ['song']
+            ['song', 'play-along']
         );
 
         $content['resources'] = array_values($content['resources'] ?? []);
@@ -186,7 +186,8 @@ class ContentController extends Controller
             'pack-bundle',
             'semester-pack',
             'song',
-            'unit'
+            'unit',
+            'play-along'
         ])) {
             $content = $this->attachChildrens($content);
 
@@ -205,6 +206,8 @@ class ContentController extends Controller
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                 }
             }
+
+            $content = $this->attachSiblingRelatedLessons($content, $request);
         } else {
             $content = $this->attachSiblingRelatedLessons($content, $request);
         }
@@ -1498,7 +1501,8 @@ class ContentController extends Controller
                 $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
             }
         }
-        $content['length_in_seconds'] = $duration;
+
+        $content['length_in_seconds'] = $content->fetch('fields.video.fields.length_in_seconds', $duration);
         $content['lesson_count'] = $content['child_count'];
 
         return $content;
