@@ -721,7 +721,9 @@ class ContentController extends Controller
                 $request->get('included_fields', []),
                 ['started'],
                 [],
-                true
+                $request->get('with_filters', true),
+                false,
+                $request->get('with_paginations', true),
             );
         }
 
