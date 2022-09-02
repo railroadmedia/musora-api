@@ -324,7 +324,7 @@ Route::group([
     //save user progress
     Route::put(
         '/reset',
-        UserProgressController::class . '@resetUserProgressOnContent'
+        UserProgressController::class . '@resetUserProgressOnContentModified'
     );
 
     //reset user progress

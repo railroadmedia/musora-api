@@ -331,4 +331,47 @@ class UserProgressController extends Controller
 
         return ResponseService::array(['success' => true, 'session_id' => $sessionId]);
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function resetUserProgressOnContentModified(Request $request)
+    {
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+
+        $content = $this->contentService->getById($request->get('content_id'));
+        throw_if(!$content, new NotFoundException('Content not found.'));
+
+        $this->userContentProgressService->resetContent(
+            $request->get('content_id'),
+            $this->userProvider->getCurrentUser()
+                ->getId()
+        );
+
+        if ($content['type'] != 'assignment') {
+            $parentType = $this->getLessonTypeParentType($content['type']);
+
+            $parent = $this->contentService->getByChildIdWhereType($request->get('content_id'), $parentType);
+        } else {
+            $parent = $this->contentService->getByChildId($request->get('content_id'));
+        }
+
+        if ($parent->isEmpty()) {
+            return ResponseService::empty();
+        }
+
+        $parentTransformed = new ContentTransformer();
+        $parent = $parentTransformed->transform(\Arr::first($parent));
+
+        $response = [
+            'success' => true,
+            'parent' => $parent,
+        ];
+
+        return ResponseService::array($response);
+    }
 }
