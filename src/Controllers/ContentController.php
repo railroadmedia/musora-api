@@ -214,7 +214,7 @@ class ContentController extends Controller
 
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                     $content['fields'] = array_merge($content['fields'], $initialContent->fetch('*fields.style'));
-                    $content = $this->attachRelatedLessonsFromParent($initialContent, $content);
+                    $content['related_lessons'] = $initialContent['related_lessons'];
                 }
             }
         } else {
@@ -1517,6 +1517,7 @@ class ContentController extends Controller
         $content["$childrenName"] = $this->contentService->getByParentId($content['id']);
         $duration = 0;
         $totalXp = 0;
+        $chilrenCount = 0;
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
             if ($course['type'] == 'assignment') {
                 unset($content["$childrenName"][$index]);
@@ -1530,10 +1531,11 @@ class ContentController extends Controller
             if (isset($content['level_number']) && isset($course['position'])) {
                 $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
             }
+            $chilrenCount++;
         }
 
         $content['length_in_seconds'] = $content->fetch('fields.video.fields.length_in_seconds', $duration);
-        $content['lesson_count'] = $content['child_count'];
+        $content['lesson_count'] = $content['child_count'] = $chilrenCount;
         $content['total_xp'] = $totalXp;
 
         return $content;
