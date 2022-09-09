@@ -1307,7 +1307,7 @@ class ContentController extends Controller
         $songsFromSameStyle = new Collection();
 
         if (count($songsFromSameArtist) < 10) {
-            $styles = $content->fetch('*fields.style');
+            $styles = $content->fetch('*fields.style', []);
             $styleField = [];
             foreach ($styles as $style) {
                 $styleField[] = 'style,'.$style['value'];
