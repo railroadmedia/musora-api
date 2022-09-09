@@ -213,7 +213,7 @@ class ContentController extends Controller
                     $content = $this->attachChildrens($content);
 
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
-                    $content['fields'] = array_merge($content['fields'], $initialContent->fetch('*fields.style'));
+                    $content['fields'] = array_merge($content['fields'], $initialContent->fetch('*fields.style', []));
                     $content['related_lessons'] = $initialContent['related_lessons'];
                 }
             }
@@ -649,7 +649,7 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
