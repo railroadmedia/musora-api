@@ -101,26 +101,28 @@ class UserProgressController extends Controller
             $request->get('content_id'),
             $this->userProvider->getCurrentUser()->getId()
         );
-
-        if ($content['type'] != 'assignment') {
-            ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
-
-            $parentType = $this->getLessonTypeParentType($content['type']);
-
-            $parent = $this->contentService->getByChildIdWhereType($request->get('content_id'), $parentType);
-        } else {
-            $parent = $this->contentService->getByChildId($request->get('content_id'));
+        $parentContentData = $content->getParentContentData();
+        $parents = [];
+        foreach($parentContentData as $parent){
+            $parents[] = $this->contentService->getById($parent->id);
         }
 
-        if ($parent->isNotEmpty()) {
+        if (!empty($parents)) {
             $parentTransformed = new ContentTransformer();
-            $parent = $parentTransformed->transform(\Arr::first($parent));
+            $parent = $parentTransformed->transform(\Arr::first($parents));
+            if((count($parents) == 2) && ($parent['completed'])){
+                $parentOfParent = $parentTransformed->transform($parents[1]);
+            }
         }
 
         $response = [
             'success' => true,
             'parent' => $parent,
         ];
+
+        if(isset($parentOfParent)){
+            $response['parentOfParent'] = $parentOfParent;
+        }
 
         if (config('musora-api.shouldDisplayReview', false)) {
             $user = auth()->user();
