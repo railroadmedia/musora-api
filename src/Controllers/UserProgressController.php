@@ -103,6 +103,7 @@ class UserProgressController extends Controller
         );
         $parentContentData = $content->getParentContentData();
         $parents = [];
+        $parent = null;
         foreach($parentContentData as $parent){
             $parents[] = $this->contentService->getById($parent->id);
         }
