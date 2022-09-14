@@ -323,7 +323,7 @@ class UserProgressController extends Controller
                 auth()->id(),
                 $mediaTypeId,
                 $request->get('current_second', 0)
-            )['id'];
+            );
 
 
         } else {
