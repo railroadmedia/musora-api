@@ -14,18 +14,18 @@ class StripTagDecorator extends ModeDecoratorBase
             if ($entity instanceof ContentEntity) {
 
                 if (isset($entity['long_bio'])) {
-                    $entities[$entityIndex]['long_bio'] = strip_tags(html_entity_decode($entity['long_bio']));
+                    $entities[$entityIndex]['long_bio'] = strip_tags(html_entity_decode($entity['long_bio']), '<a>');
                 }
 
                 if (isset($entity['short_bio'])) {
-                    $entities[$entityIndex]['short_bio'] = strip_tags(html_entity_decode($entity['short_bio']));
+                    $entities[$entityIndex]['short_bio'] = strip_tags(html_entity_decode($entity['short_bio']), '<a>');
                 }
 
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
                     if  (in_array($data['key'] ,[ 'description','short_description','long_description'])) {
                         $entities[$entityIndex]['data'][$index]['value'] =
-                            strip_tags(html_entity_decode($data['value']));
+                            strip_tags(html_entity_decode($data['value']), '<a>');
                     }
                 }
 
@@ -34,7 +34,7 @@ class StripTagDecorator extends ModeDecoratorBase
                     foreach ($item['data'] as $indexData => $data) {
                         if ($data['key'] == 'description') {
                             $entities[$entityIndex]['assignments'][$index]['data'][$indexData]['value'] =
-                                strip_tags(html_entity_decode($data['value']));
+                                strip_tags(html_entity_decode($data['value']), '<a>');
                         }
                     }
                 }
@@ -48,7 +48,7 @@ class StripTagDecorator extends ModeDecoratorBase
                         foreach ($item['data'] as $indexData => $data) {
                             if ($data['key'] == 'biography') {
                                 $entities[$entityIndex]['instructor'][$index]['data'][$indexData]['value'] =
-                                    strip_tags(html_entity_decode($data['value']));
+                                    strip_tags(html_entity_decode($data['value']), '<a>');
                             }
                         }
                     }
@@ -56,7 +56,7 @@ class StripTagDecorator extends ModeDecoratorBase
 
                 //coach biography
                 if ($entity['type'] == 'coach' && array_key_exists('biography', $entity)) {
-                    $entities[$entityIndex]['biography'] = strip_tags(html_entity_decode($entity['biography']));
+                    $entities[$entityIndex]['biography'] = strip_tags(html_entity_decode($entity['biography']), '<a>');
                 }
             }
 
