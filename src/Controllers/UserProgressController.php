@@ -310,20 +310,22 @@ class UserProgressController extends Controller
                 $request->get('media_category', 'vimeo')
             );
 
-            $sessionId = $this->mediaTrackerProvider->trackMediaPlaybackStart(
-                $request->get('media_id'),
-                $request->get('media_length_seconds'),
-                auth()->id(),
-                $mediaTypeId,
-                $request->get('current_second', 0)
-            );
-
             if ($request->get('media_type', 'video') == 'video') {
                 $this->userContentProgressService->startContent(
                     $request->get('content_id'),
                     auth()->id()
                 );
             }
+
+            $sessionId = $this->mediaTrackerProvider->trackMediaPlaybackStart(
+                $request->get('media_id'),
+                $request->get('media_length_seconds'),
+                auth()->id(),
+                $mediaTypeId,
+                $request->get('current_second', 0)
+            )['id'];
+
+
         } else {
             $this->mediaTrackerProvider->trackMediaPlaybackProgress(
                 $sessionId,
