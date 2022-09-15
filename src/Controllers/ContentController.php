@@ -1279,7 +1279,7 @@ class ContentController extends Controller
      */
     private function attachSongRelatedLessons(Request $request, mixed $content)
     : mixed {
-        if (!in_array($content['type'], ['song', 'song-part'])) {
+        if (!in_array($content['type'], ['song'])) {
             return $content;
         }
 
