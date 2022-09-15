@@ -1652,9 +1652,11 @@ class ContentController extends Controller
             );
         }
 
-        if (array_key_exists($showType, $metaData)) {
-            $contentMetaData = $metaData[$showType] ?? [];
-            $contentMetaData['episodeNumber'] = $episodesNumber[$showType]['total'] ?? '';
+        $contentType =  ($showType == 'live')?'live-streams':(($showType == 'student-review')?'student-reviews':$showType);
+        if (array_key_exists($contentType, $metaData)) {
+
+            $contentMetaData = $metaData[$contentType] ?? [];
+            $contentMetaData['episodeNumber'] = $episodesNumber[$contentType]['total'] ?? '';
         }
 
         return ResponseService::array($contentMetaData);
