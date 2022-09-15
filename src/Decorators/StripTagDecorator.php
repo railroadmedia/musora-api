@@ -25,7 +25,7 @@ class StripTagDecorator extends ModeDecoratorBase
                 foreach ($contentData as $index => $data) {
                     if  (in_array($data['key'] ,[ 'description','short_description','long_description'])) {
                         $entities[$entityIndex]['data'][$index]['value'] =
-                            strip_tags(html_entity_decode($data['value']), '<a><br>');
+                            strip_tags(html_entity_decode($data['value']), '<a><p>');
                     }
                 }
 
