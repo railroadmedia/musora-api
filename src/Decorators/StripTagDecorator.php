@@ -23,9 +23,15 @@ class StripTagDecorator extends ModeDecoratorBase
 
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
-                    if  (in_array($data['key'] ,[ 'description','short_description','long_description'])) {
-                        $entities[$entityIndex]['data'][$index]['value'] =
-                            strip_tags(html_entity_decode($data['value']), '<a><p>');
+                    $isLesson = in_array($entity['type'], array_merge(
+                        config('railcontent.singularContentTypes', []),
+                        config('railcontent.showTypes')[$entity['brand']] ?? []
+                    ));
+                    if(in_array($data['key'] ,['description']) && $isLesson){
+                        $entities[$entityIndex]['data'][$index]['value'] = strip_tags(html_entity_decode($data['value']), '<a><p>');
+                    }
+                    elseif(in_array($data['key'] ,['description','short_description','long_description'])) {
+                        $entities[$entityIndex]['data'][$index]['value'] = strip_tags(html_entity_decode($data['value']), '<a>');
                     }
                 }
 
