@@ -83,18 +83,19 @@ class MyListController extends Controller
                 ))->toJsonResponse();
             }
 
-            $lessons = $this->contentService->getFiltered(
-                $page,
-                $limit,
-                $request->get('sort', '-published_on'),
+            $lessons = $this->contentService->getByParentIdWhereTypeInPaginated(
+                $usersPrimaryPlaylist['id'],
                 $contentTypes,
-                [],
-                [$usersPrimaryPlaylist['id']],
-                $requiredFields,
-                $includedFields,
-                $request->get('required_user_states', []),
-                $request->get('included_user_states', [])
+                $request->get('limit', 20),
+                ($request->get('page', 1) - 1) * $request->get('limit', 20)
             );
+
+            $totalResults = $this->contentService->countByParentIdWhereTypeIn(
+                $usersPrimaryPlaylist['id'],
+                $contentTypes
+            );
+
+            $lessons = new ContentFilterResultsEntity(['results' => $lessons->toArray(), 'total_results' => $totalResults]);
         } else {
             $contentTypes = array_diff($contentTypes, ['course-part']);
 

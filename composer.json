@@ -4,7 +4,7 @@
   "require": {
     "php": "~7",
     "laravel/framework": "5.6.*",
-    "railroad/railcontent": "0.5.*",
+    "railroad/railcontent": "dev-0.5-mwp-open-beta-launch as 0.5.100",
     "railroad/ecommerce": "4.0.*",
     "tymon/jwt-auth": "1.0.0-rc.2",
     "vimeo/vimeo-api": "^1.2",
