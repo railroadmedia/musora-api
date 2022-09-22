@@ -13,7 +13,7 @@ Install
 ------------------------------------------------------------------------------------------------------------------------
 
 1. Install via composer:
-
+ 
 > composer require railroad/musora-api:1.0
 
 2. Add service provider to your application laravel config app.php file:
