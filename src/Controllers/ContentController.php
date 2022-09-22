@@ -1808,7 +1808,7 @@ class ContentController extends Controller
                     'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
                 'url' => route(
                     'v1.mobile.musora-api.content.show',
-                    ['id' => $nextLearningPathLesson['id'] ?? '', 'brand' => $brand]
+                    ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]
                 ),
                 'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
                 'level_rank' => $nextLearningPathLevel,
