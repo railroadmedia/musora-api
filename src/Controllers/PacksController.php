@@ -120,6 +120,7 @@ class PacksController extends Controller
                 [],
                 [],
                 [],
+                [],
                 false
             )['results']
         ))->sortByUserActivity(auth()->id(),'desc')->keyBy('slug');
@@ -131,6 +132,7 @@ class PacksController extends Controller
             -1,
             '-published_on',
             ['pack', 'semester-pack'],
+            [],
             [],
             [],
             [],

@@ -321,6 +321,7 @@ class ContentController extends Controller
                 $includedFields,
                 [],
                 [],
+                [],
                 false,
                 false,
                 false
@@ -419,6 +420,7 @@ class ContentController extends Controller
                 $includedFields,
                 [],
                 [],
+                [],
                 false,
                 false,
                 false
@@ -503,6 +505,7 @@ class ContentController extends Controller
                 $includedFields,
                 $requiredUserState,
                 $includedUserState,
+                [],
                 true
             );
 
@@ -692,6 +695,7 @@ class ContentController extends Controller
                 $request->get('included_fields', []),
                 $request->get('required_user_states', []),
                 $request->get('included_user_states', []),
+                [],
                 $request->get('with_filters', true),
                 false,
                 $request->get('with_paginations', true),
@@ -731,6 +735,7 @@ class ContentController extends Controller
                 $request->get('required_fields', []),
                 $request->get('included_fields', []),
                 ['started'],
+                [],
                 [],
                 $request->get('with_filters', true),
                 false,
@@ -1158,6 +1163,7 @@ class ContentController extends Controller
             $includedFields,
             [],
             [],
+            [],
             false,
             false,
             true
@@ -1237,6 +1243,7 @@ class ContentController extends Controller
             [],
             [],
             [],
+            [],
             false,
             false,
             false
@@ -1294,6 +1301,7 @@ class ContentController extends Controller
             [],
             [],
             [],
+            [],
             false
         )['results'];
 
@@ -1327,6 +1335,7 @@ class ContentController extends Controller
                 [],
                 [],
                 $styleField,
+                [],
                 [],
                 [],
                 false
@@ -1416,6 +1425,7 @@ class ContentController extends Controller
             $includedFields,
             $requiredUserState,
             $includedUserState,
+            [],
             true
         );
 
@@ -1779,6 +1789,7 @@ class ContentController extends Controller
             [],
             [],
             ['is_coach_of_the_month,1,boolean,='],
+            [],
             [],
             [],
             [],
