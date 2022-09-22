@@ -97,6 +97,12 @@ class UserProgressController extends Controller
         $content = $this->contentService->getById($request->get('content_id'));
         throw_if(!$content, new NotFoundException('Content not found.'));
 
+        $isGuitarQuestLesson = false;
+        $firstParent = \Arr::last($content->getParentContentData());
+        if($firstParent && $firstParent->slug == "guitar-quest"){
+            $isGuitarQuestLesson = true;
+        }
+
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
             $this->userProvider->getCurrentUser()->getId()
@@ -119,6 +125,7 @@ class UserProgressController extends Controller
         $response = [
             'success' => true,
             'parent' => $parent,
+            'is_guitar_quest_lesson' => $isGuitarQuestLesson
         ];
 
         if(isset($parentOfParent)){
