@@ -93,24 +93,18 @@ class UserProgressController extends Controller
      */
     public function completeUserProgressOnContent(CompleteContentRequest $request)
     {
+        Log::debug("Musora-api endpoint to completeprogress on content with requestdata :: ".$request->all());
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $content = $this->contentService->getById($request->get('content_id'));
         throw_if(!$content, new NotFoundException('Content not found.'));
         $currentUserId = $this->userProvider->getCurrentUser()->getId();
-        Log::debug("Musora-api endpoint to completeprogress on content  from customer". $request->get('content_id')." user is  $currentUserId");
+        Log::debug("Musora-api endpoint to completeprogress on content with id:: ". $request->get('content_id')."  and user id is  $currentUserId");
 
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
             $currentUserId
         );
-
-        $typesForComplete = array_merge(
-                    config('railcontent.allowed_types_for_bubble_progress')['completed'],
-                    config('railcontent.showTypes', [])[config('railcontent.brand')] ?? []
-                );
-        Log::debug("Musora-api endpoint to completeprogress on content -  types for bubble complete ");
-        Log::debug($typesForComplete);
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
