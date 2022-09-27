@@ -92,21 +92,24 @@ class UserProgressController extends Controller
      */
     public function completeUserProgressOnContent(CompleteContentRequest $request)
     {
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $content = $this->contentService->getById($request->get('content_id'));
         throw_if(!$content, new NotFoundException('Content not found.'));
+
+        $this->userContentProgressService->completeContent(
+            $request->get('content_id'),
+            $this->userProvider->getCurrentUser()->getId()
+        );
+
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $isGuitarQuestLesson = false;
         $firstParent = \Arr::last($content->getParentContentData());
         if($firstParent && $firstParent->slug == "guitar-quest"){
             $isGuitarQuestLesson = true;
         }
-
-        $this->userContentProgressService->completeContent(
-            $request->get('content_id'),
-            $this->userProvider->getCurrentUser()->getId()
-        );
+        
         $parentContentData = $content->getParentContentData();
         $parents = [];
         $parent = null;
