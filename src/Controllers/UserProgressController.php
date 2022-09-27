@@ -11,6 +11,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Log;
 use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\RailTrackerProviderInterface;
@@ -96,11 +97,20 @@ class UserProgressController extends Controller
 
         $content = $this->contentService->getById($request->get('content_id'));
         throw_if(!$content, new NotFoundException('Content not found.'));
+        $currentUserId = $this->userProvider->getCurrentUser()->getId();
+        Log::debug("Musora-api endpoint to completeprogress on content  from customer". $request->get('content_id')." user is  $currentUserId");
 
         $this->userContentProgressService->completeContent(
             $request->get('content_id'),
-            $this->userProvider->getCurrentUser()->getId()
+            $currentUserId
         );
+
+        $typesForComplete = array_merge(
+                    config('railcontent.allowed_types_for_bubble_progress')['completed'],
+                    config('railcontent.showTypes', [])[config('railcontent.brand')] ?? []
+                );
+        Log::debug("Musora-api endpoint to completeprogress on content -  types for bubble complete ");
+        Log::debug($typesForComplete);
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
@@ -109,7 +119,7 @@ class UserProgressController extends Controller
         if($firstParent && $firstParent->slug == "guitar-quest"){
             $isGuitarQuestLesson = true;
         }
-        
+
         $parentContentData = $content->getParentContentData();
         $parents = [];
         $parent = null;
