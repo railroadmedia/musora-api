@@ -93,7 +93,8 @@ class UserProgressController extends Controller
      */
     public function completeUserProgressOnContent(CompleteContentRequest $request)
     {
-        Log::debug("Musora-api endpoint to completeprogress on content with requestdata :: ".$request->all());
+        Log::debug("Musora-api endpoint to completeprogress on content with requestdata :: ");
+        Log::debug($request->all());
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
         $content = $this->contentService->getById($request->get('content_id'));
