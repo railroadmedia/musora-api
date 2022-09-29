@@ -534,4 +534,12 @@ Route::group([
         ContentController::class . '@getHomepageBanner'
     )
         ->name('homepage.banner');
+
+    Route::put(
+        '/delete-account',
+        [
+            'as' => 'mobile.musora-api.delete.account',
+            'uses' => \Railroad\MusoraApi\Controllers\AuthController::class . '@deleteAccount',
+        ]
+    );
 });

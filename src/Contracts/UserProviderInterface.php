@@ -76,4 +76,6 @@ interface UserProviderInterface
      */
     public function setAndGetUserTimezone()
     : string;
+
+    public function deleteAccount();
 }

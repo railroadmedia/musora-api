@@ -107,4 +107,16 @@ class AuthController extends Controller
 
         return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
     }
+
+    /**
+     * @return JsonResponse
+     */
+    public function deleteAccount()
+    {
+        $this->userProvider->deleteAccount();
+
+        return ResponseService::array([
+                                          'success' => true,
+                                      ]);
+    }
 }
