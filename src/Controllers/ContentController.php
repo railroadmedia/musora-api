@@ -900,7 +900,7 @@ class ContentController extends Controller
         $lines = [
             '<strong>student progress info:</strong> '.
             'https://'.
-            'www.musora.com/admin/user-progress-info/'.
+            'admin.musora.com/admin/user-progress-info/'.
             $currentUser->getId(),
         ];
         $inputLines = $request->all();
