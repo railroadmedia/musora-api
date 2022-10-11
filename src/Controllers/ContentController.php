@@ -154,21 +154,22 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
-        $lessonContentTypes = array_diff(
-            array_merge(
-                config(
-                    'railcontent.showTypes'
-                )[config(
-                    'railcontent.brand'
-                )] ?? [],
-                config('railcontent.singularContentTypes', []),
-                ['unit-part']
-            ),
-            [
-                'song',
-                'play-along',
-            ]
-        );
+        $lessonContentTypes = array_diff(array_merge(config(
+                                                         'railcontent.showTypes'
+                                                     )[config(
+                                                         'railcontent.brand'
+                                                     )]
+                                                     ??
+                                                     [],
+                                             config(
+                                                         'railcontent.singularContentTypes',
+                                                         []
+                                                     ),
+                                             ['unit-part']),
+                                         [
+                                             'song',
+                                             'play-along',
+                                         ]);
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -267,11 +268,15 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
-                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route('mobile.musora-api.pack.show',
-                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
         }
 
         //get content's parent for related lessons and resources
@@ -342,15 +347,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,'.$content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -536,12 +540,11 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1455,10 +1458,12 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] =
-            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
-                                               [], [])
-                ->results();
+        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                          ['is_featured,1'],
+                                                                          $includedFields, [],
+                                                                          []
+        )
+            ->results();
 
         return $content;
     }
@@ -1764,94 +1769,203 @@ class ContentController extends Controller
     public function getHomepageBanner(Request $request)
     {
         $brand = $request->get('brand', config('railcontent.brand'));
-
-        $coachOfTheMonth = $this->contentService->getFiltered(
-            1,
-            1,
-            '-published_on',
-            ['instructor'],
-            [],
-            [],
-            ['is_coach_of_the_month,1,boolean,='],
-            [],
-            [],
-            [],
-            false,
-            false,
-            false
-        )
-            ->results()
-            ->first();
-
-        $methodSlug = $brand.'-method';
-        $methodContent =
-            $this->contentService->getBySlugAndType($methodSlug, 'learning-path')
+        if (config('musora-api.api.version') == 'v1') {
+            $coachOfTheMonth = $this->contentService->getFiltered(
+                1,
+                1,
+                '-published_on',
+                ['instructor'],
+                [],
+                [],
+                ['is_coach_of_the_month,1,boolean,='],
+                [],
+                [],
+                [],
+                false,
+                false,
+                false
+            )
+                ->results()
                 ->first();
 
-        $hasStartedMethod = $methodContent['started'] === true;
-        $nextLearningPathLevel = $methodContent['level_rank'] ?? '1.1';
-        $nextLearningPathLesson =
-            $this->contentService->getNextContentForParentContentForUser($methodContent['id'], auth()->id());
+            $methodSlug = $brand.'-method';
+            $methodContent =
+                $this->contentService->getBySlugAndType($methodSlug, 'learning-path')
+                    ->first();
 
-        $response = [
-            'method' => [
-                'title' => 'Step by Step Curriculum',
-                'name' => ucfirst($brand).' Method',
-                'thumbnail_url' => ($brand == 'guitareo') ?
-                    'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
-                    'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                'url' => route('v1.mobile.musora-api.content.show',
-                               ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
-                'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
-                'level_rank' => $nextLearningPathLevel,
-                'started' => $methodContent['started'],
-                'completed' => $methodContent['completed'],
-                'user_progress' => $methodContent['user_progress'] ?? [],
-            ],
-            'songs' => [
-                'title' => 'Popular Songs in All Genres',
-                'name' => 'Songs',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/songs.jpg',
-                'url' => route('v1.mobile.musora-api.contents.filter', [
-                    'included_types' => ['song'],
-                    'brand' => $brand,
-                    'page' => 1,
-                    'limit' => 10,
-                    'statuses' => [
-                        'published',
-                    ],
-                    'sort' => '-published_on',
-                ]),
-                'link' => 'See the latest songs',
-            ],
-            'coaches' => [
-                'title' => 'Learn from the legends',
-                'name' => 'Coaches',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/coaches.jpg',
-                'url' => route('v1.mobile.musora-api.contents.filter', [
-                    'included_types' => ['instructor'],
-                    'required_fields' => ['is_coach,1'],
-                    'brand' => $brand,
-                    'page' => 1,
-                    'limit' => 10,
-                    'statuses' => [
-                        'published',
-                    ],
-                    'sort' => '-published_on',
-                ]),
-                'link' => 'See Coaches',
-            ],
-        ];
-        if ($coachOfTheMonth) {
-            $response['featured_coach'] = [
-                'title' => 'Featured Coach',
-                'name' => $coachOfTheMonth['name'] ?? '',
-                'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                'url' => route('v1.mobile.musora-api.content.show',
-                               ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
-                'link' => 'Visit Coach Page',
-                'id' => $coachOfTheMonth['id'] ?? null,
+            $hasStartedMethod = $methodContent['started'] === true;
+            $nextLearningPathLevel = $methodContent['level_rank'] ?? '1.1';
+            $nextLearningPathLesson =
+                $this->contentService->getNextContentForParentContentForUser($methodContent['id'], auth()->id());
+
+            $response = [
+                'method' => [
+                    'title' => 'Step by Step Curriculum',
+                    'name' => ucfirst($brand).' Method',
+                    'thumbnail_url' => ($brand == 'guitareo') ?
+                        'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
+                        'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
+                    'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
+                    'level_rank' => $nextLearningPathLevel,
+                    'started' => $methodContent['started'],
+                    'completed' => $methodContent['completed'],
+                    'user_progress' => $methodContent['user_progress'] ?? [],
+                ],
+                'songs' => [
+                    'title' => 'Popular Songs in All Genres',
+                    'name' => 'Songs',
+                    'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/songs.jpg',
+                    'url' => route('v1.mobile.musora-api.contents.filter', [
+                        'included_types' => ['song'],
+                        'brand' => $brand,
+                        'page' => 1,
+                        'limit' => 10,
+                        'statuses' => [
+                            'published',
+                        ],
+                        'sort' => '-published_on',
+                    ]),
+                    'link' => 'See the latest songs',
+                ],
+                'coaches' => [
+                    'title' => 'Learn from the legends',
+                    'name' => 'Coaches',
+                    'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/coaches.jpg',
+                    'url' => route('v1.mobile.musora-api.contents.filter', [
+                        'included_types' => ['instructor'],
+                        'required_fields' => ['is_coach,1'],
+                        'brand' => $brand,
+                        'page' => 1,
+                        'limit' => 10,
+                        'statuses' => [
+                            'published',
+                        ],
+                        'sort' => '-published_on',
+                    ]),
+                    'link' => 'See Coaches',
+                ],
             ];
+            if ($coachOfTheMonth) {
+                $response['featured_coach'] = [
+                    'title' => 'Featured Coach',
+                    'name' => $coachOfTheMonth['name'] ?? '',
+                    'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
+                    'link' => 'Visit Coach Page',
+                    'id' => $coachOfTheMonth['id'] ?? null,
+                ];
+            }
+        } else {
+            $response['drumeo']['introducing_musora'] = [
+                'page_type' => 'Forum',
+                'title' => 'You have Early Access',
+                'name' => 'Introducing Musora',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'page_params' => [
+                    'brand' => 'drumeo',
+                    'postId' => 317905,
+                ],
+                'link' => 'Developer’s update',
+            ];
+            $response['drumeo']['the_drum_department'] = [
+                'page_type' => 'ShowOverview',
+                'title' => 'Introducing',
+                'name' => 'The drum department',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/drumeo-drum-department.jpg',
+                'page_params' => [
+                    'brand' => 'drumeo',
+                    'keyExtractor' => 'live',
+                ],
+                'link' => 'Watch the latest episode',
+            ];
+            $response['pianote']['introducing_musora'] = [
+                'page_type' => 'Forum',
+                'title' => 'You have Early Access',
+                'name' => 'Introducing Musora',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'page_params' => [
+                    'brand' => 'pianote',
+                    'postId' => 85968,
+                ],
+                'link' => 'Developer’s update',
+            ];
+            $response['pianote']['coach_of_the_month'] = [
+                'page_type' => 'CoachOverview',
+                'title' => 'Coach of the month',
+                'name' => 'Summer Swee-Singh',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pianote-COTM-summer-swee-singh.jpg',
+                'page_params' => [
+                    'brand' => 'pianote',
+                    'id' => 369384,
+                ],
+                'link' => 'View Summer’s coach page',
+            ];
+            $response['pianote']['schedule'] = [
+                'page_type' => 'Schedule',
+                'name' => 'The Piano Bench',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-06-29-Lisa-Kevin-Boogie-Woogie-101-107.jpg',
+                'page_params' => [
+                    'brand' => 'pianote',
+                ],
+                'link' => 'Check out the schedule here',
+            ];
+            $response['guitareo']['introducing_musora'] = [
+                'page_type' => 'Forum',
+                'title' => 'You have Early Access',
+                'name' => 'Introducing Musora',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'page_params' => [
+                    'brand' => 'guitareo',
+                    'postId' => 40517,
+                ],
+                'link' => 'Developer’s update',
+            ];
+            $response['guitareo']['coach_of_the_month'] = [
+                'page_type' => 'CoachOverview',
+                'title' => 'Coach of the month',
+                'name' => 'Dean Lamb',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/guitareo-COTM-dean-lamb.jpg',
+                'page_params' => [
+                    'brand' => 'guitareo',
+                    'id' => 354026,
+                ],
+                'link' => 'Visit Dean’s coach page',
+            ];
+            $response['singeo']['introducing_musora'] = [
+                'page_type' => 'Forum',
+                'title' => 'You have Early Access',
+                'name' => 'Introducing Musora',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'page_params' => [
+                    'brand' => 'singeo',
+                    'postId' => 28597,
+                ],
+                'link' => 'Developer’s update',
+            ];
+            $response['singeo']['coach_of_the_month'] = [
+                'page_type' => 'CoachOverview',
+                'title' => 'Coach of the month',
+                'name' => 'Chris Johnson',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-04-26-COACH-Chris-Johnson-QT-146+1.jpg',
+                'page_params' => [
+                    'brand' => 'singeo',
+                    'id' => 369633,
+                ],
+                'link' => 'Visit Chris’s coach page',
+            ];
+            $response['singeo']['schedule'] = [
+                'page_type' => 'Schedule',
+                'name' => 'The Stage',
+                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-05-04-Singeo-Julia-Lisa-100.jpg',
+                'page_params' => [
+                    'brand' => 'singeo',
+                ],
+                'link' => 'Check out the schedule here',
+            ];
+            $response = $response[$brand] ?? [];
         }
 
         return ResponseService::array($response);
