@@ -197,16 +197,22 @@ class LiveStreamEventService
             if (cache()->has($brand . '-yt-access-token-data')) {
                 $tokenData = cache()->pull($brand . '-yt-access-token-data');
             } else {
-                $client->setClientId(config('railcontent.video_sync.youtube_client_api.client_id'));
-                $client->setClientSecret(config('railcontent.video_sync.youtube_client_api.client_secret'));
+                $client->setClientId(config('railcontent.video_sync.'.$brand.'.youtube_client_api.client_id'));
+                $client->setClientSecret(
+                    config('railcontent.video_sync.'.$brand.'.youtube_client_api.client_secret')
+                );
 
                 $client->setScopes(['https://www.googleapis.com/auth/youtube']);
                 $client->setAccessType("offline");
                 $client->setApprovalPrompt('force');
 
-                $tokenData = $client->refreshToken(config('railcontent.video_sync.youtube_client_api.refresh_token'));
+                $tokenData =
+                    $client->refreshToken(
+                        config('railcontent.video_sync.'.$brand.'.youtube_client_api.refresh_token')
+                    );
 
-                cache()->set($brand . '-yt-access-token-data', $tokenData, $tokenData['expires_in'] - 500);
+                cache()->set($brand.'-yt-access-token-data', $tokenData, $tokenData['expires_in'] - 500);
+
             }
 
             $client->setAccessToken($tokenData['access_token']);
