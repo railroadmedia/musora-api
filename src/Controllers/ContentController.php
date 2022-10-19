@@ -1875,7 +1875,7 @@ class ContentController extends Controller
                 'page_type' => 'Forum',
                 'title' => 'You have Early Access',
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                     'postId' => 317905,
@@ -1886,7 +1886,7 @@ class ContentController extends Controller
                 'page_type' => 'ShowOverview',
                 'title' => 'Introducing',
                 'name' => 'The drum department',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/drumeo-drum-department.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/a5a41c48-1ccc-4d7a-0712-adbcf4eef600/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                     'keyExtractor' => 'live',
@@ -1897,7 +1897,7 @@ class ContentController extends Controller
                 'page_type' => 'Forum',
                 'title' => 'You have Early Access',
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
                 'page_params' => [
                     'brand' => 'pianote',
                     'postId' => 85968,
@@ -1908,7 +1908,7 @@ class ContentController extends Controller
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Summer Swee-Singh',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pianote-COTM-summer-swee-singh.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/cda86089-e6f6-4b5e-ffff-a19f6ab49900/public',
                 'page_params' => [
                     'brand' => 'pianote',
                     'id' => 369384,
@@ -1918,7 +1918,7 @@ class ContentController extends Controller
             $response['pianote']['schedule'] = [
                 'page_type' => 'Schedule',
                 'name' => 'The Piano Bench',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-06-29-Lisa-Kevin-Boogie-Woogie-101-107.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/12964ec4-35f0-4edd-4ea7-0e5ef219ce00/public',
                 'page_params' => [
                     'brand' => 'pianote',
                 ],
@@ -1928,7 +1928,7 @@ class ContentController extends Controller
                 'page_type' => 'Forum',
                 'title' => 'You have Early Access',
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
                 'page_params' => [
                     'brand' => 'guitareo',
                     'postId' => 40517,
@@ -1939,7 +1939,7 @@ class ContentController extends Controller
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Dean Lamb',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/guitareo-COTM-dean-lamb.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/a3b33529-b493-4fed-c535-e5e62f2b4b00/public',
                 'page_params' => [
                     'brand' => 'guitareo',
                     'id' => 354026,
@@ -1950,7 +1950,7 @@ class ContentController extends Controller
                 'page_type' => 'Forum',
                 'title' => 'You have Early Access',
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/pre-launch-header-image-jpg.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
                 'page_params' => [
                     'brand' => 'singeo',
                     'postId' => 28597,
@@ -1961,7 +1961,7 @@ class ContentController extends Controller
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Chris Johnson',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-04-26-COACH-Chris-Johnson-QT-146+1.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/212c8668-d056-4ef9-289b-c745de3d2f00/public',
                 'page_params' => [
                     'brand' => 'singeo',
                     'id' => 369633,
@@ -1971,7 +1971,7 @@ class ContentController extends Controller
             $response['singeo']['schedule'] = [
                 'page_type' => 'Schedule',
                 'name' => 'The Stage',
-                'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/2022-05-04-Singeo-Julia-Lisa-100.jpg',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f3fa1a1c-0db2-4bcf-a43c-6245a91f9300/public',
                 'page_params' => [
                     'brand' => 'singeo',
                 ],
