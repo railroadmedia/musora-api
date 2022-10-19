@@ -24,6 +24,6 @@ interface RailTrackerProviderInterface
         $currentSecond,
         $lastUpdatedOn = null
     )
-    : ?array;
+    : bool|array|null;
 
 }
