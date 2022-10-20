@@ -55,7 +55,7 @@ class ResponseService
         } else {
             $result = (new CatalogueTransformer())->transform($data->results());
 
-            //$filters = (new FilterOptionsTransformer())->transform($filters);
+            $filters = (new FilterOptionsTransformer())->transform($filters);
         }
 
         return (new ContentFilterResultsEntity(
