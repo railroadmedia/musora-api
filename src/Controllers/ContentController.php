@@ -4,7 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
-use App\Decorators\PackBundleLessonDecorator;
+use Railroad\Railcontent\Decorators\Decorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -654,6 +654,9 @@ class ContentController extends Controller
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        Decorator::$typeDecoratorsEnabled = false;
+        ContentRepository::$pullFilterResultsOptionsAndCount = false;
+        ContentRepository::$catalogMetaAllowableFilters = ['instructor','topic', 'style','artist'];
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
@@ -702,6 +705,12 @@ class ContentController extends Controller
                 $request->get('only_subscribed', false)
             );
         }
+
+        $collectionForDecoration = new Collection();
+        $collectionForDecoration = $collectionForDecoration->merge($results->results());
+
+        Decorator::$typeDecoratorsEnabled = true;
+        $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
         return ResponseService::catalogue($results, $request);
     }
