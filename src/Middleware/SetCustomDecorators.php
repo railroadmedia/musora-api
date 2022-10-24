@@ -36,7 +36,7 @@ class SetCustomDecorators
         $allDecoratorsForComment =
             array_merge(
                 config('railcontent.decorators')['comment'],
-                [StripTagDecorator::class, DateFormatDecorator::class]
+                [StripTagDecorator::class, DateFormatDecorator::class, OldPlatformLinksDecorator::class]
             );
 
         ConfigService::$decorators['content'] = $allDecoratorsForContent;
