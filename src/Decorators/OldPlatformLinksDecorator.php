@@ -27,15 +27,16 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             if ($entity instanceof ContentEntity) {
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
-                    $isLesson = in_array(
+                    $isLessonOrAssignment = in_array(
                         $entity['type'],
                         array_merge(
                             config('railcontent.singularContentTypes', []),
-                            config('railcontent.showTypes')[$entity['brand']] ?? []
+                            config('railcontent.showTypes')[$entity['brand']] ?? [],
+                            ['assignment']
                         )
                     );
 
-                    if (in_array($data['key'], ['description']) && $isLesson) {
+                    if (in_array($data['key'], ['description']) && $isLessonOrAssignment) {
                         if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $data['value'], $matches)) {
                             $urls = $this->getUrls($matches[0]);
                             foreach ($urls as $oldUrl => $mwpUrl) {
@@ -279,6 +280,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                 'www.pianote.com',
                 'www.singeo.com',
                 'www.guitareo.com',
+                'forums.drumeo.com'
             ])) {
                 continue;
             }
