@@ -927,8 +927,9 @@ class ContentController extends Controller
         $input['lines'] = $lines;
         $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('musora_api.submit_student_focus_recipient.'.$brand);
+        $input['recipient'] = config('mailora.' . $brand . '.submit-student-focus-recipient' , "support@musora.com");
         $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
+        $input['sender'] = $currentUser->getEmail();
 
         return $this->sendSecure($input);
     }
