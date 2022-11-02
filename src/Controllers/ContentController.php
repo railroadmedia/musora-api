@@ -1245,6 +1245,9 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
+        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+        Decorator::$typeDecoratorsEnabled = false;
+
         $parentChildren = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
@@ -1287,6 +1290,8 @@ class ContentController extends Controller
 
         $content['next_lesson'] = $neighbourSiblings['before']->first();
         $content['previous_lesson'] = $neighbourSiblings['after']->first();
+
+        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
 
         return $content;
     }
