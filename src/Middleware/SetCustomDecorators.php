@@ -29,14 +29,14 @@ class SetCustomDecorators
                 StripTagDecorator::class,
                 MobileAppUrlDecorator::class,
                 LiveEventDecorator::class,
-            OldPlatformLinksDecorator::class
+//            OldPlatformLinksDecorator::class
 
             ]);
 
         $allDecoratorsForComment =
             array_merge(
                 config('railcontent.decorators')['comment'],
-                [StripTagDecorator::class, DateFormatDecorator::class, OldPlatformLinksDecorator::class]
+                [StripTagDecorator::class, DateFormatDecorator::class]
             );
 
         ConfigService::$decorators['content'] = $allDecoratorsForContent;
