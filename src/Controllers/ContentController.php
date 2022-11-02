@@ -1406,6 +1406,9 @@ class ContentController extends Controller
             return $content;
         }
 
+        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+        Decorator::$typeDecoratorsEnabled = false;
+
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
 
@@ -1462,6 +1465,7 @@ class ContentController extends Controller
         $content['duration_in_seconds'] = $duration;
         $content['total_xp'] = $totalXp;
 
+        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
         return $content;
     }
 
@@ -1475,6 +1479,9 @@ class ContentController extends Controller
             return $content;
         }
 
+        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+        Decorator::$typeDecoratorsEnabled = false;
+
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
@@ -1482,7 +1489,7 @@ class ContentController extends Controller
             $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
                                                [], [])
                 ->results();
-
+        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
         return $content;
     }
 
