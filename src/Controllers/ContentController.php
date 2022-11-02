@@ -1882,74 +1882,92 @@ class ContentController extends Controller
             }
         } else {
             $response['drumeo']['introducing_musora'] = [
-                'page_type' => 'Forum',
-                'title' => 'You have Early Access',
+                'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'url' => 'https://www.musora.com/unified-2022',
+                'link' => 'LEARN MORE',
+            ];
+            $response['drumeo']['coach_of_the_month'] = [
+                'page_type' => 'CoachOverview',
+                'title' => 'Coach of the month',
+                'name' => 'Todd Sucherman',
+                'thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
+                'tablet_thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
                 'page_params' => [
                     'brand' => 'drumeo',
-                    'postId' => 317905,
+                    'id' => 31973,
                 ],
-                'link' => 'Developer’s update',
+                'link' => "Visit Todd's Coach Page",
             ];
             $response['drumeo']['the_drum_department'] = [
                 'page_type' => 'ShowOverview',
                 'title' => 'Introducing',
                 'name' => 'The drum department',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/a5a41c48-1ccc-4d7a-0712-adbcf4eef600/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                     'keyExtractor' => 'live',
                 ],
                 'link' => 'Watch the latest episode',
             ];
-            $response['pianote']['introducing_musora'] = [
-                'page_type' => 'Forum',
-                'title' => 'You have Early Access',
-                'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
+            $response['drumeo']['new_songs_releases'] = [
+                'page_type' => 'Songs',
+                'title' => 'Introducing',
+                'name' => 'New Songs Releases',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
                 'page_params' => [
-                    'brand' => 'pianote',
-                    'postId' => 85968,
+                    'brand' => 'drumeo',
                 ],
-                'link' => 'Developer’s update',
+                'link' => 'Go To Songs',
+            ];
+            $response['pianote']['introducing_musora'] = [
+                'title' => "It's All Yours",
+                'name' => 'Introducing Musora',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'url' => 'https://www.musora.com/unified-2022',
+                'link' => 'LEARN MORE',
             ];
             $response['pianote']['coach_of_the_month'] = [
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Summer Swee-Singh',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/cda86089-e6f6-4b5e-ffff-a19f6ab49900/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/fcc863e8-db75-4d0a-807c-afc775e02d00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/49c95ddc-21ca-41c9-2370-eade79f02400/public',
                 'page_params' => [
                     'brand' => 'pianote',
                     'id' => 369384,
                 ],
-                'link' => 'View Summer’s coach page',
+                'link' => 'Visit Summer’s coach page',
             ];
             $response['pianote']['schedule'] = [
                 'page_type' => 'Schedule',
                 'name' => 'The Piano Bench',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/12964ec4-35f0-4edd-4ea7-0e5ef219ce00/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/45f6883d-3a0e-4c1a-145f-11515899fa00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/c76ea820-5615-407c-2a4b-fa539e041600/public',
                 'page_params' => [
                     'brand' => 'pianote',
                 ],
                 'link' => 'Check out the schedule here',
             ];
             $response['guitareo']['introducing_musora'] = [
-                'page_type' => 'Forum',
-                'title' => 'You have Early Access',
+                'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
-                'page_params' => [
-                    'brand' => 'guitareo',
-                    'postId' => 40517,
-                ],
-                'link' => 'Developer’s update',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'url' => 'https://www.musora.com/unified-2022',
+                'link' => 'LEARN MORE',
             ];
             $response['guitareo']['coach_of_the_month'] = [
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Dean Lamb',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/a3b33529-b493-4fed-c535-e5e62f2b4b00/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/bd462431-5718-4fa9-b5e3-d62c132b8700/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/033d5e42-f511-494c-5241-5bf37398a100/public',
                 'page_params' => [
                     'brand' => 'guitareo',
                     'id' => 354026,
@@ -1957,21 +1975,19 @@ class ContentController extends Controller
                 'link' => 'Visit Dean’s coach page',
             ];
             $response['singeo']['introducing_musora'] = [
-                'page_type' => 'Forum',
-                'title' => 'You have Early Access',
+                'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/65eda211-65c1-424a-e6d7-0e795c6f1900/public',
-                'page_params' => [
-                    'brand' => 'singeo',
-                    'postId' => 28597,
-                ],
-                'link' => 'Developer’s update',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'url' => 'https://www.musora.com/unified-2022',
+                'link' => 'LEARN MORE',
             ];
             $response['singeo']['coach_of_the_month'] = [
                 'page_type' => 'CoachOverview',
                 'title' => 'Coach of the month',
                 'name' => 'Chris Johnson',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/212c8668-d056-4ef9-289b-c745de3d2f00/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/5c89c338-9194-4926-2629-cc203fe7a300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/2e9f3475-c828-478e-9cf1-5a915e84fa00/public',
                 'page_params' => [
                     'brand' => 'singeo',
                     'id' => 369633,
@@ -1981,7 +1997,8 @@ class ContentController extends Controller
             $response['singeo']['schedule'] = [
                 'page_type' => 'Schedule',
                 'name' => 'The Stage',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f3fa1a1c-0db2-4bcf-a43c-6245a91f9300/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/bc0cc0da-68be-412d-0415-98e10300f000/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/986f9642-aa86-4560-e4e6-ab2767828800/public',
                 'page_params' => [
                     'brand' => 'singeo',
                 ],
