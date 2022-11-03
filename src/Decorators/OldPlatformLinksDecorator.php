@@ -23,17 +23,20 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
 
     public function decorate(Collection $entities)
     {
+        if (self::$decorationMode !== self::DECORATION_MODE_MAXIMUM) {
+            return $entities;
+        }
+        $initialDecorationMode = self::$decorationMode;
+        self::$decorationMode = self::DECORATION_MODE_MINIMUM;
         foreach ($entities as $entityIndex => $entity) {
             if ($entity instanceof ContentEntity) {
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
                     $isLessonOrAssignment = in_array(
                         $entity['type'],
-                        array_merge(
-                            config('railcontent.singularContentTypes', []),
-                            config('railcontent.showTypes')[$entity['brand']] ?? [],
-                            ['assignment']
-                        )
+                        array_merge(config('railcontent.singularContentTypes', []),
+                                    config('railcontent.showTypes')[$entity['brand']] ?? [],
+                                    ['assignment'])
                     );
 
                     if (in_array($data['key'], ['description']) && $isLessonOrAssignment) {
@@ -72,6 +75,8 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             }
         }
 
+        self::$decorationMode = $initialDecorationMode;
+
         return $entities;
     }
 
@@ -79,7 +84,6 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
         $segments,
         $url
     ) {
-
         ContentRepository::$bypassPermissions = true;
         $unifiedUrl = '/'.$segments[0].'/';
         if (isset($segments[0]) &&
@@ -160,8 +164,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             return $url;
         }
 
-        if (($segments[1] == 'forums') ||($segments[2] == 'forums')) {
-
+        if (($segments[1] == 'forums') || ($segments[2] == 'forums')) {
             $url = str_replace(
                 [
                     'www.drumeo.com/members/lessons',
@@ -187,8 +190,9 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             );
 
             return $url;
-        }elseif (is_numeric($lastSegment)) {
+        } elseif (is_numeric($lastSegment)) {
             $content = $this->contentService->getById($lastSegment);
+
             return $content['url'] ?? '';
         } elseif ($numberOfSegments == 3 && $segments[1] == 'packs') {
             $content =
@@ -280,7 +284,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                 'www.pianote.com',
                 'www.singeo.com',
                 'www.guitareo.com',
-                'forums.drumeo.com'
+                'forums.drumeo.com',
             ])) {
                 continue;
             }
