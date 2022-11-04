@@ -10,7 +10,7 @@ use Railroad\Railcontent\Support\Collection;
 
 class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDecoratorBase
 {
-    const HTML_HREF_REGEX_PATTERN = '#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#';
+    const HTML_HREF_REGEX_PATTERN = '#<a[^>]+href=\"(.*?)\"[^>]*>#';
     private $contentService;
 
     /**
@@ -40,8 +40,24 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                     );
 
                     if (in_array($data['key'], ['description']) && $isLessonOrAssignment) {
+                        $url = str_replace(
+                            [
+                                '"/members/forums',
+                                '"/members/',
+                                '"/pianote/forums',
+                                'forums.drumeo.com/index.php?',
+                            ],
+                            [
+                                '"'.route('forums.show-categories'),
+                                '"'.config('app.url').'/'.brand().'/',
+                                '"'.route('forums.show-categories'),
+                                route('forums.show-categories'),
+                            ],
+                            $data['value']
+                        );
+                        $data['value'] = $url;
                         if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $data['value'], $matches)) {
-                            $urls = $this->getUrls($matches[0]);
+                            $urls = $this->getUrls($matches[1]);
                             foreach ($urls as $oldUrl => $mwpUrl) {
                                 $entities[$entityIndex]['data'][$index]['value'] =
                                     str_replace($oldUrl, $mwpUrl, $entities[$entityIndex]['data'][$index]['value']);
@@ -53,9 +69,24 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
 
             if ($entity instanceof CommentEntity) {
                 $comment = $entity['comment'] ?? '';
-
+                $url = str_replace(
+                    [
+                        '"/members/forums',
+                        '"/members/',
+                        '"/pianote/forums',
+                        'forums.drumeo.com/index.php?',
+                    ],
+                    [
+                        '"'.route('forums.show-categories'),
+                        '"'.config('app.url').'/'.brand().'/',
+                        '"'.route('forums.show-categories'),
+                        route('forums.show-categories'),
+                    ],
+                    $comment
+                );
+                $comment = $url;
                 if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $comment, $matches)) {
-                    $urls = $this->getUrls($matches[0]);
+                    $urls = $this->getUrls($matches[1]);
                     foreach ($urls as $oldUrl => $mwpUrl) {
                         $entities[$entityIndex]['comment'] =
                             str_replace($oldUrl, $mwpUrl, $entities[$entityIndex]['comment']);
@@ -64,11 +95,27 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
 
                 $replies = $entity['replies'] ?? [];
                 foreach ($replies as $index => $reply) {
+                    $url = str_replace(
+                        [
+                            '"/members/forums',
+                            '"/members/',
+                            '"/pianote/forums',
+                            'forums.drumeo.com/index.php?',
+                        ],
+                        [
+                            '"'.route('forums.show-categories'),
+                            '"'.config('app.url').'/'.brand().'/',
+                            '"'.route('forums.show-categories'),
+                            route('forums.show-categories'),
+                        ],
+                        $reply['comment']
+                    );
+                    $reply['comment'] = $url;
                     if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $reply['comment'], $matches)) {
-                        $urls = $this->getUrls($matches[0]);
+                        $urls = $this->getUrls($matches[1]);
                         foreach ($urls as $oldUrl => $mwpUrl) {
                             $entities[$entityIndex]['replies'][$index]['comment'] =
-                                str_replace($oldUrl, $mwpUrl, $entities[$entityIndex]['comment']);
+                                str_replace($oldUrl, $mwpUrl, $entities[$entityIndex]['replies'][$index]['comment']);
                         }
                     }
                 }
@@ -164,7 +211,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             return $url;
         }
 
-        if (($segments[1] == 'forums') || ($segments[2] == 'forums')) {
+        if (in_array('forums', $segments)) {
             $url = str_replace(
                 [
                     'www.drumeo.com/members/lessons',
