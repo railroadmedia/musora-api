@@ -161,6 +161,9 @@ class ContentController extends Controller
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
+        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+        Decorator::$typeDecoratorsEnabled = false;
+
         $lessonContentTypes = array_diff(
             array_merge(
                 config(
@@ -236,9 +239,6 @@ class ContentController extends Controller
         //attach instructor's featured lessons
         $content = $this->attachFeaturedLessons($content, $request);
 
-        //attached comments on the content
-        $content = $this->attachComments($content);
-
         //attached low/high/original video ranges
         $content = $this->attachRanges($content);
 
@@ -249,6 +249,11 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
+
+        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+
+        //attached comments on the content
+        $content = $this->attachComments($content);
 
         // we need extra data for offline mode and a different response structure
         $isDownload = $request->get('download', false);
@@ -1245,9 +1250,6 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
-        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
-        Decorator::$typeDecoratorsEnabled = false;
-
         $parentChildren = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
@@ -1290,8 +1292,6 @@ class ContentController extends Controller
 
         $content['next_lesson'] = $neighbourSiblings['before']->first();
         $content['previous_lesson'] = $neighbourSiblings['after']->first();
-
-        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
 
         return $content;
     }
@@ -1411,8 +1411,6 @@ class ContentController extends Controller
             return $content;
         }
 
-        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
-        Decorator::$typeDecoratorsEnabled = false;
 
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
@@ -1470,7 +1468,6 @@ class ContentController extends Controller
         $content['duration_in_seconds'] = $duration;
         $content['total_xp'] = $totalXp;
 
-        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
         return $content;
     }
 
@@ -1484,8 +1481,6 @@ class ContentController extends Controller
             return $content;
         }
 
-        $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
-        Decorator::$typeDecoratorsEnabled = false;
 
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
@@ -1494,7 +1489,6 @@ class ContentController extends Controller
             $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
                                                [], [])
                 ->results();
-        Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
         return $content;
     }
 
