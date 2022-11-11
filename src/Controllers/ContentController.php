@@ -1922,7 +1922,7 @@ class ContentController extends Controller
             $response['drumeo']['new_songs_releases'] = [
                 'page_type' => 'Songs',
                 'title' => 'Introducing',
-                'name' => 'New Songs Releases',
+                'name' => 'New Song Releases',
                 'thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
                 'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
                 'page_params' => [
