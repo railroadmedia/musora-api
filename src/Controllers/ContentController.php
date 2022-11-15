@@ -218,6 +218,14 @@ class ContentController extends Controller
                 if ($childrenName) {
                     $initialContent = clone $content;
                     $content = $content[$childrenName][0];
+
+                    $collectionForDecoration = new Collection();
+                    $collectionForDecoration = $collectionForDecoration->merge([$content, $initialContent]);
+
+                    Decorator::$typeDecoratorsEnabled = true;
+                    $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
+                    Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+
                     $content = $this->addParentData($content, $initialContent);
                     $content = $this->attachChildrens($content);
 
