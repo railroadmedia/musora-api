@@ -1456,6 +1456,11 @@ class ContentController extends Controller
         $content['lessons_filter_options'] = $lessons->filterOptions();
         $content['lessons_filter_options_v2'] =
             array_intersect_key($content['lessons_filter_options'], array_flip(['type']));
+
+        if(array_key_exists('type', $content['lessons_filter_options_v2'])){
+            $content['lessons_filter_options_v2']['content_type'] = $content['lessons_filter_options_v2']['type'];
+            unset($content['lessons_filter_options_v2']['type']);
+        }
         $content['total_lessons'] = $lessons->totalResults();
 
         $duration = 0;
