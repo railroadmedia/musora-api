@@ -1900,29 +1900,40 @@ class ContentController extends Controller
                 ];
             }
         } else {
+            $response['drumeo']['rudiment_drumset_applications'] = [
+                'page_type' => 'Rudiments',
+                'title' => null,
+                'name' => 'Rudiment Drumset Applications',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'page_params' => [
+                    'brand' => 'drumeo',
+                ],
+                'link' => 'Go To Rudiments',
+            ];
             $response['drumeo']['introducing_musora'] = [
-                'title' => "It's All Yours",
+                'title' => null,
                 'name' => 'Introducing Musora',
                 'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
                 'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
                 'url' => 'https://www.musora.com/unified-2022',
                 'link' => 'LEARN MORE',
             ];
-            $response['drumeo']['coach_of_the_month'] = [
-                'page_type' => 'CoachOverview',
-                'title' => 'Coach of the month',
-                'name' => 'Todd Sucherman',
-                'thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
-                'tablet_thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                    'id' => 31973,
-                ],
-                'link' => "Visit Todd's Coach Page",
-            ];
+//            $response['drumeo']['coach_of_the_month'] = [
+//                'page_type' => 'CoachOverview',
+//                'title' => 'Coach of the month',
+//                'name' => 'Todd Sucherman',
+//                'thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
+//                'tablet_thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
+//                'page_params' => [
+//                    'brand' => 'drumeo',
+//                    'id' => 31973,
+//                ],
+//                'link' => "Visit Todd's Coach Page",
+//            ];
             $response['drumeo']['the_drum_department'] = [
                 'page_type' => 'ShowOverview',
-                'title' => 'Introducing',
+                'title' => null,
                 'name' => 'The drum department',
                 'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
                 'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
@@ -1934,7 +1945,7 @@ class ContentController extends Controller
             ];
             $response['drumeo']['new_songs_releases'] = [
                 'page_type' => 'Songs',
-                'title' => 'Introducing',
+                'title' => null,
                 'name' => 'New Song Releases',
                 'thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
                 'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
