@@ -1900,6 +1900,14 @@ class ContentController extends Controller
                 ];
             }
         } else {
+            $response['drumeo']['black_friday_deals'] = [
+                'title' => "BEST DEALS OF THE YEAR",
+                'name' => 'MEMBER BLACK FRIDAY DEALS',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6ae079b2-5585-4e9e-6a8d-918addef8e00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6ae079b2-5585-4e9e-6a8d-918addef8e00/public',
+                'url' => 'https://www.drumeo.com/drumshop/',
+                'link' => 'DRUM SHOP',
+            ];
             $response['drumeo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -1943,6 +1951,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Go To Songs',
             ];
+            $response['pianote']['black_friday_deals'] = [
+                'title' => "BEST DEALS OF THE YEAR",
+                'name' => 'MEMBER BLACK FRIDAY DEALS',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+                'url' => 'https://www.pianote.com/shop',
+                'link' => 'PIANOTE SHOP',
+            ];
             $response['pianote']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -1973,6 +1989,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Check out the schedule here',
             ];
+            $response['guitareo']['black_friday_deals'] = [
+                'title' => "BEST DEALS OF THE YEAR",
+                'name' => 'MEMBER BLACK FRIDAY DEALS',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+                'url' => 'https://www.guitareo.com/shop',
+                'link' => 'GUITAREO SHOP',
+            ];
             $response['guitareo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -1992,6 +2016,14 @@ class ContentController extends Controller
                     'id' => 354026,
                 ],
                 'link' => 'Visit Dean’s coach page',
+            ];
+            $response['singeo']['black_friday_deals'] = [
+                'title' => "BEST DEALS OF THE YEAR",
+                'name' => 'MEMBER BLACK FRIDAY DEALS',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+                'url' => 'https://www.singeo.com/shop',
+                'link' => 'SINGEO SHOP',
             ];
             $response['singeo']['introducing_musora'] = [
                 'title' => "It's All Yours",
