@@ -219,15 +219,16 @@ class ContentController extends Controller
                     $initialContent = clone $content;
                     $content = $content[$childrenName][0];
 
+                    $content = $this->addParentData($content, $initialContent);
+                    $content = $this->attachChildrens($content);
+
                     $collectionForDecoration = new Collection();
                     $collectionForDecoration = $collectionForDecoration->merge([$content, $initialContent]);
 
                     Decorator::$typeDecoratorsEnabled = true;
+                    ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
                     $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
                     Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
-
-                    $content = $this->addParentData($content, $initialContent);
-                    $content = $this->attachChildrens($content);
 
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                     $content['fields'] = array_merge($content['fields'], $initialContent->fetch('*fields.style', []));
