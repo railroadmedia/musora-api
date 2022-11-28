@@ -1905,8 +1905,8 @@ class ContentController extends Controller
                 'page_type' => 'Rudiments',
                 'title' => null,
                 'name' => 'Rudiment Drumset Applications',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                 ],
@@ -1920,18 +1920,6 @@ class ContentController extends Controller
                 'url' => 'https://www.musora.com/unified-2022',
                 'link' => 'LEARN MORE',
             ];
-//            $response['drumeo']['coach_of_the_month'] = [
-//                'page_type' => 'CoachOverview',
-//                'title' => 'Coach of the month',
-//                'name' => 'Todd Sucherman',
-//                'thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
-//                'tablet_thumbnail_url' => 'https://d1923uyy6spedc.cloudfront.net/2022-05-17-COACH-Todd-Suchermann-110-1655490713.jpg',
-//                'page_params' => [
-//                    'brand' => 'drumeo',
-//                    'id' => 31973,
-//                ],
-//                'link' => "Visit Todd's Coach Page",
-//            ];
             $response['drumeo']['the_drum_department'] = [
                 'page_type' => 'ShowOverview',
                 'title' => null,
@@ -1955,14 +1943,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Go To Songs',
             ];
-            $response['pianote']['black_friday_deals'] = [
-                'title' => "BEST DEALS OF THE YEAR",
-                'name' => 'MEMBER BLACK FRIDAY DEALS',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-                'url' => 'https://www.pianote.com/shop',
-                'link' => 'PIANOTE SHOP',
-            ];
+//            $response['pianote']['black_friday_deals'] = [
+//                'title' => "BEST DEALS OF THE YEAR",
+//                'name' => 'MEMBER BLACK FRIDAY DEALS',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+//                'url' => 'https://www.pianote.com/shop',
+//                'link' => 'PIANOTE SHOP',
+//            ];
             $response['pianote']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -1993,14 +1981,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Check out the schedule here',
             ];
-            $response['guitareo']['black_friday_deals'] = [
-                'title' => "BEST DEALS OF THE YEAR",
-                'name' => 'MEMBER BLACK FRIDAY DEALS',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-                'url' => 'https://www.guitareo.com/shop',
-                'link' => 'GUITAREO SHOP',
-            ];
+//            $response['guitareo']['black_friday_deals'] = [
+//                'title' => "BEST DEALS OF THE YEAR",
+//                'name' => 'MEMBER BLACK FRIDAY DEALS',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+//                'url' => 'https://www.guitareo.com/shop',
+//                'link' => 'GUITAREO SHOP',
+//            ];
             $response['guitareo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -2021,14 +2009,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Visit Dean’s coach page',
             ];
-            $response['singeo']['black_friday_deals'] = [
-                'title' => "BEST DEALS OF THE YEAR",
-                'name' => 'MEMBER BLACK FRIDAY DEALS',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-                'url' => 'https://www.singeo.com/shop',
-                'link' => 'SINGEO SHOP',
-            ];
+//            $response['singeo']['black_friday_deals'] = [
+//                'title' => "BEST DEALS OF THE YEAR",
+//                'name' => 'MEMBER BLACK FRIDAY DEALS',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+//                'url' => 'https://www.singeo.com/shop',
+//                'link' => 'SINGEO SHOP',
+//            ];
             $response['singeo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
