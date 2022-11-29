@@ -176,6 +176,7 @@ class ContentController extends Controller
             ),
             [
                 'song',
+                'song-tutorial',
                 'play-along',
             ]
         );
@@ -203,6 +204,7 @@ class ContentController extends Controller
             'pack-bundle',
             'semester-pack',
             'song',
+            'song-tutorial',
             'unit',
             'play-along',
         ])) {
@@ -1312,7 +1314,7 @@ class ContentController extends Controller
      */
     private function attachSongRelatedLessons(Request $request, mixed $content)
     : mixed {
-        if (!in_array($content['type'], ['song'])) {
+        if (!in_array($content['type'], ['song', 'song-tutorial'])) {
             return $content;
         }
 
