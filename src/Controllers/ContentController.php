@@ -233,6 +233,7 @@ class ContentController extends Controller
                     $content['data'] = array_merge($content['data'] ?? [], $initialContent['data'] ?? []);
                     $content['fields'] = array_merge($content['fields'], $initialContent->fetch('*fields.style', []));
                     $content['related_lessons'] = $initialContent['related_lessons'];
+                    $content['resources'] = array_values($content['resources']);
                 }
             }
         } else {
