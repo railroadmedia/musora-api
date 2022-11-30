@@ -4,6 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
+use Illuminate\Support\Facades\Log;
 use Railroad\Railcontent\Decorators\Decorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
@@ -1667,8 +1668,22 @@ class ContentController extends Controller
         $contentId
     ) {
         $nextContent = $this->contentService->getNextContentForParentContentForUser($contentId, user()->id);
-        throw_if(empty($nextContent), new NotFoundException('Content not exists.'));
-
+        if (!$nextContent) {
+            $userId = user()?->id;
+            Log::warning("No content with id $contentId exists. (userId:$userId)");
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => [
+                        [
+                            'title' => 'Not found',
+                            'detail' => 'Content not exists.',
+                        ],
+                    ],
+                ],
+                404
+            );
+        }
         return ResponseService::content($nextContent);
     }
 
