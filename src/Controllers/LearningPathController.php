@@ -90,8 +90,9 @@ class LearningPathController extends Controller
     public function showLearningPath($learningPathSlug)
     {
         ContentRepository::$bypassPermissions = true;
-        ContentRepository::$availableContentStatues = false;
         ContentRepository::$pullFutureContent = true;
+        ContentRepository::$availableContentStatues =
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
@@ -158,7 +159,8 @@ class LearningPathController extends Controller
     public function showLevel($learningPathSlug, $levelSlug, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
-        ContentRepository::$availableContentStatues = false;
+        ContentRepository::$availableContentStatues =
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
         ContentRepository::$pullFutureContent = true;
 
         $level =
@@ -237,7 +239,8 @@ class LearningPathController extends Controller
     public function showCourse($courseId, Request $request)
     {
         ContentRepository::$bypassPermissions = true;
-        ContentRepository::$availableContentStatues = false;
+        ContentRepository::$availableContentStatues =
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
         ContentRepository::$pullFutureContent = true;
 
         $course = $this->contentService->getById($courseId);
