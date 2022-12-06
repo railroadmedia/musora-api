@@ -1669,8 +1669,9 @@ class ContentController extends Controller
     ) {
         $nextContent = $this->contentService->getNextContentForParentContentForUser($contentId, user()->id);
         if (!$nextContent) {
-            $userId = user()?->id;
-            Log::warning("No content with id $contentId exists. (userId:$userId)");
+            $userId = user()->id;
+
+            Log::warning("No content with id $contentId exists. (userId:$userId  - method:: jumpToContinueContent:$contentId)");
             return response()->json(
                 [
                     'success' => false,
