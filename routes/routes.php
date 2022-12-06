@@ -244,6 +244,11 @@ Route::group([
         ContentController::class . '@getContentMeta'
     )
         ->name('content.meta.data');
+
+    Route::post(
+        '/request-song',
+        Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
+    )->name('mobile.musora-api.request.song');
 });
 
 //guest user
@@ -542,6 +547,11 @@ Route::group([
             'uses' => \Railroad\MusoraApi\Controllers\AuthController::class . '@deleteAccount',
         ]
     );
+
+    Route::post(
+        '/request-song',
+        Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
+    )->name('mobile.musora-api.v1.request.song');
 });
 
 Route::group([
