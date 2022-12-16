@@ -423,7 +423,8 @@ class ContentController extends Controller
                 $orderByColumn == 'sort' ? $content['sort'] : $content['published_on'],
                 1,
                 $orderByColumn,
-                $orderByDirection
+                $orderByDirection,
+                $content['id']
             );
 
             $content['next_lesson'] = $neighbourSiblings['before']->first();
@@ -1296,7 +1297,8 @@ class ContentController extends Controller
             $sort == 'sort' ? $content['sort'] : $content['published_on'],
             1,
             $sort,
-            'desc'
+            'desc',
+            $content['id']
         );
 
         // Revert to previous state
