@@ -1922,6 +1922,14 @@ class ContentController extends Controller
                 ];
             }
         } else {
+            $response['drumeo']['drumeo_awards_2022'] = [
+                'title' => null,
+                'name' => '2022 DRUMEO AWARDS',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ea1e83a6-77d3-488d-26a9-88508e550600/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ea1e83a6-77d3-488d-26a9-88508e550600/public',
+                'url' => 'https://www.drumeo.com/vote',
+                'link' => 'VOTE NOW',
+            ];
             $response['drumeo']['rudiment_drumset_applications'] = [
                 'page_type' => 'Rudiments',
                 'title' => null,
