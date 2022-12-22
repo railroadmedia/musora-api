@@ -1920,25 +1920,29 @@ class ContentController extends Controller
                 ];
             }
         } else {
-            $response['drumeo']['drumeo_awards_2022'] = [
+            $response['drumeo']['drumless_tracks'] = [
+                'page_type' => 'Songs',
                 'title' => null,
-                'name' => '2022 DRUMEO AWARDS',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ea1e83a6-77d3-488d-26a9-88508e550600/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ea1e83a6-77d3-488d-26a9-88508e550600/public',
+                'name' => 'Drumless Tracks',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
                 'url' => 'https://www.drumeo.com/vote',
-                'link' => 'VOTE NOW',
-            ];
-            $response['drumeo']['rudiment_drumset_applications'] = [
-                'page_type' => 'Rudiments',
-                'title' => null,
-                'name' => 'Rudiment Drumset Applications',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                 ],
-                'link' => 'Go To Rudiments',
+                'link' => 'Go To Songs',
             ];
+//            $response['drumeo']['rudiment_drumset_applications'] = [
+//                'page_type' => 'Rudiments',
+//                'title' => null,
+//                'name' => 'Rudiment Drumset Applications',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
+//                'page_params' => [
+//                    'brand' => 'drumeo',
+//                ],
+//                'link' => 'Go To Rudiments',
+//            ];
             $response['drumeo']['introducing_musora'] = [
                 'title' => null,
                 'name' => 'Introducing Musora',
@@ -1947,18 +1951,18 @@ class ContentController extends Controller
                 'url' => 'https://www.musora.com/unified-2022',
                 'link' => 'LEARN MORE',
             ];
-            $response['drumeo']['the_drum_department'] = [
-                'page_type' => 'ShowOverview',
-                'title' => null,
-                'name' => 'The drum department',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                    'keyExtractor' => 'live',
-                ],
-                'link' => 'Watch the latest episode',
-            ];
+//            $response['drumeo']['the_drum_department'] = [
+//                'page_type' => 'ShowOverview',
+//                'title' => null,
+//                'name' => 'The drum department',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
+//                'page_params' => [
+//                    'brand' => 'drumeo',
+//                    'keyExtractor' => 'live',
+//                ],
+//                'link' => 'Watch the latest episode',
+//            ];
             $response['drumeo']['new_songs_releases'] = [
                 'page_type' => 'Songs',
                 'title' => null,
@@ -1969,6 +1973,18 @@ class ContentController extends Controller
                     'brand' => 'drumeo',
                 ],
                 'link' => 'Go To Songs',
+            ];
+
+            $response['drumeo']['student_focus_review'] = [
+                'page_type' => 'StudentFocus',
+                'title' => null,
+                'name' => 'Student Focus',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ad11063b-e333-4e6d-d9d1-9fa006696400/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ad11063b-e333-4e6d-d9d1-9fa006696400/public',
+                'page_params' => [
+                    'brand' => 'drumeo',
+                ],
+                'link' => 'Apply For Review',
             ];
 //            $response['pianote']['black_friday_deals'] = [
 //                'title' => "BEST DEALS OF THE YEAR",
