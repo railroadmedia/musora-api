@@ -1920,18 +1920,18 @@ class ContentController extends Controller
                 ];
             }
         } else {
-            $response['drumeo']['drumless_tracks'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => 'Drumless Tracks',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
-                'url' => 'https://www.drumeo.com/vote',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                ],
-                'link' => 'Go To Songs',
-            ];
+//            $response['drumeo']['drumless_tracks'] = [
+//                'page_type' => 'Songs',
+//                'title' => null,
+//                'name' => 'Drumless Tracks',
+//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
+//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
+//                'url' => 'https://www.drumeo.com/vote',
+//                'page_params' => [
+//                    'brand' => 'drumeo',
+//                ],
+//                'link' => 'Go To Songs',
+//            ];
 //            $response['drumeo']['rudiment_drumset_applications'] = [
 //                'page_type' => 'Rudiments',
 //                'title' => null,
