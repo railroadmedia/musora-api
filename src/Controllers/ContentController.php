@@ -1920,18 +1920,17 @@ class ContentController extends Controller
                 ];
             }
         } else {
-//            $response['drumeo']['drumless_tracks'] = [
-//                'page_type' => 'Songs',
-//                'title' => null,
-//                'name' => 'Drumless Tracks',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/03b46813-7c16-497c-158f-7e3b67e76600/public',
-//                'url' => 'https://www.drumeo.com/vote',
-//                'page_params' => [
-//                    'brand' => 'drumeo',
-//                ],
-//                'link' => 'Go To Songs',
-//            ];
+            $response['drumeo']['songs_upgrade'] = [
+                'page_type' => 'Songs',
+                'title' => null,
+                'name' => 'Songs upgrade',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/96bf5455-7e05-4f20-8300-fd533662c300/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/96bf5455-7e05-4f20-8300-fd533662c300/public',
+                'page_params' => [
+                    'brand' => 'drumeo',
+                ],
+                'link' => 'Play Songs',
+            ];
 //            $response['drumeo']['rudiment_drumset_applications'] = [
 //                'page_type' => 'Rudiments',
 //                'title' => null,
@@ -1994,6 +1993,17 @@ class ContentController extends Controller
 //                'url' => 'https://www.pianote.com/shop',
 //                'link' => 'PIANOTE SHOP',
 //            ];
+            $response['pianote']['songs_upgrade'] = [
+                'page_type' => 'Songs',
+                'title' => null,
+                'name' => '1000+ SONGS TO LEARN',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6f6d73a3-67b9-44b2-1f9e-77c4bc870c00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6f6d73a3-67b9-44b2-1f9e-77c4bc870c00/public',
+                'page_params' => [
+                    'brand' => 'pianote',
+                ],
+                'link' => 'Play Songs',
+            ];
             $response['pianote']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -2032,6 +2042,17 @@ class ContentController extends Controller
 //                'url' => 'https://www.guitareo.com/shop',
 //                'link' => 'GUITAREO SHOP',
 //            ];
+            $response['guitareo']['songs_upgrade'] = [
+                'page_type' => 'Songs',
+                'title' => null,
+                'name' => '1000+ SONGS TO LEARN',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/14786854-bbfc-49fa-c75b-64da6da7e800/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/14786854-bbfc-49fa-c75b-64da6da7e800/public',
+                'page_params' => [
+                    'brand' => 'guitareo',
+                ],
+                'link' => 'Play Songs',
+            ];
             $response['guitareo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
@@ -2060,6 +2081,17 @@ class ContentController extends Controller
 //                'url' => 'https://www.singeo.com/shop',
 //                'link' => 'SINGEO SHOP',
 //            ];
+            $response['singeo']['songs_upgrade'] = [
+                'page_type' => 'Songs',
+                'title' => null,
+                'name' => '1000+ SONGS TO LEARN',
+                'thumbnail_url' => 'hhttps://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
+                'page_params' => [
+                    'brand' => 'singeo',
+                ],
+                'link' => 'Play Songs',
+            ];
             $response['singeo']['introducing_musora'] = [
                 'title' => "It's All Yours",
                 'name' => 'Introducing Musora',
