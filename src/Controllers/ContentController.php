@@ -262,7 +262,12 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
+        $collectionForDecoration = new Collection();
+        $collectionForDecoration = $collectionForDecoration->merge( $content['related_lessons']);
 
+        Decorator::$typeDecoratorsEnabled = true;
+        ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
+        $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
         Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
 
         //attached comments on the content
