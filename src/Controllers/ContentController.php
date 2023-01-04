@@ -2090,7 +2090,7 @@ class ContentController extends Controller
                 'page_type' => 'Songs',
                 'title' => null,
                 'name' => '1000+ SONGS TO LEARN',
-                'thumbnail_url' => 'hhttps://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
                 'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
                 'page_params' => [
                     'brand' => 'singeo',
