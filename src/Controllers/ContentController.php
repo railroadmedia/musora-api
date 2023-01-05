@@ -223,6 +223,7 @@ class ContentController extends Controller
                     $content = $content[$childrenName][0];
 
                     $content = $this->addParentData($content, $initialContent);
+                    $content = $this->attachDataFromParent($content, $initialContent);
                     $content = $this->attachChildrens($content);
 
                     $collectionForDecoration = new Collection();
