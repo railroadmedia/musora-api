@@ -1575,8 +1575,8 @@ class ContentController extends Controller
             $content["$childrenName"][$index]['length_in_seconds'] =
                 $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
-            if (isset($content['level_number']) && isset($course['position'])) {
-                $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['position'];
+            if (isset($content['level_number']) && isset($course['hierarchy_position_number'])) {
+                $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['hierarchy_position_number'];
             }
             $chilrenCount++;
         }
