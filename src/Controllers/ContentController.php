@@ -1984,8 +1984,8 @@ class ContentController extends Controller
                 'page_type' => 'StudentFocus',
                 'title' => null,
                 'name' => 'Student Focus',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ad11063b-e333-4e6d-d9d1-9fa006696400/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/ad11063b-e333-4e6d-d9d1-9fa006696400/public',
+                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f53e9c33-d8b0-48f2-6862-2c375ea61a00/public',
+                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f53e9c33-d8b0-48f2-6862-2c375ea61a00/public',
                 'page_params' => [
                     'brand' => 'drumeo',
                 ],
