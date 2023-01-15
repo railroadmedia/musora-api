@@ -3,6 +3,7 @@
 use Railroad\MusoraApi\Controllers\ContentController;
 use Railroad\MusoraApi\Controllers\PacksController;
 use Railroad\MusoraApi\Controllers\UserProgressController;
+use Railroad\Railcontent\Controllers\MyListJsonController;
 
 //authenticated user
 Route::group([
@@ -552,6 +553,45 @@ Route::group([
         '/request-song',
         Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
     )->name('mobile.musora-api.v1.request.song');
+
+    //packs
+    Route::get('/playlists', [
+        'as' => 'mobile.musora-api.playlists.show',
+        'uses' => \Railroad\Railcontent\Controllers\MyListJsonController::class . '@getUserPlaylists',
+    ]);
+
+    Route::post('/playlist', \Railroad\Railcontent\Controllers\MyListJsonController::class . '@createPlaylist');
+
+    Route::get('/playlist', MyListJsonController::class . '@getPlaylist');
+
+    Route::put('/copy-playlist', MyListJsonController::class . '@copyPlaylist')->name('api.copy.playlist');
+
+    Route::patch(
+        '/playlist/{id}',
+        MyListJsonController::class . '@updatePlaylist'
+    )
+        ->name('api.update.playlist');
+
+    Route::get('/public-playlists', MyListJsonController::class . '@getPublicPlaylists');
+
+    Route::put(
+        '/pin-playlist',
+        MyListJsonController::class . '@pinPlaylist'
+    )->name('api.pin.playlist');
+
+    Route::get('/my-pinned-playlists', MyListJsonController::class . '@getPinnedPlaylists');
+
+    Route::put(
+        '/unpin-playlist',
+        MyListJsonController::class . '@unpinPlaylist'
+    )->name('api.unpin.playlist');
+
+    Route::put(
+        '/like-playlist',
+        MyListJsonController::class . '@likePlaylist'
+    )->name('api.like.playlist');
+
+
 });
 
 Route::group([
