@@ -591,6 +591,8 @@ Route::group([
         MyListJsonController::class . '@likePlaylist'
     )->name('api.like.playlist');
 
+    Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
+
 
 });
 
