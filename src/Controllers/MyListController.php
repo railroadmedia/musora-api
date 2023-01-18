@@ -137,4 +137,40 @@ class MyListController extends Controller
 
         return ResponseService::list($lessons, $request);
     }
+
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changePlaylistContent(Request $request){
+
+        $this->userPlaylistsService->changePlaylistContent(
+            $request->get('playlist_id'),
+            $request->get('content_id'),
+            $request->get('position'),
+            $request->get('extra_data'),
+            $request->get('start_second'),
+            $request->get('end_second')
+        );
+
+        return $this->getPlaylistLessons($request);
+    }
+
+    /**
+     * @param \Symfony\Component\HttpFoundation\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addItemToPlaylist(Request $request)
+    {
+        $this->userPlaylistsService->addItemToPlaylist(
+            $request->get('playlist_id'),
+            $request->get('content_id'),
+            $request->get('position'),
+            $request->get('extra_data'),
+            $request->get('start_second'),
+            $request->get('end_second')
+        );
+
+        return $this->getPlaylistLessons($request);
+    }
 }
