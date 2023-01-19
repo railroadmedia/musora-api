@@ -734,6 +734,7 @@ class ContentController extends Controller
         $collectionForDecoration = $collectionForDecoration->merge($results->results());
 
         Decorator::$typeDecoratorsEnabled = true;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
         return ResponseService::catalogue($results, $request);
