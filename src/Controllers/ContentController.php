@@ -173,12 +173,12 @@ class ContentController extends Controller
                     'railcontent.brand'
                 )] ?? [],
                 config('railcontent.singularContentTypes', []),
-                ['unit-part']
+                ['unit-part', 'assignment']
             ),
             [
                 'song',
                 'song-tutorial',
-                'play-along',
+                'play-along'
             ]
         );
 
@@ -260,6 +260,11 @@ class ContentController extends Controller
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
+        if($content['type'] == 'assignment'){
+            $content['parent'] =
+                $this->vimeoVideoDecorator->decorate(new Collection([$content['parent']]))
+                    ->first();
+        }
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
