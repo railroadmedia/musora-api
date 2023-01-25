@@ -1855,7 +1855,7 @@ class ContentController extends Controller
             $index = str_replace(' ', '_', $slide['title']);
             $response[$index] = [
                 'name' => $slide['title'],
-                'title' => $slide['subtitle'],
+                'title' => $slide['subtitle'] ?? '',
                 'link' => $slide['cta_text'],
                 'thumbnail_url' => $slide['img'],
                 'tablet_thumbnail_url' => $slide['img'],
