@@ -597,6 +597,7 @@ Route::group([
 
     Route::put('/add-item-to-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@addItemToPlaylist');
 
+    Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile-app.content.assignments.count');
 
 });
 
