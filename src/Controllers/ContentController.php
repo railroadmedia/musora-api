@@ -1835,7 +1835,7 @@ class ContentController extends Controller
         $carouselSlides = $this->productProvider->carousel();
         $response = [];
 
-        foreach ($carouselSlides as $index => $slide)
+        foreach ($carouselSlides as $slide)
         {
             $pageType = null;
             $pageParams= [];
@@ -1851,7 +1851,8 @@ class ContentController extends Controller
                     $pageParams['id'] = $lastSegment;
                 }
             }
-
+            
+            $index = str_replace(' ', '_', $slide['title']);
             $response[$index] = [
                 'name' => $slide['title'],
                 'title' => $slide['subtitle'],
