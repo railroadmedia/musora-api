@@ -33,4 +33,6 @@ interface ProductProviderInterface
      * @return array
      */
     public function getMembershipProductIds():array;
+
+    public function carousel();
 }
