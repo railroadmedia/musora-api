@@ -188,11 +188,11 @@ class ContentController extends Controller
             $parent =
                 $this->contentService->getByChildId($content['id'])
                     ->first();
-            $content = $this->addParentData($content, $parent);
             $content = $this->attachDataFromParent($content, $parent);
 
             if ($parent) {
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
+                $content = $this->addParentData($content, $parent);
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
                 $content = $this->attachSiblingRelatedLessons($content, $request);
@@ -271,8 +271,9 @@ class ContentController extends Controller
         $this->stripTagDecorator->decorate(new Collection([$content]));
         $collectionForDecoration = new Collection();
         $collectionForDecoration = $collectionForDecoration->merge( $content['related_lessons']);
-        $collectionForDecoration = $collectionForDecoration->merge( [$content['parent']]);
-
+        if(isset($content['parent'])) {
+            $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
+        }
         Decorator::$typeDecoratorsEnabled = true;
         ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
