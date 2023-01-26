@@ -564,40 +564,39 @@ Route::group([
 
     Route::get('/playlist', MyListJsonController::class . '@getPlaylist');
 
-    Route::put('/copy-playlist', MyListJsonController::class . '@copyPlaylist')->name('api.copy.playlist');
+    Route::put('/copy-playlist', MyListJsonController::class . '@copyPlaylist')->name('mobile.musora-api.copy.playlist');
 
     Route::patch(
         '/playlist/{id}',
         MyListJsonController::class . '@updatePlaylist'
     )
-        ->name('api.update.playlist');
+        ->name('mobile.musora-api.update.playlist');
 
     Route::get('/public-playlists', MyListJsonController::class . '@getPublicPlaylists');
 
     Route::put(
         '/pin-playlist',
         MyListJsonController::class . '@pinPlaylist'
-    )->name('api.pin.playlist');
+    )->name('mobile.musora-api.pin.playlist');
 
     Route::get('/my-pinned-playlists', MyListJsonController::class . '@getPinnedPlaylists');
 
     Route::put(
         '/unpin-playlist',
         MyListJsonController::class . '@unpinPlaylist'
-    )->name('api.unpin.playlist');
+    )->name('mobile.musora-api.unpin.playlist');
 
     Route::put(
         '/like-playlist',
         MyListJsonController::class . '@likePlaylist'
-    )->name('api.like.playlist');
+    )->name('mobile.musora-api.like.playlist');
 
     Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
 
     Route::put('/change-playlist-content', \Railroad\MusoraApi\Controllers\MyListController::class . '@changePlaylistContent');
-
     Route::put('/add-item-to-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@addItemToPlaylist');
-
-    Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile-app.content.assignments.count');
+    Route::delete('/playlist',MyListJsonController::class . '@deletePlaylist')->name('mobile.musora-api.delete.playlist');
+    Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile.musora-api.content.assignments.count');
 
 });
 
