@@ -174,4 +174,17 @@ class MyListController extends Controller
 
         return $this->getPlaylistLessons($request);
     }
+
+    /**
+     * @param Request $request
+     * @return mixed
+     */
+    public function removeItemFromPlaylist(Request $request)
+    {
+        $deleted = $this->userPlaylistsService->removeItemFromPlaylist($request->get('user_playlist_item_id'));
+
+        return ResponseService::array([
+                                          'success' => ($deleted > 0),
+                                      ]);
+    }
 }

@@ -554,7 +554,9 @@ Route::group([
         Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
     )->name('mobile.musora-api.v1.request.song');
 
-    //packs
+    /**
+     * Playlists v2 Routes
+     */
     Route::get('/playlists', [
         'as' => 'mobile.musora-api.playlists.show',
         'uses' => \Railroad\Railcontent\Controllers\MyListJsonController::class . '@getUserPlaylists',
@@ -595,9 +597,10 @@ Route::group([
 
     Route::put('/change-playlist-content', \Railroad\MusoraApi\Controllers\MyListController::class . '@changePlaylistContent');
     Route::put('/add-item-to-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@addItemToPlaylist');
+    Route::delete('/remove-item-from-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@removeItemFromPlaylist');
     Route::delete('/playlist',MyListJsonController::class . '@deletePlaylist')->name('mobile.musora-api.delete.playlist');
     Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile.musora-api.content.assignments.count');
-
+    Route::get('/search-playlist',MyListJsonController::class . '@searchPlaylist')->name('mobile.musora-api.search.playlist');
 });
 
 Route::group([
