@@ -1926,14 +1926,6 @@ class ContentController extends Controller
                 ];
             }
         } else {
-            $response['drumeo']['drumeo_awards'] = [
-                'title' => 'THE DRUMEO AWARDS SHOW',
-                'name' => 'THIS FRIDAY',
-                'thumbnail_url' => 'https://laravel-nova.s3.us-east-2.amazonaws.com/Drumeo/carousels/7367278a-cf64-46a5-be18-f98ece0ab790-DrumeoAwardsBanner-05.jpg',
-                'tablet_thumbnail_url' => 'https://laravel-nova.s3.us-east-2.amazonaws.com/Drumeo/carousels/7367278a-cf64-46a5-be18-f98ece0ab790-DrumeoAwardsBanner-05.jpg',
-                'url' => 'https://www.youtube.com/watch?v=p2FVUMYO-6k',
-                'link' => 'SAVE THE LINK',
-            ];
             $response['drumeo']['songs_upgrade'] = [
                 'page_type' => 'Songs',
                 'title' => null,
