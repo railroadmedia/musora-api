@@ -16,6 +16,7 @@ use Railroad\MusoraApi\Transformers\PacksTransformer;
 use Railroad\MusoraApi\Transformers\ScheduledContentTransformer;
 use Railroad\MusoraApi\Transformers\UserDataTransformer;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\MusoraApi\Transformers\PlaylistsItemTransformer;
 use Spatie\Fractal\Fractal;
 
 class ResponseService
@@ -140,7 +141,7 @@ class ResponseService
         if($request->has('old_style')){
             $result = $data->results();
         } else {
-            $result = (new CatalogueTransformer())->transform($data->results());
+            $result = (new PlaylistsItemTransformer())->transform($data->results());
 
             //$filters = (new FilterOptionsTransformer())->transform($filters);
         }
