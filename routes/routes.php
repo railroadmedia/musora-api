@@ -601,6 +601,10 @@ Route::group([
     Route::delete('/playlist',MyListJsonController::class . '@deletePlaylist')->name('mobile.musora-api.delete.playlist');
     Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile.musora-api.content.assignments.count');
     Route::get('/search-playlist',MyListJsonController::class . '@searchPlaylist')->name('mobile.musora-api.search.playlist');
+    Route::post(
+        '/upload-playlist-thumb',
+        MyListJsonController::class . '@uploadPlaylistThumbnail'
+    );
 });
 
 Route::group([
