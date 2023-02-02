@@ -143,15 +143,18 @@ class MyListController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function changePlaylistContent(Request $request){
+        $playlistContent =
+            $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
 
         $this->userPlaylistsService->changePlaylistContent(
-            $request->get('playlist_id'),
-            $request->get('content_id'),
+            $request->get('user_playlist_item_id'),
             $request->get('position'),
             $request->get('extra_data'),
             $request->get('start_second'),
             $request->get('end_second')
         );
+
+        $request->merge(['playlist_id' => $playlistContent['user_playlist_id']]);
 
         return $this->getPlaylistLessons($request);
     }
