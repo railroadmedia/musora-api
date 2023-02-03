@@ -172,7 +172,9 @@ class MyListController extends Controller
             $request->get('extra_data'),
             $request->get('start_second'),
             $request->get('end_second'),
-            $request->get('import_all_assignments', false)
+            $request->get('import_all_assignments', false),
+            $request->get('import_full_soundslice_assignment', false),
+            $request->get('import_instrumentless_soundslice_assignment', false)
         );
 
         return $this->getPlaylistLessons($request);
