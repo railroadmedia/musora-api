@@ -598,6 +598,8 @@ Route::group([
         MyListJsonController::class . '@deletePlaylistLike'
     )->name('mobile.musora-api.delete.playlist.like');
 
+    Route::get('/liked-playlists', MyListJsonController::class . '@getLikedPlaylists')->name('mobile.musora-api.user.liked.playlists');
+
     Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
 
     Route::put('/change-playlist-content', \Railroad\MusoraApi\Controllers\MyListController::class . '@changePlaylistContent');
