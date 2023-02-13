@@ -122,6 +122,7 @@ class MyListController extends Controller
     {
         $page = $request->get('page', 1);
         $limit = $request->get('limit', null);
+        $sort = $request->get('sort', 'position');
 
         $contentTypes = array_merge(
             config('railcontent.appUserListContentTypes', []),
@@ -129,7 +130,7 @@ class MyListController extends Controller
         );
 
         $lessons = new ContentFilterResultsEntity([
-                                                      'results' => $this->userPlaylistsService->getUserPlaylistContents($request->get('playlist_id'), $contentTypes,$limit, $page),
+                                                      'results' => $this->userPlaylistsService->getUserPlaylistContents($request->get('playlist_id'), $contentTypes,$limit, $page, $sort),
                                                       'total_results' => $this->userPlaylistsService->countUserPlaylistContents($request->get('playlist_id')),
                                                   ]);
 
@@ -165,7 +166,7 @@ class MyListController extends Controller
      */
     public function addItemToPlaylist(Request $request)
     {
-        $this->userPlaylistsService->addItemToPlaylist(
+        $added = $this->userPlaylistsService->addItemToPlaylist(
             $request->get('playlist_id'),
             $request->get('content_id'),
             $request->get('position'),
@@ -178,7 +179,7 @@ class MyListController extends Controller
         );
 
         return ResponseService::array([
-                                          'success' => true,
+                                          'success' => $added,
                                       ]);
     }
 
