@@ -1849,9 +1849,13 @@ class ContentController extends Controller
                 }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
                     $pageType = 'CoachOverview';
                     $pageParams['id'] = $lastSegment;
+                }elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
+                    $pageType = 'PackOverview';
+                    $pageParams['id'] = $lastSegment;
+                    $pageParams['type'] = "Lesson";
                 }
             }
-            
+
             $index = str_replace(' ', '_', $slide['title']);
             $response[$index] = [
                 'name' => $slide['title'],
