@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Railroad\MusoraApi\Requests\AddItemToPlaylistRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Repositories\ContentRepository;
@@ -61,11 +62,12 @@ class MyListController extends Controller
         $state = $request->get('state');
 
         $oldFieldOptions = ConfigService::$fieldOptionList;
-        ConfigService::$fieldOptionList=[
+        ConfigService::$fieldOptionList = [
             'instructor',
             'topic',
             'difficulty',
-            'style'];
+            'style',
+        ];
 
         $contentTypes = array_merge(
             config('railcontent.appUserListContentTypes', []),
@@ -79,7 +81,12 @@ class MyListController extends Controller
         $includedFields = $request->get('included_fields', []);
 
         if (!$state) {
-            $userPrimaryPlaylist = $this->userPlaylistsService->getUserPlaylist(auth()->id(), 'primary-playlist',  $request->get('brand') ?? config('railcontent.brand'));
+            $userPrimaryPlaylist =
+                $this->userPlaylistsService->getUserPlaylist(
+                    auth()->id(),
+                    'primary-playlist',
+                    $request->get('brand') ?? config('railcontent.brand')
+                );
             if (empty($userPrimaryPlaylist)) {
                 return (new ContentFilterResultsEntity([
                                                            'results' => [],
@@ -88,8 +95,15 @@ class MyListController extends Controller
 
             $userPrimaryPlaylistId = $userPrimaryPlaylist[0]['id'];
             $lessons = new ContentFilterResultsEntity([
-                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents($userPrimaryPlaylistId, $contentTypes,$limit, $page),
-                                                          'total_results' => $this->userPlaylistsService->countUserPlaylistContents($userPrimaryPlaylistId),
+                                                          'results' => $this->userPlaylistsService->getUserPlaylistContents(
+                                                              $userPrimaryPlaylistId,
+                                                              $contentTypes,
+                                                              $limit,
+                                                              $page
+                                                          ),
+                                                          'total_results' => $this->userPlaylistsService->countUserPlaylistContents(
+                                                              $userPrimaryPlaylistId
+                                                          ),
                                                       ]);
         } else {
             $contentTypes = array_diff($contentTypes, ['course-part']);
@@ -130,8 +144,16 @@ class MyListController extends Controller
         );
 
         $lessons = new ContentFilterResultsEntity([
-                                                      'results' => $this->userPlaylistsService->getUserPlaylistContents($request->get('playlist_id'), $contentTypes,$limit, $page, $sort),
-                                                      'total_results' => $this->userPlaylistsService->countUserPlaylistContents($request->get('playlist_id')),
+                                                      'results' => $this->userPlaylistsService->getUserPlaylistContents(
+                                                          $request->get('playlist_id'),
+                                                          $contentTypes,
+                                                          $limit,
+                                                          $page,
+                                                          $sort
+                                                      ),
+                                                      'total_results' => $this->userPlaylistsService->countUserPlaylistContents(
+                                                          $request->get('playlist_id')
+                                                      ),
                                                   ]);
 
         $request->merge(['limit' => $limit]);
@@ -143,9 +165,9 @@ class MyListController extends Controller
      * @param \Symfony\Component\HttpFoundation\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePlaylistContent(Request $request){
-        $playlistContent =
-            $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
+    public function changePlaylistContent(Request $request)
+    {
+        $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
 
         $this->userPlaylistsService->changePlaylistContent(
             $request->get('user_playlist_item_id'),
@@ -161,13 +183,19 @@ class MyListController extends Controller
     }
 
     /**
-     * @param \Symfony\Component\HttpFoundation\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param AddItemToPlaylistRequest $request
+     * @return JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function addItemToPlaylist(Request $request)
+    public function addItemToPlaylist(AddItemToPlaylistRequest $request)
     {
+        $playlistIds = $request->get('playlist_id', []);
+        if (!is_array($request->get('playlist_id'))) {
+            $playlistIds = [$request->get('playlist_id')];
+        }
+
         $added = $this->userPlaylistsService->addItemToPlaylist(
-            $request->get('playlist_id'),
+            $playlistIds,
             $request->get('content_id'),
             $request->get('position'),
             $request->get('extra_data'),
