@@ -564,7 +564,7 @@ Route::group([
 
     Route::post('/playlist', \Railroad\Railcontent\Controllers\MyListJsonController::class . '@createPlaylist');
 
-    Route::get('/playlist', MyListJsonController::class . '@getPlaylist');
+    Route::get('/playlist', MyListJsonController::class . '@getPlaylist')->name('mobile.musora-api.get.playlist');
 
     Route::put('/copy-playlist', MyListJsonController::class . '@copyPlaylist')->name('mobile.musora-api.copy.playlist');
 
@@ -612,6 +612,7 @@ Route::group([
         '/upload-playlist-thumb',
         MyListJsonController::class . '@uploadPlaylistThumbnail'
     );
+    Route::get('/playlist-item', ContentController::class . '@getPlaylistItem')->name('mobile.musora-api.deeplink.playlist.item');
 });
 
 Route::group([

@@ -2143,4 +2143,30 @@ class ContentController extends Controller
         return ResponseService::array($response);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function getPlaylistItem(Request $request)
+    {
+        $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
+        throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
+
+        $content = $this->getContentOptimised($playlistContent['content_id'], $request);
+
+        $content['start_second'] = $playlistContent['start_second'] ?? null;
+        $content['end_second'] = $playlistContent['end_second'] ?? null;
+        $content['user_playlist_item_id'] = $playlistContent['id'] ?? null;
+        $content['user_playlist_item_position'] = $playlistContent['position'] ?? null;
+        $content['user_playlist_item_extra_data'] = $playlistContent['extra_data'] ?? null;
+        if (!empty($playlistContent['extra_data'])) {
+            foreach (json_decode($playlistContent['extra_data'], true) as $key => $value) {
+                $content[$key] = $value;
+            }
+        }
+
+        return ResponseService::array($content);
+    }
+
 }
