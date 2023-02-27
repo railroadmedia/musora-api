@@ -4,8 +4,6 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
-use Illuminate\Support\Facades\Log;
-use Railroad\Railcontent\Decorators\Decorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -16,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
+use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
@@ -28,10 +28,10 @@ use Railroad\MusoraApi\Requests\SubmitVideoRequest;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
+use Railroad\Railcontent\Decorators\Decorator;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
-use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -47,8 +47,6 @@ use Railroad\Railcontent\Services\UserPlaylistsService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
-
-use Railroad\Mailora\Services\MailService;
 
 class ContentController extends Controller
 {
@@ -165,22 +163,26 @@ class ContentController extends Controller
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
 
-        $lessonContentTypes = array_diff(
-            array_merge(
-                config(
-                    'railcontent.showTypes'
-                )[config(
-                    'railcontent.brand'
-                )] ?? [],
-                config('railcontent.singularContentTypes', []),
-                ['unit-part', 'assignment']
-            ),
-            [
-                'song',
-                'song-tutorial',
-                'play-along'
-            ]
-        );
+        $lessonContentTypes = array_diff(array_merge(config(
+                                                         'railcontent.showTypes'
+                                                     )[config(
+                                                         'railcontent.brand'
+                                                     )]
+                                                     ??
+                                                     [],
+                                                     config(
+                                                         'railcontent.singularContentTypes',
+                                                         []
+                                                     ),
+                                                     [
+                                                         'unit-part',
+                                                         'assignment',
+                                                     ]),
+                                         [
+                                             'song',
+                                             'song-tutorial',
+                                             'play-along',
+                                         ]);
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -261,7 +263,7 @@ class ContentController extends Controller
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
-        if($content['type'] == 'assignment'){
+        if ($content['type'] == 'assignment') {
             $content['parent'] =
                 $this->vimeoVideoDecorator->decorate(new Collection([$content['parent']]))
                     ->first();
@@ -270,8 +272,8 @@ class ContentController extends Controller
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
         $collectionForDecoration = new Collection();
-        $collectionForDecoration = $collectionForDecoration->merge( $content['related_lessons']);
-        if(isset($content['parent'])) {
+        $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
+        if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
         }
         Decorator::$typeDecoratorsEnabled = true;
@@ -306,11 +308,15 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
-                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route('mobile.musora-api.pack.show',
-                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
         }
 
         //get content's parent for related lessons and resources
@@ -381,15 +387,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,'.$content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -575,12 +580,11 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
@@ -688,7 +692,7 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
-        ContentRepository::$catalogMetaAllowableFilters = ['instructor','topic', 'style','artist'];
+        ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
@@ -960,7 +964,7 @@ class ContentController extends Controller
         $input['lines'] = $lines;
         $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('mailora.' . $brand . '.submit-student-focus-recipient' , "support@musora.com");
+        $input['recipient'] = config('mailora.'.$brand.'.submit-student-focus-recipient', "support@musora.com");
         $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
         $input['sender'] = $currentUser->getEmail();
 
@@ -1439,7 +1443,6 @@ class ContentController extends Controller
             return $content;
         }
 
-
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
 
@@ -1477,7 +1480,7 @@ class ContentController extends Controller
         $content['lessons_filter_options_v2'] =
             array_intersect_key($content['lessons_filter_options'], array_flip(['type']));
 
-        if(array_key_exists('type', $content['lessons_filter_options_v2'])){
+        if (array_key_exists('type', $content['lessons_filter_options_v2'])) {
             $content['lessons_filter_options_v2']['content_type'] = $content['lessons_filter_options_v2']['type'];
             unset($content['lessons_filter_options_v2']['type']);
         }
@@ -1514,14 +1517,16 @@ class ContentController extends Controller
             return $content;
         }
 
-
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] =
-            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
-                                               [], [])
-                ->results();
+        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                          ['is_featured,1'],
+                                                                          $includedFields, [],
+                                                                          []
+        )
+            ->results();
+
         return $content;
     }
 
@@ -1585,7 +1590,8 @@ class ContentController extends Controller
                 $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['hierarchy_position_number'])) {
-                $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['hierarchy_position_number'];
+                $content["$childrenName"][$index]['level_rank'] =
+                    $content['level_number'].'.'.$course['hierarchy_position_number'];
             }
             $chilrenCount++;
         }
@@ -1688,7 +1694,10 @@ class ContentController extends Controller
         if (!$nextContent) {
             $userId = user()->id;
 
-            Log::warning("No content with id $contentId exists. (userId:$userId  - method:: jumpToContinueContent:$contentId)");
+            Log::warning(
+                "No content with id $contentId exists. (userId:$userId  - method:: jumpToContinueContent:$contentId)"
+            );
+
             return response()->json(
                 [
                     'success' => false,
@@ -1702,6 +1711,7 @@ class ContentController extends Controller
                 404
             );
         }
+
         return ResponseService::content($nextContent);
     }
 
@@ -1877,10 +1887,8 @@ class ContentController extends Controller
                     'thumbnail_url' => ($brand == 'guitareo') ?
                         'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
                         'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                    'url' => route(
-                        'v1.mobile.musora-api.content.show',
-                        ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]
-                    ),
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
                     'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
                     'level_rank' => $nextLearningPathLevel,
                     'started' => $methodContent['started'],
@@ -1926,10 +1934,8 @@ class ContentController extends Controller
                     'title' => 'Featured Coach',
                     'name' => $coachOfTheMonth['name'] ?? '',
                     'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                    'url' => route(
-                        'v1.mobile.musora-api.content.show',
-                        ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]
-                    ),
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
                     'link' => 'Visit Coach Page',
                     'id' => $coachOfTheMonth['id'] ?? null,
                 ];
@@ -1946,17 +1952,17 @@ class ContentController extends Controller
                 ],
                 'link' => 'Play Songs',
             ];
-//            $response['drumeo']['rudiment_drumset_applications'] = [
-//                'page_type' => 'Rudiments',
-//                'title' => null,
-//                'name' => 'Rudiment Drumset Applications',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
-//                'page_params' => [
-//                    'brand' => 'drumeo',
-//                ],
-//                'link' => 'Go To Rudiments',
-//            ];
+            //            $response['drumeo']['rudiment_drumset_applications'] = [
+            //                'page_type' => 'Rudiments',
+            //                'title' => null,
+            //                'name' => 'Rudiment Drumset Applications',
+            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
+            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
+            //                'page_params' => [
+            //                    'brand' => 'drumeo',
+            //                ],
+            //                'link' => 'Go To Rudiments',
+            //            ];
             $response['drumeo']['introducing_musora'] = [
                 'title' => null,
                 'name' => 'Introducing Musora',
@@ -1965,18 +1971,18 @@ class ContentController extends Controller
                 'url' => 'https://www.musora.com/unified-2022',
                 'link' => 'LEARN MORE',
             ];
-//            $response['drumeo']['the_drum_department'] = [
-//                'page_type' => 'ShowOverview',
-//                'title' => null,
-//                'name' => 'The drum department',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
-//                'page_params' => [
-//                    'brand' => 'drumeo',
-//                    'keyExtractor' => 'live',
-//                ],
-//                'link' => 'Watch the latest episode',
-//            ];
+            //            $response['drumeo']['the_drum_department'] = [
+            //                'page_type' => 'ShowOverview',
+            //                'title' => null,
+            //                'name' => 'The drum department',
+            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
+            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
+            //                'page_params' => [
+            //                    'brand' => 'drumeo',
+            //                    'keyExtractor' => 'live',
+            //                ],
+            //                'link' => 'Watch the latest episode',
+            //            ];
             $response['drumeo']['new_songs_releases'] = [
                 'page_type' => 'Songs',
                 'title' => null,
@@ -2000,14 +2006,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Apply For Review',
             ];
-//            $response['pianote']['black_friday_deals'] = [
-//                'title' => "BEST DEALS OF THE YEAR",
-//                'name' => 'MEMBER BLACK FRIDAY DEALS',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-//                'url' => 'https://www.pianote.com/shop',
-//                'link' => 'PIANOTE SHOP',
-//            ];
+            //            $response['pianote']['black_friday_deals'] = [
+            //                'title' => "BEST DEALS OF THE YEAR",
+            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
+            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
+            //                'url' => 'https://www.pianote.com/shop',
+            //                'link' => 'PIANOTE SHOP',
+            //            ];
             $response['pianote']['songs_upgrade'] = [
                 'page_type' => 'Songs',
                 'title' => null,
@@ -2049,14 +2055,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Check out the schedule here',
             ];
-//            $response['guitareo']['black_friday_deals'] = [
-//                'title' => "BEST DEALS OF THE YEAR",
-//                'name' => 'MEMBER BLACK FRIDAY DEALS',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-//                'url' => 'https://www.guitareo.com/shop',
-//                'link' => 'GUITAREO SHOP',
-//            ];
+            //            $response['guitareo']['black_friday_deals'] = [
+            //                'title' => "BEST DEALS OF THE YEAR",
+            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
+            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
+            //                'url' => 'https://www.guitareo.com/shop',
+            //                'link' => 'GUITAREO SHOP',
+            //            ];
             $response['guitareo']['songs_upgrade'] = [
                 'page_type' => 'Songs',
                 'title' => null,
@@ -2088,14 +2094,14 @@ class ContentController extends Controller
                 ],
                 'link' => 'Visit Dean’s coach page',
             ];
-//            $response['singeo']['black_friday_deals'] = [
-//                'title' => "BEST DEALS OF THE YEAR",
-//                'name' => 'MEMBER BLACK FRIDAY DEALS',
-//                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-//                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-//                'url' => 'https://www.singeo.com/shop',
-//                'link' => 'SINGEO SHOP',
-//            ];
+            //            $response['singeo']['black_friday_deals'] = [
+            //                'title' => "BEST DEALS OF THE YEAR",
+            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
+            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
+            //                'url' => 'https://www.singeo.com/shop',
+            //                'link' => 'SINGEO SHOP',
+            //            ];
             $response['singeo']['songs_upgrade'] = [
                 'page_type' => 'Songs',
                 'title' => null,
@@ -2153,7 +2159,23 @@ class ContentController extends Controller
         $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
         throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
 
-        $content = $this->getContentOptimised($playlistContent['content_id'], $request);
+        try {
+            $content = $this->getContentOptimised($playlistContent['content_id'], $request);
+        } catch (\Exception $e) {
+            $playlistLessons =
+                $this->userPlaylistsService->getUserPlaylistContents($playlistContent['user_playlist_id']);
+            $playlistItem =
+                $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
+                    ->first();
+
+            return ResponseService::array([
+                                              "success" => false,
+                                              "title" => "Upgrade to View",
+                                              "item_title" => $playlistItem['title'],
+                                              "item_type" => $playlistItem['type'],
+                                              "parent" => $playlistItem['parent'] ?? null,
+                                          ]);
+        }
 
         $content['start_second'] = $playlistContent['start_second'] ?? null;
         $content['end_second'] = $playlistContent['end_second'] ?? null;
