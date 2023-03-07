@@ -16,26 +16,14 @@ use Railroad\Railcontent\Services\UserPlaylistsService;
 
 class MyListController extends Controller
 {
-    /**
-     * @var ContentService
-     */
-    private $contentService;
+    private ContentService $contentService;
+    private ContentRepository $contentRepository;
+    private UserPlaylistsService $userPlaylistsService;
 
     /**
-     * @var ContentRepository
-     */
-    private $contentRepository;
-
-    /**
-     * @var UserPlaylistsService
-     */
-    private $userPlaylistsService;
-
-    /**
-     * MyListController constructor.
-     *
      * @param ContentService $contentService
      * @param ContentRepository $contentRepository
+     * @param UserPlaylistsService $userPlaylistsService
      */
     public function __construct(
         ContentService $contentService,
@@ -155,7 +143,10 @@ class MyListController extends Controller
                                                           $request->get('playlist_id')
                                                       ),
                                                   ]);
-
+        if ($sort == 'random') {
+            $limit = null;
+        }
+        
         $request->merge(['limit' => $limit]);
 
         return ResponseService::list($lessons, $request);
