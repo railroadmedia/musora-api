@@ -185,7 +185,7 @@ class MyListController extends Controller
             $playlistIds = [$request->get('playlist_id')];
         }
 
-        $added = $this->userPlaylistsService->addItemToPlaylist(
+        $results = $this->userPlaylistsService->addItemToPlaylist(
             $playlistIds,
             $request->get('content_id'),
             $request->get('position'),
@@ -196,10 +196,9 @@ class MyListController extends Controller
             $request->get('import_full_soundslice_assignment', false),
             $request->get('import_instrumentless_soundslice_assignment', false)
         );
+        $results['success'] = !empty($results);
 
-        return ResponseService::array([
-                                          'success' => $added,
-                                      ]);
+        return ResponseService::array($results);
     }
 
     /**
