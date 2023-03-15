@@ -155,7 +155,7 @@ class ContentController extends Controller
         $this->methodService = $methodService;
     }
 
-    public function getContentOptimised($contentId, Request $request)
+    public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
@@ -264,7 +264,11 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
-        $collectionForDecoration = new Collection();
+        if($playlistItemId) {
+            $content['user_playlist_item_id'] = $playlistItemId;
+        }
+
+        $collectionForDecoration = new Collection([$content]);
         $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
         if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
@@ -2153,7 +2157,7 @@ class ContentController extends Controller
         throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
 
         try {
-            $content = $this->getContentOptimised($playlistContent['content_id'], $request);
+            $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id']);
         } catch (\Exception $e) {
             $playlistLessons =
                 $this->userPlaylistsService->getUserPlaylistContents($playlistContent['user_playlist_id']);
