@@ -186,6 +186,7 @@ class ContentController extends Controller
 
             if ($parent) {
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
+                $parent['lesson_count'] = (!isset($parent['lesson_count'])) ? $parent['child_count'] ?? count($parent['lessons']) : $parent['lesson_count'];
                 $content = $this->addParentData($content, $parent);
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
