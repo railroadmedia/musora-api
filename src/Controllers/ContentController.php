@@ -2188,7 +2188,8 @@ class ContentController extends Controller
         if (!isset($content['parent']) || ($content['type'] == 'assignment')) {
             unset($content['related_lessons']);
         }
-        if (isset($content['parent']) && ($content['parent']['lesson_count'] == 1)) {
+
+        if (isset($content['parent'])  && (isset($content['parent']['child_count']) && ($content['parent']['child_count'] == 1)) && ($content['type'] != 'assignment')) {
             unset($content['parent']);
         }
 
