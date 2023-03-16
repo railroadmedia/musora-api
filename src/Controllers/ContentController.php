@@ -2153,6 +2153,10 @@ class ContentController extends Controller
      */
     public function getPlaylistItem(Request $request)
     {
+        $oldFutureContent = ContentRepository::$pullFutureContent;
+
+        ContentRepository::$pullFutureContent = true;
+
         $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
         throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
 
@@ -2192,6 +2196,8 @@ class ContentController extends Controller
         if (isset($content['parent'])  && (isset($content['parent']['child_count']) && ($content['parent']['child_count'] == 1)) && ($content['type'] != 'assignment')) {
             unset($content['parent']);
         }
+
+        ContentRepository::$pullFutureContent = $oldFutureContent;
 
         return ResponseService::array($content);
     }
