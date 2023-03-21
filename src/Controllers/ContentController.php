@@ -268,7 +268,7 @@ class ContentController extends Controller
             $content['user_playlist_item_id'] = $playlistItemId;
         }
 
-        $collectionForDecoration = new Collection([$content]);
+        $collectionForDecoration = new Collection();
         $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
         if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
