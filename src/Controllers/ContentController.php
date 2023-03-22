@@ -1856,9 +1856,13 @@ class ContentController extends Controller
                 }elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
                     $pageType = 'CourseOverview';
                     $pageParams['id'] = $lastSegment;
-                } elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
+                }elseif (is_numeric($lastSegment) && in_array('forums', $segments) && in_array('jump-to-post', $segments)) {
                     $pageType = 'Forum';
                     $pageParams['postId'] = $lastSegment;
+                }
+                elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
+                    $pageType = 'Forum';
+                    $pageParams['threadId'] = $lastSegment;
                 }
             }
 
