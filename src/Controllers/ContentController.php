@@ -2199,7 +2199,7 @@ class ContentController extends Controller
 
         $userPlaylists = collect($this->userPlaylistsService->getUserPlaylist(user()->id, 'user-playlist'));
         $playlists =
-            $userPlaylists->whereNotIn('id', $playlistContent['id']);
+            $userPlaylists->whereNotIn('id', $playlistContent['user_playlist_id']);
         $content['related_playlists'] = $playlists;
 
         ContentRepository::$pullFutureContent = $oldFutureContent;
