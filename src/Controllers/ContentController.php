@@ -163,18 +163,25 @@ class ContentController extends Controller
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
 
-        $lessonContentTypes = array_diff(array_merge(config(
-                                                         'railcontent.showTypes'
-                                                     )[config(
-                                                         'railcontent.brand'
-                                                     )] ?? [], config('railcontent.singularContentTypes', []), [
-                                                         'unit-part',
-                                                         'assignment',
-                                                     ]), [
-                                             'song',
-                                             'song-tutorial',
-                                             'play-along',
-                                         ]);
+        $lessonContentTypes = array_diff(
+            array_merge(
+                config(
+                    'railcontent.showTypes'
+                )[config(
+                    'railcontent.brand'
+                )] ?? [],
+                config('railcontent.singularContentTypes', []),
+                [
+                    'unit-part',
+                    'assignment',
+                ]
+            ),
+            [
+                'song',
+                'song-tutorial',
+                'play-along',
+            ]
+        );
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -186,7 +193,9 @@ class ContentController extends Controller
 
             if ($parent) {
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
-                $parent['lesson_count'] = (!isset($parent['lesson_count'])) ? $parent['child_count'] ?? count($parent['lessons']) : $parent['lesson_count'];
+                $parent['lesson_count'] =
+                    (!isset($parent['lesson_count'])) ? $parent['child_count'] ?? count($parent['lessons']) :
+                        $parent['lesson_count'];
                 $content = $this->addParentData($content, $parent);
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
@@ -264,7 +273,7 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
-        if($playlistItemId) {
+        if ($playlistItemId) {
             $content['user_playlist_item_id'] = $playlistItemId;
         }
 
@@ -305,15 +314,11 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route(
-                'mobile.musora-api.learning-path.lesson.show',
-                ['lessonId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
+                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route(
-                'mobile.musora-api.pack.show',
-                ['packId' => $content['id'], 'brand' => $content['brand']]
-            );
+            return redirect()->route('mobile.musora-api.pack.show',
+                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
         }
 
         //get content's parent for related lessons and resources
@@ -384,14 +389,15 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle =
-                    $this->contentService->getFiltered(1,
-                                                       19,
-                                                       '-published_on',
-                                                       [$content['type']],
-                                                       [],
-                                                       [],
-                                                       ['style,'.$content->fetch('fields.style')])['results'];
+                $songsFromSameStyle = $this->contentService->getFiltered(
+                    1,
+                    19,
+                    '-published_on',
+                    [$content['type']],
+                    [],
+                    [],
+                    ['style,'.$content->fetch('fields.style')]
+                )['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -577,11 +583,12 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] =
-                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
-                                                   $includedFields,
-                                                   [], [])
-                    ->results();
+            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                              ['is_featured,1'],
+                                                                              $includedFields, [],
+                                                                              []
+            )
+                ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1517,12 +1524,10 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                          ['is_featured,1'],
-                                                                          $includedFields, [],
-                                                                          []
-        )
-            ->results();
+        $content['featured_lessons'] =
+            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
+                                               [], [])
+                ->results();
 
         return $content;
     }
@@ -1884,8 +1889,10 @@ class ContentController extends Controller
                     'thumbnail_url' => ($brand == 'guitareo') ?
                         'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
                         'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                    'url' => route('v1.mobile.musora-api.content.show',
-                                   ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
+                    'url' => route(
+                        'v1.mobile.musora-api.content.show',
+                        ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]
+                    ),
                     'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
                     'level_rank' => $nextLearningPathLevel,
                     'started' => $methodContent['started'],
@@ -1931,8 +1938,10 @@ class ContentController extends Controller
                     'title' => 'Featured Coach',
                     'name' => $coachOfTheMonth['name'] ?? '',
                     'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                    'url' => route('v1.mobile.musora-api.content.show',
-                                   ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
+                    'url' => route(
+                        'v1.mobile.musora-api.content.show',
+                        ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]
+                    ),
                     'link' => 'Visit Coach Page',
                     'id' => $coachOfTheMonth['id'] ?? null,
                 ];
@@ -2168,12 +2177,30 @@ class ContentController extends Controller
             $playlistItem =
                 $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
                     ->first();
+            $message = '';
+
+            if ($playlistItem['type'] == 'song') {
+                $message = 'This Song content is part of our Musora+ Membership';
+            } elseif (in_array(
+                $playlistItem['type'],
+                array_merge(
+                    config('railcontent.singularContentTypes', []),
+                    config('railcontent.showTypes')[$request->get('brand')] ?? []
+                )
+            )) {
+                $message = 'This Lesson is part of our Musora Membership';
+            }else {
+
+                $message = $playlistItem['title'].' is part of our '.$playlistItem['parent']['title']?? ' pack';
+            }
 
             return ResponseService::array([
                                               "success" => false,
-                                              "title" => "Upgrade to View",
+                                              "mussage" => $message,
+                                              "title" => "Content Unavailable",
                                               "item_title" => $playlistItem['title'],
                                               "item_type" => $playlistItem['type'],
+                                              "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
                                               "parent" => $playlistItem['parent'] ?? null,
                                           ]);
         }
@@ -2193,18 +2220,21 @@ class ContentController extends Controller
             unset($content['related_lessons']);
         }
 
-        if (isset($content['parent'])  && (isset($content['parent']['child_count']) && ($content['parent']['child_count'] == 1)) && ($content['type'] != 'assignment')) {
+        if (isset($content['parent']) &&
+            (isset($content['parent']['child_count']) && ($content['parent']['child_count'] == 1)) &&
+            ($content['type'] != 'assignment')) {
             unset($content['parent']);
         }
 
         $userPlaylists = collect($this->userPlaylistsService->getUserPlaylist(user()->id, 'user-playlist'));
         $playlists =
-            $userPlaylists->whereNotIn('id', $playlistContent['user_playlist_id'])->values();
+            $userPlaylists->whereNotIn('id', $playlistContent['user_playlist_id'])
+                ->values();
+
         $content['related_playlists'] = $playlists;
 
         ContentRepository::$pullFutureContent = $oldFutureContent;
 
         return ResponseService::array($content);
     }
-
 }
