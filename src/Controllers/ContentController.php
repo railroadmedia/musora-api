@@ -2196,7 +2196,7 @@ class ContentController extends Controller
 
             return ResponseService::array([
                                               "success" => false,
-                                              "mussage" => $message,
+                                              "message" => $message,
                                               "title" => "Content Unavailable",
                                               "item_title" => $playlistItem['title'],
                                               "item_type" => $playlistItem['type'],
