@@ -2190,8 +2190,7 @@ class ContentController extends Controller
             )) {
                 $message = 'This Lesson is part of our Musora Membership';
             }else {
-
-                $message = $playlistItem['title'].' is part of our '.$playlistItem['parent']['title']?? ' pack';
+                $message = $playlistItem['title'].' is part of our '.($playlistItem['parent'])?$playlistItem['parent']['title']:''. ' premium pack';
             }
 
             return ResponseService::array([
@@ -2225,14 +2224,7 @@ class ContentController extends Controller
             ($content['type'] != 'assignment')) {
             unset($content['parent']);
         }
-
-        $userPlaylists = collect($this->userPlaylistsService->getUserPlaylist(user()->id, 'user-playlist'));
-        $playlists =
-            $userPlaylists->whereNotIn('id', $playlistContent['user_playlist_id'])
-                ->values();
-
-        $content['related_playlists'] = $playlists;
-
+        
         ContentRepository::$pullFutureContent = $oldFutureContent;
 
         return ResponseService::array($content);
