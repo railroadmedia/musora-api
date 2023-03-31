@@ -2169,6 +2169,10 @@ class ContentController extends Controller
         $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
         throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
 
+        $playlist = $this->userPlaylistsService->getPlaylist($playlistContent['user_playlist_id']);
+        throw_if(($playlist == -1), new NotFoundException("You don’t have access to this playlist", 'Private Playlist'));
+        throw_if(!$playlist, new NotFoundException("Playlist not exists."));
+
         try {
             $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id']);
         } catch (\Exception $e) {
