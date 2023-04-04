@@ -21,6 +21,7 @@ use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
+use Railroad\MusoraApi\Exceptions\PlaylistException;
 use Railroad\MusoraApi\Requests\ContentMetaRequest;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
@@ -163,25 +164,18 @@ class ContentController extends Controller
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
 
-        $lessonContentTypes = array_diff(
-            array_merge(
-                config(
-                    'railcontent.showTypes'
-                )[config(
-                    'railcontent.brand'
-                )] ?? [],
-                config('railcontent.singularContentTypes', []),
-                [
-                    'unit-part',
-                    'assignment',
-                ]
-            ),
-            [
-                'song',
-                'song-tutorial',
-                'play-along',
-            ]
-        );
+        $lessonContentTypes = array_diff(array_merge(config(
+                                                         'railcontent.showTypes'
+                                                     )[config(
+                                                         'railcontent.brand'
+                                                     )] ?? [], config('railcontent.singularContentTypes', []), [
+                                                         'unit-part',
+                                                         'assignment',
+                                                     ]), [
+                                             'song',
+                                             'song-tutorial',
+                                             'play-along',
+                                         ]);
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -314,11 +308,15 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
-                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route('mobile.musora-api.pack.show',
-                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
         }
 
         //get content's parent for related lessons and resources
@@ -389,15 +387,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,'.$content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -583,12 +580,11 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
@@ -1524,10 +1520,12 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] =
-            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
-                                               [], [])
-                ->results();
+        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                          ['is_featured,1'],
+                                                                          $includedFields, [],
+                                                                          []
+        )
+            ->results();
 
         return $content;
     }
@@ -1889,10 +1887,8 @@ class ContentController extends Controller
                     'thumbnail_url' => ($brand == 'guitareo') ?
                         'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
                         'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                    'url' => route(
-                        'v1.mobile.musora-api.content.show',
-                        ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]
-                    ),
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
                     'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
                     'level_rank' => $nextLearningPathLevel,
                     'started' => $methodContent['started'],
@@ -1938,10 +1934,8 @@ class ContentController extends Controller
                     'title' => 'Featured Coach',
                     'name' => $coachOfTheMonth['name'] ?? '',
                     'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                    'url' => route(
-                        'v1.mobile.musora-api.content.show',
-                        ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]
-                    ),
+                    'url' => route('v1.mobile.musora-api.content.show',
+                                   ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
                     'link' => 'Visit Coach Page',
                     'id' => $coachOfTheMonth['id'] ?? null,
                 ];
@@ -2170,8 +2164,11 @@ class ContentController extends Controller
         throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
 
         $playlist = $this->userPlaylistsService->getPlaylist($playlistContent['user_playlist_id']);
-        throw_if(($playlist == -1), new NotFoundException("You don’t have access to this playlist", 'Private Playlist'));
-        throw_if(!$playlist, new NotFoundException("Playlist not exists."));
+        throw_if(
+            ($playlist == -1),
+            new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
+        );
+        throw_if(!$playlist, new PlaylistException("Playlist not exists.", "Playlist not exists."));
 
         try {
             $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id']);
@@ -2182,7 +2179,6 @@ class ContentController extends Controller
                 $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
                     ->first();
             $message = '';
-
             if ($playlistItem['type'] == 'song') {
                 $message = 'This Song content is part of our Musora+ Membership';
             } elseif (in_array(
@@ -2193,19 +2189,19 @@ class ContentController extends Controller
                 )
             )) {
                 $message = 'This Lesson is part of our Musora Membership';
-            }else {
-                $message = $playlistItem['title'].' is part of our '.($playlistItem['parent'])?$playlistItem['parent']['title']:''. ' premium pack';
+            } else {
+                $message =
+                    $playlistItem['title'].' is part of our '.($playlistItem['parent']) ?
+                        $playlistItem['parent']['title'] : ''.' premium pack';
             }
 
-            return ResponseService::array([
-                                              "success" => false,
-                                              "message" => $message,
-                                              "title" => "Content Unavailable",
-                                              "item_title" => $playlistItem['title'],
-                                              "item_type" => $playlistItem['type'],
-                                              "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
-                                              "parent" => $playlistItem['parent'] ?? null,
-                                          ]);
+            $extraData = [
+                "item_title" => $playlistItem['title'],
+                "item_type" => $playlistItem['type'],
+                "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
+                "parent" => $playlistItem['parent'] ?? null,
+            ];
+            throw new PlaylistException($message, "Content Unavailable", $extraData);
         }
 
         $content['start_second'] = $playlistContent['start_second'] ?? null;
@@ -2228,7 +2224,7 @@ class ContentController extends Controller
             ($content['type'] != 'assignment')) {
             unset($content['parent']);
         }
-        
+
         ContentRepository::$pullFutureContent = $oldFutureContent;
 
         return ResponseService::array($content);

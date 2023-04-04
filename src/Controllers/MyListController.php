@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Railroad\MusoraApi\Exceptions\PlaylistException;
 use Railroad\MusoraApi\Requests\AddItemToPlaylistRequest;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
@@ -212,5 +213,22 @@ class MyListController extends Controller
         return ResponseService::array([
                                           'success' => ($deleted > 0),
                                       ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws \Throwable
+     */
+    public function getPlaylist(Request $request)
+    {
+        $playlist = $this->userPlaylistsService->getPlaylist($request->get('playlist_id'));
+        throw_if(
+            ($playlist == -1),
+            new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
+        );
+        throw_if(!$playlist, new PlaylistException("Playlist not exists.", "Playlist not exists."));
+
+        return ResponseService::array(['data' => [$playlist]]);
     }
 }
