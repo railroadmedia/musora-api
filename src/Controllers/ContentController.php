@@ -1844,6 +1844,12 @@ class ContentController extends Controller
                 $segments = $ctaRequest->segments();
 
                 $lastSegment = last($ctaRequest->segments());
+
+                $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
+                if($routeAction['as'] == 'platform.content.first-level'){
+                    $pageType = 'Lesson';
+                    $pageParams['id'] = $lastSegment;
+                }
                 if(isset($pageTypeMapping[$lastSegment])){
                     $pageType = $pageTypeMapping[$lastSegment];
                 }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
