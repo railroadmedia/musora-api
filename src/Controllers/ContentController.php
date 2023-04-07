@@ -1850,300 +1850,65 @@ class ContentController extends Controller
      */
     public function getHomepageBanner(Request $request)
     {
-        $brand = $request->get('brand', config('railcontent.brand'));
-        if (config('musora-api.api.version') == 'v1') {
-            $coachOfTheMonth = $this->contentService->getFiltered(
-                1,
-                1,
-                '-published_on',
-                ['instructor'],
-                [],
-                [],
-                ['is_coach_of_the_month,1,boolean,='],
-                [],
-                [],
-                [],
-                false,
-                false,
-                false
-            )
-                ->results()
-                ->first();
+        $pageTypeMapping = config('musora-api.pageTypeMapping', []);
+        $carouselSlides = $this->productProvider->carousel();
+        $response = [];
 
-            $methodSlug = $brand.'-method';
-            $methodContent =
-                $this->contentService->getBySlugAndType($methodSlug, 'learning-path')
-                    ->first();
+        foreach ($carouselSlides as $slide)
+        {
+            $pageType = null;
+            $pageParams= [];
+            if (filter_var($slide['cta_url'], FILTER_VALIDATE_URL)) {
+                $ctaRequest = \Request::create($slide['cta_url']);
+                $segments = $ctaRequest->segments();
 
-            $hasStartedMethod = $methodContent['started'] === true;
-            $nextLearningPathLevel = $methodContent['level_rank'] ?? '1.1';
-            $nextLearningPathLesson =
-                $this->contentService->getNextContentForParentContentForUser($methodContent['id'], auth()->id());
+                $lastSegment = last($ctaRequest->segments());
 
-            $response = [
-                'method' => [
-                    'title' => 'Step by Step Curriculum',
-                    'name' => ucfirst($brand).' Method',
-                    'thumbnail_url' => ($brand == 'guitareo') ?
-                        'https://musora-web-platform.s3.amazonaws.com/carousel/Guitareo-Method_Lesson+3+1.jpg' :
-                        'https://musora-web-platform.s3.amazonaws.com/carousel/'.$brand.'-method+1.jpg',
-                    'url' => route('v1.mobile.musora-api.content.show',
-                                   ['id' => $nextLearningPathLesson['id'] ?? $methodContent['id'], 'brand' => $brand]),
-                    'link' => !$hasStartedMethod ? 'Start Method' : 'Continue Level '.$nextLearningPathLevel,
-                    'level_rank' => $nextLearningPathLevel,
-                    'started' => $methodContent['started'],
-                    'completed' => $methodContent['completed'],
-                    'user_progress' => $methodContent['user_progress'] ?? [],
-                ],
-                'songs' => [
-                    'title' => 'Popular Songs in All Genres',
-                    'name' => 'Songs',
-                    'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/songs.jpg',
-                    'url' => route('v1.mobile.musora-api.contents.filter', [
-                        'included_types' => ['song'],
-                        'brand' => $brand,
-                        'page' => 1,
-                        'limit' => 10,
-                        'statuses' => [
-                            'published',
-                        ],
-                        'sort' => '-published_on',
-                    ]),
-                    'link' => 'See the latest songs',
-                ],
-                'coaches' => [
-                    'title' => 'Learn from the legends',
-                    'name' => 'Coaches',
-                    'thumbnail_url' => 'https://musora-web-platform.s3.amazonaws.com/carousel/coaches.jpg',
-                    'url' => route('v1.mobile.musora-api.contents.filter', [
-                        'included_types' => ['instructor'],
-                        'required_fields' => ['is_coach,1'],
-                        'brand' => $brand,
-                        'page' => 1,
-                        'limit' => 10,
-                        'statuses' => [
-                            'published',
-                        ],
-                        'sort' => '-published_on',
-                    ]),
-                    'link' => 'See Coaches',
-                ],
-            ];
-            if ($coachOfTheMonth) {
-                $response['featured_coach'] = [
-                    'title' => 'Featured Coach',
-                    'name' => $coachOfTheMonth['name'] ?? '',
-                    'thumbnail_url' => $coachOfTheMonth['coach_top_banner_image'] ?? '',
-                    'url' => route('v1.mobile.musora-api.content.show',
-                                   ['id' => $coachOfTheMonth['id'] ?? '', 'brand' => $brand]),
-                    'link' => 'Visit Coach Page',
-                    'id' => $coachOfTheMonth['id'] ?? null,
-                ];
+                $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
+                if($routeAction['as'] == 'platform.content.first-level'){
+                    $pageType = 'Lesson';
+                    $pageParams['id'] = $lastSegment;
+                }
+                if(isset($pageTypeMapping[$lastSegment])){
+                    $pageType = $pageTypeMapping[$lastSegment];
+                }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
+                    $pageType = 'CoachOverview';
+                    $pageParams['id'] = $lastSegment;
+                }elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
+                    $pageType = 'PackOverview';
+                    $pageParams['id'] = $lastSegment;
+                    $pageParams['type'] = "Lesson";
+                }elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
+                    $pageType = 'CourseOverview';
+                    $pageParams['id'] = $lastSegment;
+                }elseif (is_numeric($lastSegment) && in_array('forums', $segments) && in_array('jump-to-post', $segments)) {
+                    $pageType = 'Forum';
+                    $pageParams['postId'] = $lastSegment;
+                }
+                elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
+                    $pageType = 'Forum';
+                    $pageParams['threadId'] = $lastSegment;
+                }
             }
-        } else {
-            $response['drumeo']['songs_upgrade'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => 'Songs upgrade',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/96bf5455-7e05-4f20-8300-fd533662c300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/96bf5455-7e05-4f20-8300-fd533662c300/public',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                ],
-                'link' => 'Play Songs',
-            ];
-            //            $response['drumeo']['rudiment_drumset_applications'] = [
-            //                'page_type' => 'Rudiments',
-            //                'title' => null,
-            //                'name' => 'Rudiment Drumset Applications',
-            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
-            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0e238c6d-384d-4982-3b8f-f2f6d5b1ec00/public',
-            //                'page_params' => [
-            //                    'brand' => 'drumeo',
-            //                ],
-            //                'link' => 'Go To Rudiments',
-            //            ];
-            $response['drumeo']['introducing_musora'] = [
-                'title' => null,
-                'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
-                'url' => 'https://www.musora.com/unified-2022',
-                'link' => 'LEARN MORE',
-            ];
-            //            $response['drumeo']['the_drum_department'] = [
-            //                'page_type' => 'ShowOverview',
-            //                'title' => null,
-            //                'name' => 'The drum department',
-            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/9279f302-3bcc-422e-9666-7a9f1cd9cd00/public',
-            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/e8dc5f4d-1a3d-4d3a-b2d4-79ae5a35ec00/public',
-            //                'page_params' => [
-            //                    'brand' => 'drumeo',
-            //                    'keyExtractor' => 'live',
-            //                ],
-            //                'link' => 'Watch the latest episode',
-            //            ];
-            $response['drumeo']['new_songs_releases'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => 'New Song Releases',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/image/quality=100,width=1536,height=430,fit=cover,metadata=none/https://musora-web-platform.s3.amazonaws.com/carousel/Songs-banner.jpg',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                ],
-                'link' => 'Go To Songs',
-            ];
 
-            $response['drumeo']['student_focus_review'] = [
-                'page_type' => 'StudentFocus',
-                'title' => null,
-                'name' => 'Student Focus',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f53e9c33-d8b0-48f2-6862-2c375ea61a00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/f53e9c33-d8b0-48f2-6862-2c375ea61a00/public',
-                'page_params' => [
-                    'brand' => 'drumeo',
-                ],
-                'link' => 'Apply For Review',
+            $index = str_replace(' ', '_', $slide['title']);
+            $response[$index] = [
+                'name' => $slide['title'],
+                //'title' => $slide['subtitle'] ,
+                'link' => $slide['cta_text'],
+                'thumbnail_url' => $slide['img'],
+                'tablet_thumbnail_url' => $slide['img'],
+                'url' => $slide['cta_url']
             ];
-            //            $response['pianote']['black_friday_deals'] = [
-            //                'title' => "BEST DEALS OF THE YEAR",
-            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
-            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6425c9dc-c7b5-4b5d-bea5-d4d5ddd41a00/public',
-            //                'url' => 'https://www.pianote.com/shop',
-            //                'link' => 'PIANOTE SHOP',
-            //            ];
-            $response['pianote']['songs_upgrade'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => '1000+ SONGS TO LEARN',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6f6d73a3-67b9-44b2-1f9e-77c4bc870c00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6f6d73a3-67b9-44b2-1f9e-77c4bc870c00/public',
-                'page_params' => [
-                    'brand' => 'pianote',
-                ],
-                'link' => 'Play Songs',
-            ];
-            $response['pianote']['introducing_musora'] = [
-                'title' => "It's All Yours",
-                'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
-                'url' => 'https://www.musora.com/unified-2022',
-                'link' => 'LEARN MORE',
-            ];
-            $response['pianote']['coach_of_the_month'] = [
-                'page_type' => 'CoachOverview',
-                'title' => 'Coach of the month',
-                'name' => 'Summer Swee-Singh',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/fcc863e8-db75-4d0a-807c-afc775e02d00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/49c95ddc-21ca-41c9-2370-eade79f02400/public',
-                'page_params' => [
-                    'brand' => 'pianote',
-                    'id' => 369384,
-                ],
-                'link' => 'Visit Summer’s coach page',
-            ];
-            $response['pianote']['schedule'] = [
-                'page_type' => 'Schedule',
-                'name' => 'The Piano Bench',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/45f6883d-3a0e-4c1a-145f-11515899fa00/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/c76ea820-5615-407c-2a4b-fa539e041600/public',
-                'page_params' => [
-                    'brand' => 'pianote',
-                ],
-                'link' => 'Check out the schedule here',
-            ];
-            //            $response['guitareo']['black_friday_deals'] = [
-            //                'title' => "BEST DEALS OF THE YEAR",
-            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
-            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/b4adbc55-1044-4da8-3469-c17a6081ee00/public',
-            //                'url' => 'https://www.guitareo.com/shop',
-            //                'link' => 'GUITAREO SHOP',
-            //            ];
-            $response['guitareo']['songs_upgrade'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => '1000+ SONGS TO LEARN',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/14786854-bbfc-49fa-c75b-64da6da7e800/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/14786854-bbfc-49fa-c75b-64da6da7e800/public',
-                'page_params' => [
-                    'brand' => 'guitareo',
-                ],
-                'link' => 'Play Songs',
-            ];
-            $response['guitareo']['introducing_musora'] = [
-                'title' => "It's All Yours",
-                'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
-                'url' => 'https://www.musora.com/unified-2022',
-                'link' => 'LEARN MORE',
-            ];
-            $response['guitareo']['coach_of_the_month'] = [
-                'page_type' => 'CoachOverview',
-                'title' => 'Coach of the month',
-                'name' => 'Dean Lamb',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/bd462431-5718-4fa9-b5e3-d62c132b8700/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/033d5e42-f511-494c-5241-5bf37398a100/public',
-                'page_params' => [
-                    'brand' => 'guitareo',
-                    'id' => 354026,
-                ],
-                'link' => 'Visit Dean’s coach page',
-            ];
-            //            $response['singeo']['black_friday_deals'] = [
-            //                'title' => "BEST DEALS OF THE YEAR",
-            //                'name' => 'MEMBER BLACK FRIDAY DEALS',
-            //                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-            //                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/91151654-c55b-44c2-526e-ff7cf03b0100/public',
-            //                'url' => 'https://www.singeo.com/shop',
-            //                'link' => 'SINGEO SHOP',
-            //            ];
-            $response['singeo']['songs_upgrade'] = [
-                'page_type' => 'Songs',
-                'title' => null,
-                'name' => '1000+ SONGS TO LEARN',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/4177b05e-b7c6-4782-b835-9db7ca5d0800/public',
-                'page_params' => [
-                    'brand' => 'singeo',
-                ],
-                'link' => 'Play Songs',
-            ];
-            $response['singeo']['introducing_musora'] = [
-                'title' => "It's All Yours",
-                'name' => 'Introducing Musora',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/6c1f9f12-2f0a-4d28-230f-41ac4ca4e300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/0441bca6-48e3-4a1e-042e-ee9871a2a000/public',
-                'url' => 'https://www.musora.com/unified-2022',
-                'link' => 'LEARN MORE',
-            ];
-            $response['singeo']['coach_of_the_month'] = [
-                'page_type' => 'CoachOverview',
-                'title' => 'Coach of the month',
-                'name' => 'Chris Johnson',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/5c89c338-9194-4926-2629-cc203fe7a300/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/2e9f3475-c828-478e-9cf1-5a915e84fa00/public',
-                'page_params' => [
-                    'brand' => 'singeo',
-                    'id' => 369633,
-                ],
-                'link' => 'Visit Chris’s coach page',
-            ];
-            $response['singeo']['schedule'] = [
-                'page_type' => 'Schedule',
-                'name' => 'The Stage',
-                'thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/bc0cc0da-68be-412d-0415-98e10300f000/public',
-                'tablet_thumbnail_url' => 'https://musora.com/cdn-cgi/imagedelivery/0Hon__GSkIjm-B_W77SWCA/986f9642-aa86-4560-e4e6-ab2767828800/public',
-                'page_params' => [
-                    'brand' => 'singeo',
-                ],
-                'link' => 'Check out the schedule here',
-            ];
-            $response = $response[$brand] ?? [];
+            if(!empty($slide['subtitle'])){
+                $response[$index]['title'] = $slide['subtitle'];
+            }
+            if($pageType){
+                $response[$index]['page_type'] = $pageType;
+            }
+            if(!empty($pageParams)){
+                $response[$index]['page_params'] = $pageParams;
+            }
         }
 
         return ResponseService::array($response);

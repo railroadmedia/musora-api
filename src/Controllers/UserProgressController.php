@@ -322,7 +322,9 @@ class UserProgressController extends Controller
                 $request->get('media_category', 'vimeo')
             );
 
-            if ($request->get('media_type', 'video') == 'video') {
+            if (($request->get('media_type', 'video') == 'video') ||
+                (($request->get('media_type', 'video') == 'assignment') && ($request->get('media_category', 'vimeo') == 'soundslice')))
+            {
                 $this->userContentProgressService->startContent(
                     $request->get('content_id'),
                     auth()->id()
