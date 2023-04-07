@@ -1940,6 +1940,7 @@ class ContentController extends Controller
         } catch (\Exception $e) {
             $playlistLessons =
                 $this->userPlaylistsService->getUserPlaylistContents($playlistContent['user_playlist_id']);
+
             $playlistItem =
                 $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
                     ->first();
@@ -1950,14 +1951,16 @@ class ContentController extends Controller
                 $playlistItem['type'],
                 array_merge(
                     config('railcontent.singularContentTypes', []),
-                    config('railcontent.showTypes')[$request->get('brand')] ?? []
+                    config('railcontent.showTypes')[$request->get('brand')] ?? [],
+                    ['assignment']
                 )
             )) {
                 $message = 'This Lesson is part of our Musora Membership';
             } else {
+                $title = (isset($playlistItem['parent'])) ?
+                    $playlistItem['parent']['title'] : '';
                 $message =
-                    $playlistItem['title'].' is part of our '.($playlistItem['parent']) ?
-                        $playlistItem['parent']['title'] : ''.' premium pack';
+                    $playlistItem['title'].' is part of our '.$title.' premium pack';
             }
 
             $extraData = [
@@ -1965,6 +1968,7 @@ class ContentController extends Controller
                 "item_type" => $playlistItem['type'],
                 "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
                 "parent" => $playlistItem['parent'] ?? null,
+                "learn_more_link" => "https://musora.helpscoutdocs.com/article/1034-musora-membership-options#membershiptype"
             ];
             throw new PlaylistException($message, "Content Unavailable", $extraData);
         }

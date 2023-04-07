@@ -30,14 +30,17 @@ class PlaylistException extends Exception
      */
     public function render()
     {
-        return response()->json(
-
-                array_merge([  "success" => false,
-                                "message" => $this->message,
-                                "title" => $this->title],
-                            $this->extraData)
-          ,
-            404
-        );
+        return response()->json([
+                                    'data' => [
+                                        array_merge(
+                                            [
+                                                "success" => false,
+                                                "message" => $this->message,
+                                                "title" => $this->title,
+                                            ],
+                                            $this->extraData
+                                        ),
+                                    ],
+                                ], 404);
     }
 }
