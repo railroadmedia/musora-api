@@ -35,4 +35,6 @@ interface ProductProviderInterface
     public function getMembershipProductIds():array;
 
     public function carousel();
+
+    public function getCohortTemplate($slug) : array;
 }

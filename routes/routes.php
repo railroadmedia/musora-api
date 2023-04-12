@@ -552,6 +552,12 @@ Route::group([
         '/request-song',
         Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
     )->name('mobile.musora-api.v1.request.song');
+
+    Route::get(
+        '/cohort',
+        \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getTemplate'
+    )
+        ->name('mobile.musora-api.cohort.template');
 });
 
 Route::group([
