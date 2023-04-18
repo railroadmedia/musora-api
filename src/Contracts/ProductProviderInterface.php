@@ -37,4 +37,8 @@ interface ProductProviderInterface
     public function carousel();
 
     public function getCohortTemplate($slug) : array;
+
+    public function getActiveCohort();
+
+    public function userOwnProduct($productId);
 }

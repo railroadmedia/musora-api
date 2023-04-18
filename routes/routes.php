@@ -558,6 +558,12 @@ Route::group([
         \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getTemplate'
     )
         ->name('mobile.musora-api.cohort.template');
+
+    Route::get(
+        '/cohort-banner',
+        \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getBanner'
+    )
+        ->name('mobile.musora-api.cohort.banner');
 });
 
 Route::group([
