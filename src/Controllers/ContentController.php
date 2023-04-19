@@ -37,6 +37,7 @@ use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
+use Railroad\Railcontent\Repositories\ContentPermissionRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
@@ -115,16 +116,23 @@ class ContentController extends Controller
      */
     private $methodService;
 
+    private ContentPermissionRepository $contentPermissionRepository;
+
     /**
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
      * @param UserProviderInterface $userProvider
+     * @param MailService $mailoraMailService
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
      * @param StripTagDecorator $stripTagDecorator
      * @param DownloadService $downloadService
      * @param ContentFollowsService $contentFollowsService
+     * @param UserPlaylistsService $userPlaylistsService
+     * @param ProductProviderInterface $productProvider
+     * @param MethodService $methodService
+     * @param ContentPermissionRepository $contentPermissionRepository
      */
     public function __construct(
         ContentService $contentService,
@@ -139,7 +147,8 @@ class ContentController extends Controller
         ContentFollowsService $contentFollowsService,
         UserPlaylistsService $userPlaylistsService,
         ProductProviderInterface $productProvider,
-        MethodService $methodService
+        MethodService $methodService,
+        ContentPermissionRepository $contentPermissionRepository
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -154,6 +163,7 @@ class ContentController extends Controller
         $this->userPlaylistsService = $userPlaylistsService;
         $this->productProvider = $productProvider;
         $this->methodService = $methodService;
+        $this->contentPermissionRepository = $contentPermissionRepository;
     }
 
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
@@ -1944,23 +1954,45 @@ class ContentController extends Controller
             $playlistItem =
                 $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
                     ->first();
+            $contentPermissionRows = collect(
+                $this->contentPermissionRepository->getByContentIdsOrTypes([$playlistItem['id']],
+                                                                           [$playlistItem['type']])
+            );
+            $grupedPermissions = $contentPermissionRows->groupBy('content_id');
+
+            $needLifetime = (count($contentPermissionRows) == 1) && array_intersect(
+                    ['Drumeo Lifetime Member'],
+                    (isset($grupedPermissions[$playlistItem['id']])) ?
+                        $grupedPermissions[$playlistItem['id']]->pluck('name')
+                            ->toArray() : []
+                );
+            $needMusoraBasic = array_intersect(
+                ['Musora Basic Membership'],
+                (isset($grupedPermissions[$playlistItem['id']])) ?
+                    $grupedPermissions[$playlistItem['id']]->pluck('name')
+                        ->toArray() : []
+            );
+
             $message = '';
-            if ($playlistItem['type'] == 'song') {
-                $message = 'This Song content is part of our Musora+ Membership';
-            } elseif (in_array(
-                $playlistItem['type'],
-                array_merge(
-                    config('railcontent.singularContentTypes', []),
-                    config('railcontent.showTypes')[$request->get('brand')] ?? [],
-                    ['assignment']
-                )
-            )) {
-                $message = 'This Lesson is part of our Musora Membership';
+            if (!empty($needLifetime)) {
+                $message = 'This Masterclass is part of our exclusive <b>Lifetime Membership</b>.';
+            } elseif (!empty($needMusoraBasic)) {
+                $message = 'This lesson is part of our <b>Musora Membership</b>.';
+            } elseif ($playlistItem['type'] == 'song') {
+                $message = 'This Song content is part of our <b>Musora+ Membership</b>.';
             } else {
-                $title = (isset($playlistItem['parent'])) ?
-                    $playlistItem['parent']['title'] : '';
-                $message =
-                    $playlistItem['title'].' is part of our '.$title.' premium pack';
+                $parentContentData = array_reverse(json_decode($playlistItem['parent_content_data'], true));
+                $parent = $parentContentData[0] ?? null;
+                $title = '';
+                if ($parent) {
+                    ContentRepository::$bypassPermissions = true;
+                    $parentData = $this->contentService->getById($parent['id']);
+
+                    $title = $parentData['title'];
+
+                    ContentRepository::$bypassPermissions = false;
+                }
+                $message = $playlistItem['title'].' is part of our <b>'.$title.'</b> Pack.';
             }
 
             $extraData = [
@@ -1968,7 +2000,7 @@ class ContentController extends Controller
                 "item_type" => $playlistItem['type'],
                 "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
                 "parent" => $playlistItem['parent'] ?? null,
-                "learn_more_link" => "https://musora.helpscoutdocs.com/article/1034-musora-membership-options#membershiptype"
+                "learn_more_link" => "https://musora.helpscoutdocs.com/article/1034-musora-membership-options#membershiptype",
             ];
             throw new PlaylistException($message, "Content Unavailable", $extraData);
         }
