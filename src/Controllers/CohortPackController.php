@@ -47,7 +47,6 @@ class CohortPackController extends Controller
             $contentId = $activeCohort['content_id'];
             if ($contentId > 0) {
                 $content = $this->contentService->getById($contentId);
-
                 $cohortBanner = [
                     'course_url' => ($content) ? $content->fetch('url', '') : '',
                     'light_mode_logo' => $activeCohort['light_mode_logo'],
@@ -56,15 +55,19 @@ class CohortPackController extends Controller
                     'close_visible' => $activeCohort['cohort_end_time'] < Carbon::now(),
                 ];
 
-                $nextLesson = $this->contentService->getNextContentForParentContentForUser($contentId, user()->id);
+                $nextLesson = $this->contentService->getNextCohortLesson($contentId, user()->id);
+
                 if ($nextLesson) {
                     $cohortBanner['lesson_url'] = $nextLesson->fetch('url');
+                    $cohortBanner['published_on'] = $nextLesson->fetch('published_on');
+                    $cohortBanner['published_on_in_timezone'] = $nextLesson->fetch('published_on_in_timezone');
                     $cohortBanner['title'] = $nextLesson->fetch('title');
                     $cohortBanner['thumbnail'] = $nextLesson->fetch('data.thumbnail_url');
                     $cohortBanner['continue_visible'] = true;
-                } elseif ($content['completed']) {
+                }
+                if ($content['completed']) {
                     $cohortBanner['completed'] = true;
-                    $cohortBanner['thumbnail'] = $content->fetch('data.thumbnail_url');
+                    $cohortBanner['continue_visible'] = false;
                 }
             }
         }
