@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Transformers;
 
+use Carbon\Carbon;
 use League\Fractal\TransformerAbstract;
 
 class CohortTransformer extends TransformerAbstract
@@ -14,6 +15,15 @@ class CohortTransformer extends TransformerAbstract
             $responseStructure = config('response.'.$apiVersion.'.cohort', []);
         }
 
+        $content['cohort'] = $content['cohort']->getAttributes();
+        $content['cohort']['cohort_start_date'] =  Carbon::parse($content['cohort']['cohort_start_date'])
+            ->format('Y/m/d H:i:s');
+        $content['cohort']['cohort_end_date'] =  Carbon::parse($content['cohort']['cohort_end_date'])
+            ->format('Y/m/d H:i:s');
+        $content['cohort']['enrollment_start_date'] =  Carbon::parse($content['cohort']['enrollment_start_date'])
+            ->format('Y/m/d H:i:s');
+        $content['cohort']['enrollment_end_date'] =  Carbon::parse($content['cohort']['enrollment_end_date'])
+            ->format('Y/m/d H:i:s');
         if (!$responseStructure) {
             return $content;
         }
