@@ -54,11 +54,25 @@ class CohortPackController extends Controller
                     'continue_visible' => false,
                     'close_visible' => $activeCohort['cohort_end_time'] < Carbon::now(),
                 ];
-
+                if($content){
+                    $cohortBanner['course'] = [
+                        'page_type' => 'PackOverview',
+                        'page_params' => [
+                            'id' => $contentId,
+                            'type' => 'Lesson'
+                        ]
+                    ];
+                }
                 $nextLesson = $this->contentService->getNextCohortLesson($contentId, user()->id);
 
                 if ($nextLesson) {
                     $cohortBanner['lesson_url'] = $nextLesson->fetch('url');
+                    $cohortBanner['lesson'] = [
+                        'page_type' => 'Lesson',
+                        'page_params' => [
+                            'id' => $nextLesson->fetch('id')
+                        ]
+                    ];
                     $cohortBanner['published_on'] = $nextLesson->fetch('published_on');
                     $cohortBanner['published_on_in_timezone'] = $nextLesson->fetch('published_on_in_timezone');
                     $cohortBanner['title'] = $nextLesson->fetch('title');
