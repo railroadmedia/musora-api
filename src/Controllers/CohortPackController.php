@@ -49,6 +49,7 @@ class CohortPackController extends Controller
                 $content = $this->contentService->getById($contentId);
 
                 $cohortBanner = [
+                    'cohort_id' => $activeCohort['id'],
                     'course_url' => ($content) ? $content->fetch('url', '') : '',
                     'light_mode_logo' => $activeCohort['light_mode_logo'],
                     'dark_mode_logo' => $activeCohort['dark_mode_logo'],
