@@ -47,20 +47,21 @@ class CohortPackController extends Controller
             $contentId = $activeCohort['content_id'];
             if ($contentId > 0) {
                 $content = $this->contentService->getById($contentId);
+
                 $cohortBanner = [
                     'course_url' => ($content) ? $content->fetch('url', '') : '',
                     'light_mode_logo' => $activeCohort['light_mode_logo'],
                     'dark_mode_logo' => $activeCohort['dark_mode_logo'],
                     'continue_visible' => false,
-                    'close_visible' => $activeCohort['cohort_end_time'] < Carbon::now(),
+                    'close_visible' => Carbon::parse($activeCohort['cohort_end_date']) < Carbon::now(),
                 ];
-                if($content){
+                if ($content) {
                     $cohortBanner['course'] = [
                         'page_type' => 'PackOverview',
                         'page_params' => [
                             'id' => $contentId,
-                            'type' => 'Lesson'
-                        ]
+                            'type' => (($content['bundle_count'] ?? 0) > 1) ? 'Bundles' : 'Lesson',
+                        ],
                     ];
                 }
                 $nextLesson = $this->contentService->getNextCohortLesson($contentId, user()->id);
@@ -70,8 +71,8 @@ class CohortPackController extends Controller
                     $cohortBanner['lesson'] = [
                         'page_type' => 'Lesson',
                         'page_params' => [
-                            'id' => $nextLesson->fetch('id')
-                        ]
+                            'id' => $nextLesson->fetch('id'),
+                        ],
                     ];
                     $cohortBanner['published_on'] = $nextLesson->fetch('published_on');
                     $cohortBanner['published_on_in_timezone'] = $nextLesson->fetch('published_on_in_timezone');
@@ -87,7 +88,6 @@ class CohortPackController extends Controller
         }
 
         return ResponseService::array($cohortBanner);
-
     }
 
 }
