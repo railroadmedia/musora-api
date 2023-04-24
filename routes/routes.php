@@ -536,7 +536,7 @@ Route::group([
         '/auth-key',
         \Railroad\MusoraApi\Controllers\AuthController::class.'@getTempToken'
     )
-        ->name('homepage.banner');
+        ->name('mobile.musora-api.v1.auth.key');
 });
 
 Route::group([
