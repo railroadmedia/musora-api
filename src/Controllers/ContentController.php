@@ -1855,7 +1855,10 @@ class ContentController extends Controller
                     $response['slide_'.$index]['first_button'] =
                         $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
                 }
-
+                if ($slide['cta_url'] && !($slide['primary_cta_url'])) {
+                    $response['slide_'.$index]['first_button'] =
+                        $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                }
                 if ($slide['secondary_cta_url']) {
                     $response['slide_'.$index]['second_button'] =
                         $this->getButtonData(
@@ -1884,6 +1887,12 @@ class ContentController extends Controller
                     $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
                 $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
             }
+
+            if ($slide['cta_url']) {
+                $firstButton =
+                    $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
+            }
         }
 
         return ResponseService::array($response);
@@ -1906,7 +1915,7 @@ class ContentController extends Controller
             $segments = $ctaRequest->segments();
 
             $lastSegment = last($ctaRequest->segments());
-            $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
+            $routeAction = app('router')->getRoutes()->match(app('request')->create($primaryCtaUrl))->getAction();
 
             if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
                     $pageType = 'Lesson';
