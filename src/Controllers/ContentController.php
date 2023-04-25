@@ -1846,7 +1846,8 @@ class ContentController extends Controller
                 $lastSegment = last($ctaRequest->segments());
 
                 $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
-                if($routeAction['as'] == 'platform.content.first-level'){
+
+                if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
                     $pageType = 'Lesson';
                     $pageParams['id'] = $lastSegment;
                 }
