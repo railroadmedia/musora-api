@@ -1843,8 +1843,8 @@ class ContentController extends Controller
                     'description' => $slide['description'],
                     'video_src' => $slide['video_src'],
                     'desc_color' => $slide['desc_color'],
-                    'thumbnail_url' => $slide['mobile_img'],
-                    'tablet_thumbnail_url' => $slide['tablet_img'],
+                    'thumbnail_url' => $slide['mobile_img'] ?? $slide['img'],
+                    'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
 
                 ];
                 if (!empty($slide['subtitle'])) {
