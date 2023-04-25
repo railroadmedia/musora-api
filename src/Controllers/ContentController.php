@@ -1430,7 +1430,6 @@ class ContentController extends Controller
             return $content;
         }
 
-
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
 
@@ -1504,7 +1503,6 @@ class ContentController extends Controller
         if ($content['type'] != 'instructor') {
             return $content;
         }
-
 
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
@@ -1693,6 +1691,7 @@ class ContentController extends Controller
                 404
             );
         }
+
         return ResponseService::content($nextContent);
     }
 
@@ -1835,68 +1834,120 @@ class ContentController extends Controller
         $carouselSlides = $this->productProvider->carousel();
         $response = [];
 
-        foreach ($carouselSlides as $slide)
-        {
-            $pageType = null;
-            $pageParams= [];
-            if (filter_var($slide['cta_url'], FILTER_VALIDATE_URL)) {
-                $ctaRequest = \Request::create($slide['cta_url']);
-                $segments = $ctaRequest->segments();
+        if (config('musora-api.api.version') == 'v3') {
+            foreach ($carouselSlides as $index => $slide) {
+                $response['slide_'.$index] = [
+                    'name' => $slide['title'],
+                    //'title' => $slide['subtitle'] ,
+                    'logo' => $slide['logo'],
+                    'description' => $slide['description'],
+                    'video_src' => $slide['video_src'],
+                    'desc_color' => $slide['desc_color'],
+                    'thumbnail_url' => $slide['mobile_img'],
+                    'tablet_thumbnail_url' => $slide['tablet_img'],
 
-                $lastSegment = last($ctaRequest->segments());
-
-                $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
-
-                if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
-                    $pageType = 'Lesson';
-                    $pageParams['id'] = $lastSegment;
+                ];
+                if (!empty($slide['subtitle'])) {
+                    $response['slide_'.$index]['title'] = $slide['subtitle'];
                 }
-                if(isset($pageTypeMapping[$lastSegment])){
-                    $pageType = $pageTypeMapping[$lastSegment];
-                }elseif(in_array('enrollment', $segments)){
-                    $pageType = 'CohortLandingPage';
-                    $pageParams['slug'] = $lastSegment;
-                }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
-                    $pageType = 'CoachOverview';
-                    $pageParams['id'] = $lastSegment;
-                }elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
-                    $pageType = 'PackOverview';
-                    $pageParams['id'] = $lastSegment;
-                    $pageParams['type'] = "Lesson";
-                }elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
-                    $pageType = 'CourseOverview';
-                    $pageParams['id'] = $lastSegment;
-                }elseif (is_numeric($lastSegment) && in_array('forums', $segments) && in_array('jump-to-post', $segments)) {
-                    $pageType = 'Forum';
-                    $pageParams['postId'] = $lastSegment;
+
+                if ($slide['primary_cta_url']) {
+                    $response['slide_'.$index]['first_button'] =
+                        $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
                 }
-                elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
-                    $pageType = 'Forum';
-                    $pageParams['threadId'] = $lastSegment;
+
+                if ($slide['secondary_cta_url']) {
+                    $response['slide_'.$index]['second_button'] =
+                        $this->getButtonData(
+                            $slide['secondary_cta_url'],
+                            $pageTypeMapping,
+                            $slide['secondary_cta_text']
+                        );
                 }
             }
 
-            $index = str_replace(' ', '_', $slide['title']);
-            $response[$index] = [
+            return ResponseService::array($response);
+        }
+
+        foreach ($carouselSlides as $index => $slide) {
+            $response['slide_'.$index] = [
                 'name' => $slide['title'],
-                //'title' => $slide['subtitle'] ,
-                'link' => $slide['cta_text'],
-                'thumbnail_url' => $slide['img'],
-                'tablet_thumbnail_url' => $slide['img'],
-                'url' => $slide['cta_url']
+                'thumbnail_url' => $slide['tablet_img'],
+                'tablet_thumbnail_url' => $slide['tablet_img'],
             ];
-            if(!empty($slide['subtitle'])){
-                $response[$index]['title'] = $slide['subtitle'];
+            if (!empty($slide['subtitle'])) {
+                $response['slide_'.$index]['title'] = $slide['subtitle'];
             }
-            if($pageType){
-                $response[$index]['page_type'] = $pageType;
-            }
-            if(!empty($pageParams)){
-                $response[$index]['page_params'] = $pageParams;
+
+            if ($slide['primary_cta_url']) {
+                $firstButton =
+                    $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
             }
         }
 
         return ResponseService::array($response);
+    }
+
+    /**
+     * @param $primaryCtaUrl
+     * @param mixed $pageTypeMapping
+     * @param $text
+     * @return array
+     */
+    private function getButtonData($primaryCtaUrl, mixed $pageTypeMapping, $text)
+    : array {
+        $pageType = null;
+        $pageParams = [];
+        $buttonData = [];
+
+        if (filter_var($primaryCtaUrl, FILTER_VALIDATE_URL)) {
+            $ctaRequest = \Request::create($primaryCtaUrl);
+            $segments = $ctaRequest->segments();
+
+            $lastSegment = last($ctaRequest->segments());
+            $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
+
+            if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
+                    $pageType = 'Lesson';
+                    $pageParams['id'] = $lastSegment;
+            }
+            if (isset($pageTypeMapping[$lastSegment])) {
+                $pageType = $pageTypeMapping[$lastSegment];
+            }elseif(in_array('enrollment', $segments)){
+                $pageType = 'CohortLandingPage';
+                $pageParams['slug'] = $lastSegment;
+	    } elseif (is_numeric($lastSegment) && in_array('coaches', $segments)) {
+                $pageType = 'CoachOverview';
+                $pageParams['id'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
+                $pageType = 'PackOverview';
+                $pageParams['id'] = $lastSegment;
+                $pageParams['type'] = "Lesson";
+            } elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
+                $pageType = 'CourseOverview';
+                $pageParams['id'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) &&
+                in_array('forums', $segments) &&
+                in_array('jump-to-post', $segments)) {
+                $pageType = 'Forum';
+                $pageParams['postId'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
+                $pageType = 'Forum';
+                $pageParams['threadId'] = $lastSegment;
+            }
+        }
+
+        $buttonData['url'] = $primaryCtaUrl;
+        $buttonData['link'] = $text;
+        if ($pageType) {
+            $buttonData['page_type'] = $pageType;
+        }
+        if (!empty($pageParams)) {
+            $buttonData['page_params'] = $pageParams;
+        }
+
+        return $buttonData;
     }
 
 }
