@@ -1875,8 +1875,8 @@ class ContentController extends Controller
         foreach ($carouselSlides as $index => $slide) {
             $response['slide_'.$index] = [
                 'name' => $slide['title'],
-                'thumbnail_url' => $slide['tablet_img'],
-                'tablet_thumbnail_url' => $slide['tablet_img'],
+                'thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
+                'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
             ];
             if (!empty($slide['subtitle'])) {
                 $response['slide_'.$index]['title'] = $slide['subtitle'];
