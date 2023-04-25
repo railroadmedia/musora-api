@@ -1853,6 +1853,9 @@ class ContentController extends Controller
                 }
                 if(isset($pageTypeMapping[$lastSegment])){
                     $pageType = $pageTypeMapping[$lastSegment];
+                }elseif(in_array('enrollment', $segments)){
+                    $pageType = 'CohortLandingPage';
+                    $pageParams['slug'] = $lastSegment;
                 }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
                     $pageType = 'CoachOverview';
                     $pageParams['id'] = $lastSegment;
