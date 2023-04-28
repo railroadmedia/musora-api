@@ -174,6 +174,10 @@ class ContentController extends Controller
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
 
+        if ($playlistItemId) {
+            $content['user_playlist_item_id'] = $playlistItemId;
+        }
+
         $lessonContentTypes = array_diff(array_merge(config(
                                                          'railcontent.showTypes'
                                                      )[config(
@@ -277,11 +281,10 @@ class ContentController extends Controller
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
-        if ($playlistItemId) {
-            $content['user_playlist_item_id'] = $playlistItemId;
-        }
+
 
         $collectionForDecoration = new Collection();
+        $collectionForDecoration = $collectionForDecoration->merge([$content]);
         $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
         if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
