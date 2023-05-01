@@ -8,6 +8,7 @@ use League\Fractal\Serializer\ArraySerializer;
 use League\Fractal\TransformerAbstract;
 use Railroad\MusoraApi\Serializer\DataSerializer;
 use Railroad\MusoraApi\Transformers\CatalogueTransformer;
+use Railroad\MusoraApi\Transformers\CohortTransformer;
 use Railroad\MusoraApi\Transformers\ContentForDownloadTransformer;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
@@ -192,6 +193,15 @@ class ResponseService
         $response->setData($data);
 
         return $response;
+    }
+
+    public static function cohort($data)
+    {
+        return Fractal::create()
+            ->item($data)
+            ->transformWith(CohortTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
     }
 }
 

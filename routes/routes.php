@@ -613,6 +613,18 @@ Route::group([
         MyListJsonController::class . '@uploadPlaylistThumbnail'
     );
     Route::get('/playlist-item', ContentController::class . '@getPlaylistItem')->name('mobile.musora-api.deeplink.playlist.item');
+
+    Route::get(
+        '/cohort',
+        \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getTemplate'
+    )
+        ->name('mobile.musora-api.cohort.template');
+
+    Route::get(
+        '/cohort-banner',
+        \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getBanner'
+    )
+        ->name('mobile.musora-api.cohort.banner');
 });
 
 Route::group([

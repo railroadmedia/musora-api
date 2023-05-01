@@ -1876,8 +1876,8 @@ class ContentController extends Controller
                     'description' => $slide['description'],
                     'video_src' => $slide['video_src'],
                     'desc_color' => $slide['desc_color'],
-                    'thumbnail_url' => $slide['mobile_img'],
-                    'tablet_thumbnail_url' => $slide['tablet_img'],
+                    'thumbnail_url' => $slide['mobile_img'] ?? $slide['img'],
+                    'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
 
                 ];
                 if (!empty($slide['subtitle'])) {
@@ -1888,7 +1888,10 @@ class ContentController extends Controller
                     $response['slide_'.$index]['first_button'] =
                         $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
                 }
-
+                if ($slide['cta_url'] && !($slide['primary_cta_url'])) {
+                    $response['slide_'.$index]['first_button'] =
+                        $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                }
                 if ($slide['secondary_cta_url']) {
                     $response['slide_'.$index]['second_button'] =
                         $this->getButtonData(
@@ -1905,8 +1908,8 @@ class ContentController extends Controller
         foreach ($carouselSlides as $index => $slide) {
             $response['slide_'.$index] = [
                 'name' => $slide['title'],
-                'thumbnail_url' => $slide['tablet_img'],
-                'tablet_thumbnail_url' => $slide['tablet_img'],
+                'thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
+                'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
             ];
             if (!empty($slide['subtitle'])) {
                 $response['slide_'.$index]['title'] = $slide['subtitle'];
@@ -1915,6 +1918,12 @@ class ContentController extends Controller
             if ($slide['primary_cta_url']) {
                 $firstButton =
                     $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
+            }
+
+            if ($slide['cta_url']) {
+                $firstButton =
+                    $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
                 $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
             }
         }
@@ -1939,9 +1948,18 @@ class ContentController extends Controller
             $segments = $ctaRequest->segments();
 
             $lastSegment = last($ctaRequest->segments());
+            $routeAction = app('router')->getRoutes()->match(app('request')->create($primaryCtaUrl))->getAction();
+
+            if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
+                    $pageType = 'Lesson';
+                    $pageParams['id'] = $lastSegment;
+            }
             if (isset($pageTypeMapping[$lastSegment])) {
                 $pageType = $pageTypeMapping[$lastSegment];
-            } elseif (is_numeric($lastSegment) && in_array('coaches', $segments)) {
+            }elseif(in_array('enrollment', $segments)){
+                $pageType = 'CohortLandingPage';
+                $pageParams['slug'] = $lastSegment;
+	    } elseif (is_numeric($lastSegment) && in_array('coaches', $segments)) {
                 $pageType = 'CoachOverview';
                 $pageParams['id'] = $lastSegment;
             } elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
