@@ -1881,6 +1881,9 @@ class ContentController extends Controller
             if (!empty($slide['subtitle'])) {
                 $response['slide_'.$index]['title'] = $slide['subtitle'];
             }
+            if (($slide['trailer'])) {
+                $response['slide_'.$index]['trailer'] = $slide['trailer'];
+            }
 
             if ($slide['primary_cta_url']) {
                 $firstButton =
