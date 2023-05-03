@@ -1894,7 +1894,7 @@ class ContentController extends Controller
                     $response['slide_'.$index]['first_button'] =
                         $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
                 }
-                if ($slide['secondary_cta_url']) {
+                if ($slide['secondary_cta_url'] || $slide['secondary_cta_text']) {
                     $response['slide_'.$index]['second_button'] =
                         $this->getButtonData(
                             $slide['secondary_cta_url'],
