@@ -78,4 +78,6 @@ interface UserProviderInterface
     : string;
 
     public function deleteAccount();
+
+    public function getAuthKey();
 }
