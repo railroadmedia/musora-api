@@ -119,4 +119,12 @@ class AuthController extends Controller
                                           'success' => true,
                                       ]);
     }
+
+    /**
+     * @return mixed
+     */
+    public function getTempToken()
+    {
+        return $this->userProvider->getAuthKey();
+    }
 }
