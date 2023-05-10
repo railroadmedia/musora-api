@@ -96,13 +96,13 @@ class AuthController extends Controller
      * @return array
      * @throws Throwable
      */
-    public function getAuthUser()
+    public function getAuthUser(Request $request)
     {
         $user = $this->userProvider->getCurrentUser();
         throw_if(!$user, new UnauthorizedException('Login Required.'));
 
-        $membershipData = $this->userProvider->getCurrentUserMembershipData();
-        $profileData = $this->userProvider->getCurrentUserProfileData();
+        $membershipData = $this->userProvider->getCurrentUserMembershipData($request->get('app'));
+        $profileData = $this->userProvider->getCurrentUserProfileData($request->get('app'));
         $experienceData = $this->userProvider->getCurrentUserExperienceData();
 
         return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
