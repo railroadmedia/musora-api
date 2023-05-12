@@ -334,6 +334,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                 'www.singeo.com',
                 'www.guitareo.com',
                 'forums.drumeo.com',
+                'http://forums.drumeo.com/'
             ])) {
                 continue;
             }
