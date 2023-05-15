@@ -34,6 +34,7 @@ use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Events\PlaylistItemLoaded;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
@@ -2006,6 +2007,8 @@ class ContentController extends Controller
     {
         $oldFutureContent = ContentRepository::$pullFutureContent;
 
+        $currentUser = $this->userProvider->getCurrentUser();
+
         ContentRepository::$pullFutureContent = true;
 
         $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
@@ -2100,6 +2103,8 @@ class ContentController extends Controller
         }
 
         ContentRepository::$pullFutureContent = $oldFutureContent;
+
+        event(new PlaylistItemLoaded($playlistContent['user_playlist_id'], $playlistContent['id'], $playlistContent['position']));
 
         return ResponseService::array($content);
     }

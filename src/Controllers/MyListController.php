@@ -2,6 +2,7 @@
 
 namespace Railroad\MusoraApi\Controllers;
 
+use App\Providers\MusoraApiProductProvider;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,20 +21,24 @@ class MyListController extends Controller
     private ContentService $contentService;
     private ContentRepository $contentRepository;
     private UserPlaylistsService $userPlaylistsService;
+    private MusoraApiProductProvider $provider;
 
     /**
      * @param ContentService $contentService
      * @param ContentRepository $contentRepository
      * @param UserPlaylistsService $userPlaylistsService
+     * @param MusoraApiProductProvider $provider
      */
     public function __construct(
         ContentService $contentService,
         ContentRepository $contentRepository,
-        UserPlaylistsService $userPlaylistsService
+        UserPlaylistsService $userPlaylistsService,
+        MusoraApiProductProvider $provider
     ) {
         $this->contentService = $contentService;
         $this->contentRepository = $contentRepository;
         $this->userPlaylistsService = $userPlaylistsService;
+        $this->provider = $provider;
     }
 
     /** Pull my list content
@@ -232,6 +237,7 @@ class MyListController extends Controller
         );
         throw_if(!$playlist, new PlaylistException("Playlist not exists.", "Playlist not exists."));
 
+        $playlist['playback_item_id'] = $this->provider->getPlaybackItemId($playlist['id']);
         return ResponseService::array(['data' => [$playlist]]);
     }
 }

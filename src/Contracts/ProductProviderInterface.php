@@ -41,4 +41,6 @@ interface ProductProviderInterface
     public function getActiveCohort();
 
     public function userOwnProduct($productId);
+
+    public function getPlaybackItemId($playlistId);
 }
