@@ -2108,4 +2108,21 @@ class ContentController extends Controller
 
         return ResponseService::array($content);
     }
+
+    /**
+     * @param Request $request
+     * @param $playlistId
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function jumpToPlay(Request $request, $playlistId)
+    {
+        $playbackItemId = $this->productProvider->getPlaybackItemId($playlistId);
+        if(!$playbackItemId){
+            return ResponseService::empty();
+        }
+
+        $request->merge(['user_playlist_item_id' => $playbackItemId]);
+        return $this->getPlaylistItem($request);
+    }
 }
