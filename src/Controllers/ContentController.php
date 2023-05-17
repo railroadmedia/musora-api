@@ -2030,47 +2030,8 @@ class ContentController extends Controller
             $playlistItem =
                 $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
                     ->first();
-            $contentPermissionRows = collect(
-                $this->contentPermissionRepository->getByContentIdsOrTypes([$playlistItem['id']],
-                                                                           [$playlistItem['type']])
-            );
-            $grupedPermissions = $contentPermissionRows->groupBy('content_id');
 
-            $needLifetime = (count($contentPermissionRows) == 1) && array_intersect(
-                    ['Drumeo Lifetime Member'],
-                    (isset($grupedPermissions[$playlistItem['id']])) ?
-                        $grupedPermissions[$playlistItem['id']]->pluck('name')
-                            ->toArray() : []
-                );
-            $needMusoraBasic = array_intersect(
-                ['Musora Basic Membership'],
-                (isset($grupedPermissions[$playlistItem['id']])) ?
-                    $grupedPermissions[$playlistItem['id']]->pluck('name')
-                        ->toArray() : []
-            );
-
-            $message = '';
-            if (!empty($needLifetime)) {
-                $message = 'This Masterclass is part of our exclusive <b>Lifetime Membership</b>.';
-            } elseif (!empty($needMusoraBasic)) {
-                $message = 'This lesson is part of our <b>Musora Membership</b>.';
-            } elseif ($playlistItem['type'] == 'song') {
-                $message = 'This Song content is part of our <b>Musora+ Membership</b>.';
-            } else {
-                $parentContentData = array_reverse(json_decode($playlistItem['parent_content_data'], true));
-                $parent = $parentContentData[0] ?? null;
-                $title = '';
-                if ($parent) {
-                    ContentRepository::$bypassPermissions = true;
-                    $parentData = $this->contentService->getById($parent['id']);
-
-                    $title = $parentData['title'];
-
-                    ContentRepository::$bypassPermissions = false;
-                }
-                $message = $playlistItem['title'].' is part of our <b>'.$title.'</b> Pack.';
-            }
-
+            $message = $playlistItem['need_access_message'] ?? 'No access';
             $extraData = [
                 "item_title" => $playlistItem['title'],
                 "item_type" => $playlistItem['type'],
