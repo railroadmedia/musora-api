@@ -680,7 +680,7 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
-        ContentRepository::$catalogMetaAllowableFilters = ['instructor','topic', 'style','artist'];
+        ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
@@ -701,12 +701,32 @@ class ContentController extends Controller
         }
 
         $sortedBy = '-published_on';
-
+        $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
-            if (array_key_exists($type, config('railcontent.cataloguesMetadata'))) {
+            if($type == 'song'){
+                $type = 'songs';
+            }
+            if($type == 'course'){
+                $type = 'courses';
+            }
+            if($type == 'rudiment'){
+                $type = 'rudiments';
+            }
+            if($type == 'play-along'){
+                $type = 'play-alongs';
+            }
+            if($type == 'instructor'){
+                $type = 'coaches';
+            }
+
+            if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.config('railcontent.brand')))) {
+
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFilters');
+
             }
         }
+        ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
         $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
