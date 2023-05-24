@@ -732,7 +732,7 @@ class ContentController extends Controller
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.config('railcontent.brand')))) {
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
-                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFilters');
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
             }
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
