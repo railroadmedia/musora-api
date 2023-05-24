@@ -680,7 +680,7 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
-        ContentRepository::$catalogMetaAllowableFilters = ['instructor','topic', 'style','artist'];
+        ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
@@ -701,12 +701,15 @@ class ContentController extends Controller
         }
 
         $sortedBy = '-published_on';
-
+        $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
-            if (array_key_exists($type, config('railcontent.cataloguesMetadata'))) {
+            $type = $this->getContentTypeForMetaData($type);
+            if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.config('railcontent.brand')))) {
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFilters');
             }
         }
+        ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
         $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -1962,6 +1965,24 @@ class ContentController extends Controller
         }
 
         return $buttonData;
+    }
+
+    private function getContentTypeForMetaData($type)
+    {
+        switch ($type) {
+            case 'course':
+                return 'courses';
+            case 'song':
+                return 'songs';
+            case 'rudiment':
+                return 'rudiments';
+            case 'play-along':
+                return 'play-alongs';
+            case 'instructor':
+                return 'coaches';
+        }
+
+        return $type;
     }
 
 }
