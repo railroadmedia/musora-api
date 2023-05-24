@@ -34,9 +34,11 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                 foreach ($contentData as $index => $data) {
                     $isLessonOrAssignment = in_array(
                         $entity['type'],
-                        array_merge(config('railcontent.singularContentTypes', []),
-                                    config('railcontent.showTypes')[$entity['brand']] ?? [],
-                                    ['assignment'])
+                        array_merge(
+                            config('railcontent.singularContentTypes', []),
+                            config('railcontent.showTypes')[$entity['brand']] ?? [],
+                            ['assignment']
+                        )
                     );
 
                     if (in_array($data['key'], ['description']) && $isLessonOrAssignment) {
@@ -332,17 +334,19 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                 'www.singeo.com',
                 'www.guitareo.com',
                 'forums.drumeo.com',
+                'http://forums.drumeo.com/'
             ])) {
                 continue;
             }
 
             $oldRequest = \Request::create($url);
-
-            $segments = $this->formatNewUrl($oldRequest->segments(), $url);
-            if ($oldRequest->getQueryString()) {
-                $segments = $segments.'?'.$oldRequest->getQueryString();
+            if (!empty($oldRequest->segments())) {
+                $segments = $this->formatNewUrl($oldRequest->segments(), $url);
+                if ($oldRequest->getQueryString()) {
+                    $segments = $segments.'?'.$oldRequest->getQueryString();
+                }
+                $urls[$match] = $segments;
             }
-            $urls[$match] = $segments;
         }
 
         return $urls;
