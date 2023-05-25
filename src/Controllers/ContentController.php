@@ -735,6 +735,9 @@ class ContentController extends Controller
                 $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
             }
         }
+        if(count($types) > 1){
+            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+        }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
         $sorted = $request->get('sort', $sortedBy);
@@ -777,12 +780,16 @@ class ContentController extends Controller
     {
         ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
         ContentRepository::$pullFutureContent = false;
+        ContentRepository::$catalogMetaAllowableFilters = ['type','instructor'];
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
             $types =
                 array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+        }
+        if(count($types) == 1){
+            ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.in-progress.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
