@@ -35,7 +35,7 @@ class ResponseService
     public static function catalogue($data, $request)
     {
         $filters = $data->filterOptions();
-        if(!in_array('instructor', $request->get('included_types', []))) {
+        if(array_key_exists('difficulty', $filters)){
             $filters['showSkillLevel'] = true;
         }
 
