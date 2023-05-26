@@ -199,16 +199,15 @@ class ContentController extends Controller
                 $this->contentService->getByChildId($content['id'])
                     ->first();
 
-            Decorator::$typeDecoratorsEnabled = true;
-            ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
-            $collectionForDecoration = new Collection();
-            $collectionForDecoration = $collectionForDecoration->merge([$parent]);
-            $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
-            Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
-
-            $content = $this->attachDataFromParent($content, $parent);
-
             if ($parent) {
+                Decorator::$typeDecoratorsEnabled = true;
+                ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
+                $collectionForDecoration = new Collection();
+                $collectionForDecoration = $collectionForDecoration->merge([$parent]);
+                $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
+                Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+
+                $content = $this->attachDataFromParent($content, $parent);
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
                 $parent['lesson_count'] =
                     (!isset($parent['lesson_count'])) ? $parent['child_count'] ?? count($parent['lessons']) :
