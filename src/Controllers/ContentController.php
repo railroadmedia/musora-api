@@ -293,7 +293,6 @@ class ContentController extends Controller
 
 
         $collectionForDecoration = new Collection();
-        $collectionForDecoration = $collectionForDecoration->merge([$content]);
         $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
         if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
@@ -1680,9 +1679,6 @@ class ContentController extends Controller
             $content['full_price'] = $parent['full_price'] ?? 0;
             $content['price'] = $parent['price'] ?? 0;
         }
-
-        //add parent's instructors and resources to content
-        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
 
         $content['instructor'] = array_unique(
             array_merge(
