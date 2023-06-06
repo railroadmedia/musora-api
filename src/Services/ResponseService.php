@@ -54,6 +54,9 @@ class ResponseService
             if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters)){
                 unset($filters[$key]);
             }
+            if(in_array('progress', ContentRepository::$catalogMetaAllowableFilters)){
+                $filters['progress'] = ['All','In Progress', 'Completed'];
+            }
         }
 
         if($request->has('old_style')){
