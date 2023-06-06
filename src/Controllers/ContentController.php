@@ -706,9 +706,13 @@ class ContentController extends Controller
      */
     public function filterContents(Request $request)
     {
+        $oldStatuses = ContentRepository::$availableContentStatues;
+        $oldPullFutureContent = ContentRepository::$pullFutureContent;
+
         ContentRepository::$availableContentStatues =
-            $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
-        ContentRepository::$pullFutureContent = $request->has('future');
+            $request->get('statuses', $oldStatuses);
+        ContentRepository::$pullFutureContent = $request->get('future') ? 1:  $oldPullFutureContent;
+
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
@@ -784,9 +788,12 @@ class ContentController extends Controller
      */
     public function getInProgressContent(Request $request)
     {
-        ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
-        ContentRepository::$pullFutureContent = false;
-        ContentRepository::$catalogMetaAllowableFilters = ['type','instructor'];
+        $oldStatuses = ContentRepository::$availableContentStatues;
+        $oldPullFutureContent = ContentRepository::$pullFutureContent;
+        ContentRepository::$availableContentStatues =
+            $request->get('statuses', $oldStatuses);
+        ContentRepository::$pullFutureContent = $request->has('future', $oldPullFutureContent);
+	ContentRepository::$catalogMetaAllowableFilters = ['type','instructor'];
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
