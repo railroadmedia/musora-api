@@ -17,6 +17,7 @@ use Railroad\MusoraApi\Transformers\PacksTransformer;
 use Railroad\MusoraApi\Transformers\ScheduledContentTransformer;
 use Railroad\MusoraApi\Transformers\UserDataTransformer;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Repositories\ContentRepository;
 use Spatie\Fractal\Fractal;
 
 class ResponseService
@@ -34,7 +35,8 @@ class ResponseService
     public static function catalogue($data, $request)
     {
         $filters = $data->filterOptions();
-        if(array_key_exists('difficulty', $filters)){
+
+        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters)){
             $filters['showSkillLevel'] = true;
         }
 
@@ -48,6 +50,9 @@ class ResponseService
                     $filters[$key] = array_diff($filterOptions, ['All']);
                     array_unshift($filters[$key], 'All');
                 }
+            }
+            if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters)){
+                unset($filters[$key]);
             }
         }
 
