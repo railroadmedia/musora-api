@@ -37,7 +37,7 @@ class ResponseService
     {
         $filters = $data->filterOptions();
 
-        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters)){
+        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
             $filters['showSkillLevel'] = true;
         }
 
@@ -52,7 +52,7 @@ class ResponseService
                     array_unshift($filters[$key], 'All');
                 }
             }
-            if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters)){
+            if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters ?? ['instructor', 'topic', 'style', 'artist'])){
                 unset($filters[$key]);
             }
         }
