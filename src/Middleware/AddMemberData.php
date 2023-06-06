@@ -38,7 +38,7 @@ class AddMemberData
         if ($this->userProvider->getCurrentUser()) {
             $content = json_decode($response->content(), true);
             $response->setContent(
-                json_encode(array_merge($content, $this->userProvider->getCurrentUserMembershipData($request->get('brand'))))
+                json_encode(array_merge($content, $this->userProvider->getCurrentUserMembershipData($request->get('app'))))
             );
         }
         return $response;

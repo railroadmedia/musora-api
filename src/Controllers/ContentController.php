@@ -188,9 +188,16 @@ class ContentController extends Controller
             $parent =
                 $this->contentService->getByChildId($content['id'])
                     ->first();
-            $content = $this->attachDataFromParent($content, $parent);
 
             if ($parent) {
+                Decorator::$typeDecoratorsEnabled = true;
+                ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
+                $collectionForDecoration = new Collection();
+                $collectionForDecoration = $collectionForDecoration->merge([$parent]);
+                $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
+                Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+
+                $content = $this->attachDataFromParent($content, $parent);
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
@@ -684,7 +691,7 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
-        ContentRepository::$catalogMetaAllowableFilters = ['instructor','topic', 'style','artist'];
+        ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
@@ -705,12 +712,18 @@ class ContentController extends Controller
         }
 
         $sortedBy = '-published_on';
-
+        $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
-            if (array_key_exists($type, config('railcontent.cataloguesMetadata'))) {
+            $type = $this->getContentTypeForMetaData($type);
+            if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.config('railcontent.brand')))) {
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.'.$type.'.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
             }
         }
+        if(count($types) > 1){
+            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+        }
+        ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
         $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -754,13 +767,16 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', $oldStatuses);
         ContentRepository::$pullFutureContent = $request->has('future', $oldPullFutureContent);
-
+	ContentRepository::$catalogMetaAllowableFilters = ['type','instructor'];
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
             $types =
                 array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+        }
+        if(count($types) == 1){
+            ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.'.config('railcontent.brand').'.in-progress.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -1438,7 +1454,6 @@ class ContentController extends Controller
             return $content;
         }
 
-
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
 
@@ -1512,7 +1527,6 @@ class ContentController extends Controller
         if ($content['type'] != 'instructor') {
             return $content;
         }
-
 
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
@@ -1701,6 +1715,7 @@ class ContentController extends Controller
                 404
             );
         }
+
         return ResponseService::content($nextContent);
     }
 
@@ -1843,64 +1858,152 @@ class ContentController extends Controller
         $carouselSlides = $this->productProvider->carousel();
         $response = [];
 
-        foreach ($carouselSlides as $slide)
-        {
-            $pageType = null;
-            $pageParams= [];
-            if (filter_var($slide['cta_url'], FILTER_VALIDATE_URL)) {
-                $ctaRequest = \Request::create($slide['cta_url']);
-                $segments = $ctaRequest->segments();
+        if (config('musora-api.api.version') == 'v3') {
+            foreach ($carouselSlides as $index => $slide) {
+                $response['slide_'.$index] = [
+                    'name' => $slide['title'],
+                    //'title' => $slide['subtitle'] ,
+                    'logo' => $slide['logo'],
+                    'description' => $slide['description'],
+                    'video_src' => $slide['video_src'],
+                    'desc_color' => $slide['desc_color'],
+                    'thumbnail_url' => $slide['mobile_img'] ?? $slide['img'],
+                    'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
 
-                $lastSegment = last($ctaRequest->segments());
-
-                $routeAction = app('router')->getRoutes()->match(app('request')->create($slide['cta_url']))->getAction();
-                if($routeAction['as'] == 'platform.content.first-level'){
-                    $pageType = 'Lesson';
-                    $pageParams['id'] = $lastSegment;
+                ];
+                if (!empty($slide['subtitle'])) {
+                    $response['slide_'.$index]['title'] = $slide['subtitle'];
                 }
-                if(isset($pageTypeMapping[$lastSegment])){
-                    $pageType = $pageTypeMapping[$lastSegment];
-                }elseif(is_numeric($lastSegment) && in_array('coaches', $segments)){
-                    $pageType = 'CoachOverview';
-                    $pageParams['id'] = $lastSegment;
-                }elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
-                    $pageType = 'PackOverview';
-                    $pageParams['id'] = $lastSegment;
-                    $pageParams['type'] = "Lesson";
-                }elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
-                    $pageType = 'CourseOverview';
-                    $pageParams['id'] = $lastSegment;
-                }elseif (is_numeric($lastSegment) && in_array('forums', $segments) && in_array('jump-to-post', $segments)) {
-                    $pageType = 'Forum';
-                    $pageParams['postId'] = $lastSegment;
+                if (($slide['trailer'])) {
+                    $response['slide_'.$index]['trailer'] = $slide['trailer'];
                 }
-                elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
-                    $pageType = 'Forum';
-                    $pageParams['threadId'] = $lastSegment;
+                if ($slide['primary_cta_url']) {
+                    $response['slide_'.$index]['first_button'] =
+                        $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                }
+                if ($slide['cta_url'] && !($slide['primary_cta_url'])) {
+                    $response['slide_'.$index]['first_button'] =
+                        $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                }
+                if ($slide['secondary_cta_url'] || $slide['secondary_cta_text']) {
+                    $response['slide_'.$index]['second_button'] =
+                        $this->getButtonData(
+                            $slide['secondary_cta_url'],
+                            $pageTypeMapping,
+                            $slide['secondary_cta_text']
+                        );
                 }
             }
 
-            $index = str_replace(' ', '_', $slide['title']);
-            $response[$index] = [
+            return ResponseService::array($response);
+        }
+
+        foreach ($carouselSlides as $index => $slide) {
+            $response['slide_'.$index] = [
                 'name' => $slide['title'],
-                //'title' => $slide['subtitle'] ,
-                'link' => $slide['cta_text'],
-                'thumbnail_url' => $slide['img'],
-                'tablet_thumbnail_url' => $slide['img'],
-                'url' => $slide['cta_url']
+                'thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
+                'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
             ];
-            if(!empty($slide['subtitle'])){
-                $response[$index]['title'] = $slide['subtitle'];
+            if (!empty($slide['subtitle'])) {
+                $response['slide_'.$index]['title'] = $slide['subtitle'];
             }
-            if($pageType){
-                $response[$index]['page_type'] = $pageType;
+            if (($slide['trailer'])) {
+                $response['slide_'.$index]['trailer'] = $slide['trailer'];
             }
-            if(!empty($pageParams)){
-                $response[$index]['page_params'] = $pageParams;
+
+            if ($slide['primary_cta_url']) {
+                $firstButton =
+                    $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
+            }
+
+            if ($slide['cta_url']) {
+                $firstButton =
+                    $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                $response['slide_'.$index] = array_merge($response['slide_'.$index], $firstButton);
             }
         }
 
         return ResponseService::array($response);
+    }
+
+    /**
+     * @param $primaryCtaUrl
+     * @param mixed $pageTypeMapping
+     * @param $text
+     * @return array
+     */
+    private function getButtonData($primaryCtaUrl, mixed $pageTypeMapping, $text)
+    : array {
+        $pageType = null;
+        $pageParams = [];
+        $buttonData = [];
+
+        if (filter_var($primaryCtaUrl, FILTER_VALIDATE_URL)) {
+            $ctaRequest = \Request::create($primaryCtaUrl);
+            $segments = $ctaRequest->segments();
+
+            $lastSegment = last($ctaRequest->segments());
+            $routeAction = app('router')->getRoutes()->match(app('request')->create($primaryCtaUrl))->getAction();
+
+            if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
+                    $pageType = 'Lesson';
+                    $pageParams['id'] = $lastSegment;
+            }
+            if (isset($pageTypeMapping[$lastSegment])) {
+                $pageType = $pageTypeMapping[$lastSegment];
+            }elseif(in_array('enrollment', $segments)){
+                $pageType = 'CohortLandingPage';
+                $pageParams['slug'] = $lastSegment;
+	    } elseif (is_numeric($lastSegment) && in_array('coaches', $segments)) {
+                $pageType = 'CoachOverview';
+                $pageParams['id'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
+                $pageType = 'PackOverview';
+                $pageParams['id'] = $lastSegment;
+                $pageParams['type'] = "Lesson";
+            } elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
+                $pageType = 'CourseOverview';
+                $pageParams['id'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) &&
+                in_array('forums', $segments) &&
+                in_array('jump-to-post', $segments)) {
+                $pageType = 'Forum';
+                $pageParams['postId'] = $lastSegment;
+            } elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
+                $pageType = 'Forum';
+                $pageParams['threadId'] = $lastSegment;
+            }
+        }
+
+        $buttonData['url'] = $primaryCtaUrl;
+        $buttonData['link'] = $text;
+        if ($pageType) {
+            $buttonData['page_type'] = $pageType;
+        }
+        if (!empty($pageParams)) {
+            $buttonData['page_params'] = $pageParams;
+        }
+
+        return $buttonData;
+    }
+
+    private function getContentTypeForMetaData($type)
+    {
+        switch ($type) {
+            case 'course':
+                return 'courses';
+            case 'song':
+                return 'songs';
+            case 'rudiment':
+                return 'rudiments';
+            case 'play-along':
+                return 'play-alongs';
+            case 'instructor':
+                return 'coaches';
+        }
+
+        return $type;
     }
 
 }

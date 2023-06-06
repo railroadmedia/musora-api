@@ -8,6 +8,7 @@ use League\Fractal\Serializer\ArraySerializer;
 use League\Fractal\TransformerAbstract;
 use Railroad\MusoraApi\Serializer\DataSerializer;
 use Railroad\MusoraApi\Transformers\CatalogueTransformer;
+use Railroad\MusoraApi\Transformers\CohortTransformer;
 use Railroad\MusoraApi\Transformers\ContentForDownloadTransformer;
 use Railroad\MusoraApi\Transformers\ContentTransformer;
 use Railroad\MusoraApi\Transformers\FilterOptionsTransformer;
@@ -16,6 +17,7 @@ use Railroad\MusoraApi\Transformers\PacksTransformer;
 use Railroad\MusoraApi\Transformers\ScheduledContentTransformer;
 use Railroad\MusoraApi\Transformers\UserDataTransformer;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Repositories\ContentRepository;
 use Spatie\Fractal\Fractal;
 
 class ResponseService
@@ -33,7 +35,8 @@ class ResponseService
     public static function catalogue($data, $request)
     {
         $filters = $data->filterOptions();
-        if(!in_array('instructor', $request->get('included_types', []))) {
+
+        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
             $filters['showSkillLevel'] = true;
         }
 
@@ -47,6 +50,9 @@ class ResponseService
                     $filters[$key] = array_diff($filterOptions, ['All']);
                     array_unshift($filters[$key], 'All');
                 }
+            }
+            if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters ?? ['instructor', 'topic', 'style', 'artist'])){
+                unset($filters[$key]);
             }
         }
 
@@ -191,6 +197,15 @@ class ResponseService
         $response->setData($data);
 
         return $response;
+    }
+
+    public static function cohort($data)
+    {
+        return Fractal::create()
+            ->item($data)
+            ->transformWith(CohortTransformer::class)
+            ->serializeWith(DataSerializer::class)
+            ->toArray();
     }
 }
 
