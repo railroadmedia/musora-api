@@ -76,6 +76,15 @@ class MyListController extends Controller
                     $request->get('brand') ?? config('railcontent.brand')
                 );
             if (empty($userPrimaryPlaylist)) {
+                $userPrimaryPlaylist =
+                    $this->userPlaylistsService->getUserPlaylist(
+                        auth()->id(),
+                        'user-playlist',
+                        $request->get('brand') ?? config('railcontent.brand')
+                    );
+            }
+
+            if (empty($userPrimaryPlaylist)) {
                 return (new ContentFilterResultsEntity([
                                                            'results' => [],
                                                        ]))->toJsonResponse();
