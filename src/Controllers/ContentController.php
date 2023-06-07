@@ -1493,8 +1493,8 @@ class ContentController extends Controller
 
         if(array_key_exists('type', $content['lessons_filter_options_v2'])){
             $content['lessons_filter_options_v2']['content_type'] = $content['lessons_filter_options_v2']['type'];
-            unset($content['lessons_filter_options_v2']['type']);
         }
+        $content['lessons_filter_options_v2']['progress'] = ['All','In Progress', 'Completed'];
         $content['total_lessons'] = $lessons->totalResults();
 
         $duration = 0;
