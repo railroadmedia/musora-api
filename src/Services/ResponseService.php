@@ -37,14 +37,6 @@ class ResponseService
     {
         $filters = $data->filterOptions();
 
-        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
-            $filters['showSkillLevel'] = true;
-        }
-
-        if ($request->get('included_types', []) == ['coach-stream']) {
-            $filters = ['content_type' => ['coach-stream']];
-        }
-
         foreach ($filters as $key => $filterOptions) {
             if (is_array($filterOptions)) {
                 if (($key != 'content_type') && ($key != 'instructor')) {
@@ -55,9 +47,17 @@ class ResponseService
             if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters ?? ['instructor', 'topic', 'style', 'artist'])){
                 unset($filters[$key]);
             }
-            if(in_array('progress', ContentRepository::$catalogMetaAllowableFilters)){
+            if(in_array('progress', ContentRepository::$catalogMetaAllowableFilters ?? [])){
                 $filters['progress'] = ['All','In Progress', 'Completed'];
             }
+        }
+
+        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
+            $filters['showSkillLevel'] = true;
+        }
+
+        if ($request->get('included_types', []) == ['coach-stream']) {
+            $filters = ['content_type' => ['coach-stream']];
         }
 
         if($request->has('old_style')){
