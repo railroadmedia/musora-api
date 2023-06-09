@@ -104,6 +104,7 @@ class LiveController extends Controller
         $currentEvent['chatRollStyle'] = $this->chatProvider->getCustomStyle();
 
         $currentEvent['userId'] = auth()->id();
+        $currentEvent['resources'] = array_values($currentEvent['resources'] ?? []);
 
         $railchatDataArray = $this->chatProvider->getRailchatData();
 
