@@ -51,7 +51,7 @@ class ResponseService
             }
         }
 
-        if(array_key_exists('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
+        if(in_array('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
             $filters['showSkillLevel'] = true;
         }
 
