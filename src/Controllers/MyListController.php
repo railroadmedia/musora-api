@@ -242,4 +242,15 @@ class MyListController extends Controller
 
         return ResponseService::array(['data' => [$playlist]]);
     }
+
+    /**
+     * @param $playlistId
+     * @return JsonResponse
+     */
+    public function reportPlaylist($playlistId)
+    {
+        $this->userPlaylistsService->reportPlaylist($playlistId);
+
+        return ResponseService::array(['success' => true]);
+    }
 }

@@ -611,6 +611,9 @@ Route::group([
         \Railroad\MusoraApi\Controllers\AuthController::class.'@getTempToken'
     )
         ->name('mobile.musora-api.v1.auth.key');
+
+    Route::put('/playlist/report/{id}', \Railroad\MusoraApi\Controllers\MyListController::class.'@reportPlaylist')
+        ->name('mobile.musora-api.v1.playlist.report');
 });
 
 Route::group([
