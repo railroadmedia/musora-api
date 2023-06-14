@@ -251,6 +251,6 @@ class MyListController extends Controller
     {
         $this->userPlaylistsService->reportPlaylist($playlistId);
 
-        return ResponseService::array(['success' => true]);
+        return ResponseService::array(['success' => true,  "message" => "This playlist has been reported."]);
     }
 }
