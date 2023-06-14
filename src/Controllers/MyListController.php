@@ -238,6 +238,10 @@ class MyListController extends Controller
             ($playlist == -1),
             new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
         );
+        throw_if(
+            ($playlist == -2),
+            new PlaylistException("You don’t have access to this playlist. Unblock the playlist owner to access the playlist.  ", 'Blocked Playlist')
+        );
         throw_if(!$playlist, new PlaylistException("Playlist not exists.", "Playlist not exists."));
 
         return ResponseService::array(['data' => [$playlist]]);
