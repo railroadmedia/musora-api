@@ -3,6 +3,7 @@
 use Railroad\MusoraApi\Controllers\ContentController;
 use Railroad\MusoraApi\Controllers\PacksController;
 use Railroad\MusoraApi\Controllers\UserProgressController;
+use Railroad\Railcontent\Controllers\MyListJsonController;
 
 //authenticated user
 Route::group([
@@ -531,6 +532,68 @@ Route::group([
         Railroad\Railcontent\Controllers\RequestedSongsJsonController::class . '@requestSong'
     )->name('mobile.musora-api.v1.request.song');
 
+    /**
+     * Playlists v2 Routes
+     */
+    Route::get('/playlists', [
+        'as' => 'mobile.musora-api.playlists.show',
+        'uses' => \Railroad\Railcontent\Controllers\MyListJsonController::class . '@getUserPlaylists',
+    ]);
+
+    Route::post('/playlist', \Railroad\Railcontent\Controllers\MyListJsonController::class . '@createPlaylist');
+
+    Route::get('/playlist', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylist')->name('mobile.musora-api.get.playlist');
+
+    Route::put('/copy-playlist', MyListJsonController::class . '@copyPlaylist')->name('mobile.musora-api.copy.playlist');
+
+    Route::patch(
+        '/playlist/{id}',
+        MyListJsonController::class . '@updatePlaylist'
+    )
+        ->name('mobile.musora-api.update.playlist');
+
+    Route::get('/public-playlists', MyListJsonController::class . '@getPublicPlaylists');
+
+    Route::put(
+        '/pin-playlist',
+        MyListJsonController::class . '@pinPlaylist'
+    )->name('mobile.musora-api.pin.playlist');
+
+    Route::get('/my-pinned-playlists', MyListJsonController::class . '@getPinnedPlaylists');
+
+    Route::put(
+        '/unpin-playlist',
+        MyListJsonController::class . '@unpinPlaylist'
+    )->name('mobile.musora-api.unpin.playlist');
+
+    Route::put(
+        '/like-playlist',
+        MyListJsonController::class . '@likePlaylist'
+    )->name('mobile.musora-api.like.playlist');
+
+    Route::delete(
+        '/like-playlist',
+        MyListJsonController::class . '@deletePlaylistLike'
+    )->name('mobile.musora-api.delete.playlist.like');
+
+    Route::get('/liked-playlists', MyListJsonController::class . '@getLikedPlaylists')->name('mobile.musora-api.user.liked.playlists');
+
+    Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
+
+    Route::put('/change-playlist-content', \Railroad\MusoraApi\Controllers\MyListController::class . '@changePlaylistContent');
+    Route::put('/add-item-to-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@addItemToPlaylist');
+    Route::delete('/remove-item-from-list', \Railroad\MusoraApi\Controllers\MyListController::class . '@removeItemFromPlaylist');
+    Route::delete('/playlist',MyListJsonController::class . '@deletePlaylist')->name('mobile.musora-api.delete.playlist');
+    Route::get('/lessons-and-assignments-count/{contentId}', \Railroad\Railcontent\Controllers\ContentJsonController::class . '@countLessonsAndAssignments')->name('mobile.musora-api.content.assignments.count');
+    Route::get('/search-playlist',MyListJsonController::class . '@searchPlaylist')->name('mobile.musora-api.search.playlist');
+    Route::get('/play/{playlistId}', [ContentController::class  , 'jumpToPlay'])
+        ->name('mobile.musora-api.jump-to-play');
+    Route::post(
+        '/upload-playlist-thumb',
+        MyListJsonController::class . '@uploadPlaylistThumbnail'
+    );
+    Route::get('/playlist-item', ContentController::class . '@getPlaylistItem')->name('mobile.musora-api.deeplink.playlist.item');
+
     Route::get(
         '/cohort',
         \Railroad\MusoraApi\Controllers\CohortPackController::class . '@getTemplate'
@@ -548,6 +611,9 @@ Route::group([
         \Railroad\MusoraApi\Controllers\AuthController::class.'@getTempToken'
     )
         ->name('mobile.musora-api.v1.auth.key');
+
+    Route::put('/playlist/report/{id}', \Railroad\MusoraApi\Controllers\MyListController::class.'@reportPlaylist')
+        ->name('mobile.musora-api.v1.playlist.report');
 });
 
 Route::group([

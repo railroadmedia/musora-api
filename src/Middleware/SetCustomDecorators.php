@@ -40,8 +40,14 @@ class SetCustomDecorators
             [StripTagDecorator::class, DateFormatDecorator::class, OldPlatformLinksDecorator::class,]
         );
 
+        $allDecoratorsForPlaylistItems = array_merge(
+            config('railcontent.decorators')['playlist-item'],
+            [DateFormatDecorator::class]
+        );
+
         ConfigService::$decorators['content'] = $allDecoratorsForContent;
         ConfigService::$decorators['comment'] = $allDecoratorsForComment;
+        ConfigService::$decorators['playlist-item'] = $allDecoratorsForPlaylistItems;
 
         return $next($request);
     }

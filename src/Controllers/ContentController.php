@@ -4,8 +4,6 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
-use Illuminate\Support\Facades\Log;
-use Railroad\Railcontent\Decorators\Decorator;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -16,11 +14,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
+use Railroad\Mailora\Services\MailService;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
+use Railroad\MusoraApi\Exceptions\PlaylistException;
 use Railroad\MusoraApi\Requests\ContentMetaRequest;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
@@ -28,14 +29,16 @@ use Railroad\MusoraApi\Requests\SubmitVideoRequest;
 use Railroad\MusoraApi\Services\DownloadService;
 use Railroad\MusoraApi\Services\ResponseService;
 use Railroad\MusoraApi\Transformers\CommentTransformer;
+use Railroad\Railcontent\Decorators\Decorator;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
-use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Events\PlaylistItemLoaded;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
+use Railroad\Railcontent\Repositories\ContentPermissionRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
@@ -47,8 +50,6 @@ use Railroad\Railcontent\Services\UserPlaylistsService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
 use Throwable;
-
-use Railroad\Mailora\Services\MailService;
 
 class ContentController extends Controller
 {
@@ -116,16 +117,23 @@ class ContentController extends Controller
      */
     private $methodService;
 
+    private ContentPermissionRepository $contentPermissionRepository;
+
     /**
      * @param ContentService $contentService
      * @param CommentService $commentService
      * @param ContentVimeoVideoDecorator $vimeoVideoDecorator
      * @param UserProviderInterface $userProvider
+     * @param MailService $mailoraMailService
      * @param ContentHierarchyRepository $contentHierarchyRepository
      * @param FullTextSearchService $fullTextSearchService
      * @param StripTagDecorator $stripTagDecorator
      * @param DownloadService $downloadService
      * @param ContentFollowsService $contentFollowsService
+     * @param UserPlaylistsService $userPlaylistsService
+     * @param ProductProviderInterface $productProvider
+     * @param MethodService $methodService
+     * @param ContentPermissionRepository $contentPermissionRepository
      */
     public function __construct(
         ContentService $contentService,
@@ -140,7 +148,8 @@ class ContentController extends Controller
         ContentFollowsService $contentFollowsService,
         UserPlaylistsService $userPlaylistsService,
         ProductProviderInterface $productProvider,
-        MethodService $methodService
+        MethodService $methodService,
+        ContentPermissionRepository $contentPermissionRepository
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -155,9 +164,10 @@ class ContentController extends Controller
         $this->userPlaylistsService = $userPlaylistsService;
         $this->productProvider = $productProvider;
         $this->methodService = $methodService;
+        $this->contentPermissionRepository = $contentPermissionRepository;
     }
 
-    public function getContentOptimised($contentId, Request $request)
+    public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
@@ -165,22 +175,22 @@ class ContentController extends Controller
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
 
-        $lessonContentTypes = array_diff(
-            array_merge(
-                config(
-                    'railcontent.showTypes'
-                )[config(
-                    'railcontent.brand'
-                )] ?? [],
-                config('railcontent.singularContentTypes', []),
-                ['unit-part']
-            ),
-            [
-                'song',
-                'song-tutorial',
-                'play-along',
-            ]
-        );
+        if ($playlistItemId) {
+            $content['user_playlist_item_id'] = $playlistItemId;
+        }
+
+        $lessonContentTypes = array_diff(array_merge(config(
+                                                         'railcontent.showTypes'
+                                                     )[config(
+                                                         'railcontent.brand'
+                                                     )] ?? [], config('railcontent.singularContentTypes', []), [
+                                                         'unit-part',
+                                                         'assignment',
+                                                     ]), [
+                                             'song',
+                                             'song-tutorial',
+                                             'play-along',
+                                         ]);
 
         $content['resources'] = array_values($content['resources'] ?? []);
 
@@ -199,6 +209,10 @@ class ContentController extends Controller
 
                 $content = $this->attachDataFromParent($content, $parent);
                 $parent['lessons'] = $this->contentService->getByParentId($parent['id']);
+                $parent['lesson_count'] =
+                    (!isset($parent['lesson_count'])) ? $parent['child_count'] ?? count($parent['lessons']) :
+                        $parent['lesson_count'];
+                $content = $this->addParentData($content, $parent);
                 $content = $this->attachRelatedLessonsFromParent($parent, $content);
             } else {
                 $content = $this->attachSiblingRelatedLessons($content, $request);
@@ -267,12 +281,21 @@ class ContentController extends Controller
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
+        if ($content['type'] == 'assignment') {
+            $content['parent'] =
+                $this->vimeoVideoDecorator->decorate(new Collection([$content['parent']]))
+                    ->first();
+        }
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
-        $collectionForDecoration = new Collection();
-        $collectionForDecoration = $collectionForDecoration->merge( $content['related_lessons']);
 
+
+        $collectionForDecoration = new Collection();
+        $collectionForDecoration = $collectionForDecoration->merge($content['related_lessons']);
+        if (isset($content['parent'])) {
+            $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
+        }
         Decorator::$typeDecoratorsEnabled = true;
         ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
@@ -305,11 +328,15 @@ class ContentController extends Controller
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
         if ($content['type'] == 'learning-path-lesson') {
-            return redirect()->route('mobile.musora-api.learning-path.lesson.show',
-                                     ['lessonId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.learning-path.lesson.show',
+                ['lessonId' => $content['id'], 'brand' => $content['brand']]
+            );
         } elseif ($content['type'] == 'pack') {
-            return redirect()->route('mobile.musora-api.pack.show',
-                                     ['packId' => $content['id'], 'brand' => $content['brand']]);
+            return redirect()->route(
+                'mobile.musora-api.pack.show',
+                ['packId' => $content['id'], 'brand' => $content['brand']]
+            );
         }
 
         //get content's parent for related lessons and resources
@@ -380,15 +407,14 @@ class ContentController extends Controller
             $songsFromSameStyle = new Collection();
 
             if (count($songsFromSameArtist) < 10) {
-                $songsFromSameStyle = $this->contentService->getFiltered(
-                    1,
-                    19,
-                    '-published_on',
-                    [$content['type']],
-                    [],
-                    [],
-                    ['style,'.$content->fetch('fields.style')]
-                )['results'];
+                $songsFromSameStyle =
+                    $this->contentService->getFiltered(1,
+                                                       19,
+                                                       '-published_on',
+                                                       [$content['type']],
+                                                       [],
+                                                       [],
+                                                       ['style,'.$content->fetch('fields.style')])['results'];
 
                 // remove requested song if in related lessons, part two of two (because sometimes in $songsFromSameStyle)
                 foreach ($songsFromSameStyle as $songFromSameStyleIndex => $songFromSameStyle) {
@@ -574,12 +600,11 @@ class ContentController extends Controller
                 $includedFields[] = 'instructor,'.$instructor['id'];
             }
 
-            $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
-                                                                              ['is_featured,1'],
-                                                                              $includedFields, [],
-                                                                              []
-            )
-                ->results();
+            $content['featured_lessons'] =
+                $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'],
+                                                   $includedFields,
+                                                   [], [])
+                    ->results();
         }
 
         //add parent's instructors and resources to content
@@ -751,6 +776,7 @@ class ContentController extends Controller
         $collectionForDecoration = $collectionForDecoration->merge($results->results());
 
         Decorator::$typeDecoratorsEnabled = true;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
         return ResponseService::catalogue($results, $request);
@@ -975,7 +1001,7 @@ class ContentController extends Controller
         $input['lines'] = $lines;
         $input['logo'] = config('musora-api.brand_logo_path_for_email.'.$brand);
         $input['type'] = 'layouts/inline/alert';
-        $input['recipient'] = config('mailora.' . $brand . '.submit-student-focus-recipient' , "support@musora.com");
+        $input['recipient'] = config('mailora.'.$brand.'.submit-student-focus-recipient', "support@musora.com");
         $input['success'] = config('musora-api.submit_student_focus_success_message.'.$brand);
         $input['sender'] = $currentUser->getEmail();
 
@@ -1491,7 +1517,7 @@ class ContentController extends Controller
         $content['lessons_filter_options_v2'] =
             array_intersect_key($content['lessons_filter_options'], array_flip(['type']));
 
-        if(array_key_exists('type', $content['lessons_filter_options_v2'])){
+        if (array_key_exists('type', $content['lessons_filter_options_v2'])) {
             $content['lessons_filter_options_v2']['content_type'] = $content['lessons_filter_options_v2']['type'];
         }
         $content['lessons_filter_options_v2']['progress'] = ['All','In Progress', 'Completed'];
@@ -1531,10 +1557,13 @@ class ContentController extends Controller
         $includedFields = [];
         $includedFields[] = 'instructor,'.$content['id'];
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
-        $content['featured_lessons'] =
-            $this->contentService->getFiltered(1, 4, '-published_on', [], [], [], ['is_featured,1'], $includedFields,
-                                               [], [])
-                ->results();
+        $content['featured_lessons'] = $this->contentService->getFiltered(1, 4, '-published_on', [], [], [],
+                                                                          ['is_featured,1'],
+                                                                          $includedFields, [],
+                                                                          []
+        )
+            ->results();
+
         return $content;
     }
 
@@ -1598,7 +1627,8 @@ class ContentController extends Controller
                 $course->fetch('fields.video.fields.length_in_seconds', 0);
             $content["$childrenName"][$index]['lesson_count'] = $course['child_count'];
             if (isset($content['level_number']) && isset($course['hierarchy_position_number'])) {
-                $content["$childrenName"][$index]['level_rank'] = $content['level_number'].'.'.$course['hierarchy_position_number'];
+                $content["$childrenName"][$index]['level_rank'] =
+                    $content['level_number'].'.'.$course['hierarchy_position_number'];
             }
             $chilrenCount++;
         }
@@ -1656,9 +1686,6 @@ class ContentController extends Controller
             $content['price'] = $parent['price'] ?? 0;
         }
 
-        //add parent's instructors and resources to content
-        $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
-
         $content['instructor'] = array_unique(
             array_merge(
                 $content['instructor'] ?? [],
@@ -1701,7 +1728,10 @@ class ContentController extends Controller
         if (!$nextContent) {
             $userId = user()->id;
 
-            Log::warning("No content with id $contentId exists. (userId:$userId  - method:: jumpToContinueContent:$contentId)");
+            Log::warning(
+                "No content with id $contentId exists. (userId:$userId  - method:: jumpToContinueContent:$contentId)"
+            );
+
             return response()->json(
                 [
                     'success' => false,
@@ -2004,6 +2034,98 @@ class ContentController extends Controller
         }
 
         return $type;
+    }
+ /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function getPlaylistItem(Request $request)
+    {
+        $oldFutureContent = ContentRepository::$pullFutureContent;
+
+        $currentUser = $this->userProvider->getCurrentUser();
+
+        ContentRepository::$pullFutureContent = true;
+
+        $playlistContent = $this->userPlaylistsService->getPlaylistItemById($request->get('user_playlist_item_id'));
+        throw_if(!$playlistContent, new NotFoundException('Playlist item not exists.'));
+
+        $playlist = $this->userPlaylistsService->getPlaylist($playlistContent['user_playlist_id']);
+        throw_if(
+            ($playlist == -1),
+            new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
+        );
+        throw_if(
+            ($playlist == -2),
+            new PlaylistException("You don’t have access to this playlist. Unblock the playlist owner to access the playlist.  ", 'Blocked Playlist')
+        );
+        throw_if(!$playlist, new PlaylistException("Playlist doesn't exist.", "Playlist doesn't exist."));
+
+        try {
+            $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id']);
+        } catch (\Exception $e) {
+            $playlistLessons =
+                $this->userPlaylistsService->getUserPlaylistContents($playlistContent['user_playlist_id']);
+
+            $playlistItem =
+                $playlistLessons->where('user_playlist_item_id', $request->get('user_playlist_item_id'))
+                    ->first();
+
+            $message = $playlistItem['need_access_message'] ?? 'No access';
+            $extraData = [
+                "item_title" => $playlistItem['title'],
+                "item_type" => $playlistItem['type'],
+                "thumbnail_url" => $playlistItem['thumbnail_url'] ?? '',
+                "parent" => $playlistItem['parent'] ?? null,
+                "learn_more_link" => "https://musora.helpscoutdocs.com/article/1034-musora-membership-options#membershiptype",
+            ];
+            throw new PlaylistException($message, "Content Unavailable", $extraData);
+        }
+
+        $content['start_second'] = $playlistContent['start_second'] ?? null;
+        $content['end_second'] = $playlistContent['end_second'] ?? null;
+        $content['user_playlist_item_id'] = $playlistContent['id'] ?? null;
+        $content['user_playlist_item_position'] = $playlistContent['position'] ?? null;
+        $content['user_playlist_item_extra_data'] = $playlistContent['extra_data'] ?? null;
+        if (!empty($playlistContent['extra_data'])) {
+            foreach (json_decode($playlistContent['extra_data'], true) as $key => $value) {
+                $content[$key] = $value;
+            }
+        }
+
+        if (!isset($content['parent']) || ($content['type'] == 'assignment')) {
+            unset($content['related_lessons']);
+        }
+
+        if (isset($content['parent']) &&
+            (isset($content['parent']['child_count']) && ($content['parent']['child_count'] == 1)) &&
+            ($content['type'] != 'assignment')) {
+            unset($content['parent']);
+        }
+
+        ContentRepository::$pullFutureContent = $oldFutureContent;
+
+        event(new PlaylistItemLoaded($playlistContent['user_playlist_id'], $playlistContent['id'], $playlistContent['position']));
+
+        return ResponseService::array($content);
+    }
+
+    /**
+     * @param Request $request
+     * @param $playlistId
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function jumpToPlay(Request $request, $playlistId)
+    {
+        $playbackItemId = $this->productProvider->getPlaybackItemId($playlistId);
+        if(!$playbackItemId){
+            return ResponseService::empty();
+        }
+
+        $request->merge(['user_playlist_item_id' => $playbackItemId]);
+        return $this->getPlaylistItem($request);
     }
 
 }
