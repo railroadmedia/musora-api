@@ -7,7 +7,7 @@
   "require": {
     "php": "^8.1",
     "laravel/framework": "^9.0",
-    "railroad/railcontent": "dev-2.0-playlists as v2.0.62",
+    "railroad/railcontent": "2.1.*",
     "railroad/ecommerce": "^5.0",
     "railroad/permissions": "^2.0",
     "railroad/response": "2.0.x-dev",
