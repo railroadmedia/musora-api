@@ -1673,8 +1673,8 @@ class ContentController extends Controller
     private function addParentData(mixed $content, mixed $parent)
     {
         if (in_array($parent['type'], ['pack', 'semester-pack'])) {
-            $content['is_owned'] = $parent['is_owned'];
-            $content['is_locked'] = $parent['is_locked'];
+//            $content['is_owned'] = $parent['is_owned'];
+//            $content['is_locked'] = $parent['is_locked'];
 
             $content['thumbnail'] = $parent['thumbnail'];
             $content['pack_logo'] = $parent['pack_logo'];
