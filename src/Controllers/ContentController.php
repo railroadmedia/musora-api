@@ -1888,7 +1888,7 @@ class ContentController extends Controller
         $carouselSlides = $this->productProvider->carousel();
         $response = [];
 
-        if (config('musora-api.api.version') == 'v3') {
+        if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4') {
             foreach ($carouselSlides as $index => $slide) {
                 $response['slide_'.$index] = [
                     'name' => $slide['title'],
@@ -1979,6 +1979,10 @@ class ContentController extends Controller
             if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
                     $pageType = 'Lesson';
                     $pageParams['id'] = $lastSegment;
+            }
+            if((isset($routeAction['as']) && $routeAction['as'] == 'platform.home.create-playlist-window') && (config('musora-api.api.version') == 'v4')){
+                $pageType = 'PlaylistCRUD';
+                $pageParams['mode'] = 'Create';
             }
             if (isset($pageTypeMapping[$lastSegment])) {
                 $pageType = $pageTypeMapping[$lastSegment];
