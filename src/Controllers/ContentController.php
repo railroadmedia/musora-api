@@ -1907,6 +1907,9 @@ class ContentController extends Controller
                 if (($slide['trailer'])) {
                     $response['slide_'.$index]['trailer'] = $slide['trailer'];
                 }
+                if (($slide['trailer_button_1'])) {
+                    $response['slide_'.$index]['trailer_button_1'] = $slide['trailer_button_1'];
+                }
                 if ($slide['primary_cta_url']) {
                     $response['slide_'.$index]['first_button'] =
                         $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
