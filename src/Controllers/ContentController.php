@@ -1676,11 +1676,11 @@ class ContentController extends Controller
 //            $content['is_owned'] = $parent['is_owned'];
 //            $content['is_locked'] = $parent['is_locked'];
 
-            $content['thumbnail'] = $parent['thumbnail'];
-            $content['pack_logo'] = $parent['pack_logo'];
+            $content['thumbnail'] = $parent['thumbnail'] ?? '';
+            $content['pack_logo'] = $parent['pack_logo'] ?? '';
 
-            $content['apple_product_id'] = $parent['apple_product_id'];
-            $content['google_product_id'] = $parent['google_product_id'];
+            $content['apple_product_id'] = $parent['apple_product_id'] ?? null;
+            $content['google_product_id'] = $parent['google_product_id'] ?? null;
 
             $content['full_price'] = $parent['full_price'] ?? 0;
             $content['price'] = $parent['price'] ?? 0;
