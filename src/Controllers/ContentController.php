@@ -2099,6 +2099,11 @@ class ContentController extends Controller
         $content['user_playlist_item_id'] = $playlistContent['id'] ?? null;
         $content['user_playlist_item_position'] = $playlistContent['position'] ?? null;
         $content['user_playlist_item_extra_data'] = $playlistContent['extra_data'] ?? null;
+        $content['content_name'] =
+            $playlistContent['content_name'] ?? null;
+        $content['playlist_item_name'] =
+            $playlistContent['playlist_item_name'] ?? null;
+
         if (!empty($playlistContent['extra_data'])) {
             foreach (json_decode($playlistContent['extra_data'], true) as $key => $value) {
                 $content[$key] = $value;
