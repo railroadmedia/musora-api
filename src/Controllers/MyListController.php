@@ -175,7 +175,8 @@ class MyListController extends Controller
             $request->get('position'),
             $request->get('extra_data'),
             $request->get('start_second'),
-            $request->get('end_second')
+            $request->get('end_second'),
+            $request->get('playlist_item_name')
         );
 
         $request->merge(['playlist_id' => $playlistContent['user_playlist_id']]);
