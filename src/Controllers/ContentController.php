@@ -296,6 +296,10 @@ class ContentController extends Controller
         if (isset($content['parent'])) {
             $collectionForDecoration = $collectionForDecoration->merge([$content['parent']]);
         }
+        if (isset($content['lessons'])) {
+            $collectionForDecoration = $collectionForDecoration->merge($content['lessons']);
+        }
+
         Decorator::$typeDecoratorsEnabled = true;
         ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
