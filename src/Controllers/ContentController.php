@@ -2114,6 +2114,10 @@ class ContentController extends Controller
             }
         }
 
+        if(($content['type'] == 'song') && (count($content['assignments'] ?? []) > 0)){
+            $content['length_in_seconds'] = $content['assignments'][0]['length_in_seconds'] ?? 0;
+        }
+
         if (!isset($content['parent']) || ($content['type'] == 'assignment')) {
             unset($content['related_lessons']);
         }
