@@ -2128,7 +2128,7 @@ class ContentController extends Controller
             unset($content['parent']);
         }
 
-if($content['parent']){
+if(isset($content['parent'])){
     $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
     Decorator::$typeDecoratorsEnabled = false;
     $parent = $this->contentService->getById($content['parent']['id']);
