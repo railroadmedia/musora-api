@@ -626,6 +626,8 @@ Route::group([
         ContentController::class.'@getHomepageBanner'
     )
         ->name('homepage.banner');
+
+    Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
 });
 
 Route::group([
