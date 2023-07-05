@@ -2128,6 +2128,38 @@ class ContentController extends Controller
             unset($content['parent']);
         }
 
+if($content['parent']){
+    $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+    Decorator::$typeDecoratorsEnabled = false;
+    $parent = $this->contentService->getById($content['parent']['id']);
+    if($parent->getParentContentData())
+    {
+        $route = [];
+        $parentContentData = $parent->getParentContentData();
+        foreach ($parentContentData as $parent) {
+            switch ($parent->type) {
+                case 'learning-path':
+                    $route[] = 'Method';
+                    break;
+                case 'learning-path-level':
+                    $route[] = 'L'.$parent->position;
+                    break;
+                case 'song':
+                    break;
+                case 'play-along':
+                    break;
+                case 'edge-pack':
+                    break;
+                default:
+                    $parentE = $this->contentService->getById($parent->id);
+                    $route[] = $parentE['title'] ?? '';
+                    break;
+            }
+        }
+        $content['parent']['route'] = $route;
+    }
+    Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+}
         ContentRepository::$pullFutureContent = $oldFutureContent;
 
         event(new PlaylistItemLoaded($playlistContent['user_playlist_id'], $playlistContent['id'], $playlistContent['position']));
