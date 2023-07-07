@@ -103,7 +103,7 @@ class MyListController extends Controller
                                                           ),
                                                       ]);
         } else {
-            $contentTypes = array_diff($contentTypes, ['course-part']);
+            $contentTypes = array_diff($contentTypes, ['course-part', 'assignment']);
 
             $lessons = $this->contentService->getFiltered(
                 $page,
