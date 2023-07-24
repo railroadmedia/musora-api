@@ -1987,6 +1987,10 @@ class ContentController extends Controller
             $lastSegment = last($ctaRequest->segments());
             $routeAction = app('router')->getRoutes()->match(app('request')->create($primaryCtaUrl))->getAction();
 
+            if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content-type-catalog' && $lastSegment == 'drum-fest-international-2022'){
+                $pageType = 'ShowOverview';
+                $pageParams['keyExtractor'] = $lastSegment;
+            }
             if(isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level'){
                     $pageType = 'Lesson';
                     $pageParams['id'] = $lastSegment;
