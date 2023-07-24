@@ -1777,6 +1777,28 @@ class ContentController extends Controller
             $contentMetaData = $metaData[$contentType] ?? [];
             $contentMetaData['episodeNumber'] = $episodesNumber[$contentType]['total'] ?? '';
         }
+        if (array_key_exists('trailer1', $contentMetaData)) {
+            $trailer1 = $this->productProvider->getVimeoEndpoints($contentMetaData['trailer1']);
+            if($trailer1) {
+                $contentMetaData['trailer1'] = [
+                    'vimeo_video_id' => $trailer1['vimeo_video_id'] ?? null,
+                    'video_playback_endpoints' => $trailer1['video_playback_endpoints'] ?? [],
+                    'length_in_seconds' => $trailer1['length_in_seconds'] ?? 0,
+                ];
+            }
+
+        }
+        if (array_key_exists('trailer2', $contentMetaData)) {
+            $trailer2 = $this->productProvider->getVimeoEndpoints($contentMetaData['trailer2']);
+            if($trailer2) {
+                $contentMetaData['trailer2'] = [
+                    'vimeo_video_id' => $trailer2['vimeo_video_id'] ?? null,
+                    'video_playback_endpoints' => $trailer2['video_playback_endpoints'] ?? [],
+                    'length_in_seconds' => $trailer2['length_in_seconds'] ?? 0,
+                ];
+            }
+
+        }
 
         return ResponseService::array($contentMetaData);
     }
