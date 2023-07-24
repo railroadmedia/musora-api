@@ -2075,10 +2075,11 @@ class ContentController extends Controller
             ($playlist == -1),
             new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
         );
-        throw_if(
-            ($playlist == -2),
-            new PlaylistException("You don’t have access to this playlist. Unblock the playlist owner to access the playlist.  ", 'Blocked Playlist')
-        );
+        if($playlist == -2) {
+            $playlist = $this->userPlaylistsService->getPlaylist($playlistContent['user_playlist_id'], false);
+            $userDisplayName = $playlist['user']['display_name'] ?? '';
+            throw new PlaylistException("You've previously blocked the user who owns this playlist. Unblock ".$userDisplayName." to access this playlist.", 'Blocked Playlist');
+        }
         throw_if(!$playlist, new PlaylistException("Playlist doesn't exist.", "Playlist doesn't exist."));
 
         try {
