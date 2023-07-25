@@ -2097,10 +2097,11 @@ class ContentController extends Controller
             ($playlist == -1),
             new PlaylistException("You don’t have access to this playlist", 'Private Playlist')
         );
-        throw_if(
-            ($playlist == -2),
-            new PlaylistException("You don’t have access to this playlist. Unblock the playlist owner to access the playlist.  ", 'Blocked Playlist')
-        );
+        if($playlist == -2) {
+            $playlist = $this->userPlaylistsService->getPlaylist($playlistContent['user_playlist_id'], false);
+            $userDisplayName = $playlist['user']['display_name'] ?? '';
+            throw new PlaylistException("You've previously blocked the user who owns this playlist. Unblock ".$userDisplayName." to access this playlist.", 'Blocked Playlist');
+        }
         throw_if(!$playlist, new PlaylistException("Playlist doesn't exist.", "Playlist doesn't exist."));
 
         try {
@@ -2140,6 +2141,10 @@ class ContentController extends Controller
             }
         }
 
+        if(($content['type'] == 'song') && (count($content['assignments'] ?? []) > 0)){
+            $content['length_in_seconds'] = $content['assignments'][0]['length_in_seconds'] ?? 0;
+        }
+
         if (!isset($content['parent']) || ($content['type'] == 'assignment')) {
             unset($content['related_lessons']);
         }
@@ -2150,6 +2155,38 @@ class ContentController extends Controller
             unset($content['parent']);
         }
 
+if(isset($content['parent'])){
+    $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
+    Decorator::$typeDecoratorsEnabled = false;
+    $parent = $this->contentService->getById($content['parent']['id']);
+    if($parent->getParentContentData())
+    {
+        $route = [];
+        $parentContentData = $parent->getParentContentData();
+        foreach ($parentContentData as $parent) {
+            switch ($parent->type) {
+                case 'learning-path':
+                    $route[] = 'Method';
+                    break;
+                case 'learning-path-level':
+                    $route[] = 'L'.$parent->position;
+                    break;
+                case 'song':
+                    break;
+                case 'play-along':
+                    break;
+                case 'edge-pack':
+                    break;
+                default:
+                    $parentE = $this->contentService->getById($parent->id);
+                    $route[] = $parentE['title'] ?? '';
+                    break;
+            }
+        }
+        $content['parent']['route'] = $route;
+    }
+    Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
+}
         ContentRepository::$pullFutureContent = $oldFutureContent;
 
         event(new PlaylistItemLoaded($playlistContent['user_playlist_id'], $playlistContent['id'], $playlistContent['position']));
