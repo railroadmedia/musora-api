@@ -108,21 +108,7 @@ class PacksController extends Controller
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
 
-        $packs = (new PackCollection(
-            $this->contentService->getFiltered(
-                1,
-                -1,
-                '-published_on',
-                ['pack', 'semester-pack'],
-                [],
-                [],
-                [],
-                [],
-                [],
-                [],
-                false
-            )['results']
-        ))->sortByUserActivity(auth()->id(),'desc')->keyBy('slug');
+        $packs = $this->productProvider->getPacks()->keyBy('slug');
 
         ContentRepository::$bypassPermissions = true;
 
