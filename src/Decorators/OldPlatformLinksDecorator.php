@@ -327,6 +327,9 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
         $urls = [];
         foreach ($matches as $match) {
             $url = $match;
+            if(!filter_var($url, FILTER_VALIDATE_URL)){
+                continue;
+            }
             $initialRequest = \Request::create($url);
             if (!in_array($initialRequest->getHttpHost(), [
                 'www.drumeo.com',

@@ -43,4 +43,6 @@ interface ProductProviderInterface
     public function userOwnProduct($productId);
 
     public function getPlaybackItemId($playlistId);
+
+    public function getVimeoEndpoints($vimeoId);
 }
