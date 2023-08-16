@@ -1893,7 +1893,8 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues = false;
         ContentRepository::$pullFutureContent = true;
 
-        $content = $this->getContentOptimised(config('musora-api.routine_trailer'), $request);
+      //  $content = $this->getContentOptimised(config('musora-api.routine_trailer'), $request);
+        $content =  $this->productProvider->getVimeoEndpoints(config('musora-api.routine_trailer'));
 
         $response = [
             'vimeo_video_id' => $content['vimeo_video_id'] ?? null,
