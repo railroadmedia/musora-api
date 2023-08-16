@@ -303,6 +303,13 @@ class ContentController extends Controller
         Decorator::$typeDecoratorsEnabled = true;
         ModeDecoratorBase::$decorationMode = ModeDecoratorBase::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
+
+        if ($playlistItemId) {
+            $collectionForDecoration = new Collection();
+            $collectionForDecoration = $collectionForDecoration->merge([$content]);
+            $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'playlist-item');
+        }
+
         Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
 
         //attached comments on the content
