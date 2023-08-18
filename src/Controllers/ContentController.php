@@ -1697,13 +1697,14 @@ class ContentController extends Controller
             $content['price'] = $parent['price'] ?? 0;
         }
 
-        $content['instructor'] = array_unique(
-            array_merge(
-                $content['instructor'] ?? [],
-                ContentHelper::getFieldValues($parent->getArrayCopy(), 'instructor')
-            ),
-            SORT_REGULAR
+        $contentRows = array_merge(
+            $content['coaches'] ?? [],
+            $parent['coaches'] ?? []
         );
+
+        $coachIds = array_unique(array_column($contentRows, 'id'));
+
+        $content['instructor'] = array_intersect_key($content['instructor'], $coachIds);
 
         return $content;
     }
