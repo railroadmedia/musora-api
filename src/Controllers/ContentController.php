@@ -283,11 +283,6 @@ class ContentController extends Controller
         $content =
             $this->vimeoVideoDecorator->decorate(new Collection([$content]))
                 ->first();
-        if ($content['type'] == 'assignment') {
-            $content['parent'] =
-                $this->vimeoVideoDecorator->decorate(new Collection([$content['parent']]))
-                    ->first();
-        }
 
         //strip HTML tags
         $this->stripTagDecorator->decorate(new Collection([$content]));
@@ -310,6 +305,12 @@ class ContentController extends Controller
             $collectionForDecoration = new Collection();
             $collectionForDecoration = $collectionForDecoration->merge([$content]);
             $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'playlist-item');
+        }
+
+        if ($content['type'] == 'assignment') {
+            $content['parent'] =
+                $this->vimeoVideoDecorator->decorate(new Collection([$content['parent']]))
+                    ->first();
         }
 
         Decorator::$typeDecoratorsEnabled = $decoratorsEnabled;
