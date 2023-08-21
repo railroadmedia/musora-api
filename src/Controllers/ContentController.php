@@ -1704,7 +1704,7 @@ class ContentController extends Controller
 
         $coachIds = array_unique(array_column($contentRows, 'id'));
 
-        $content['instructor'] = array_intersect_key($content['instructor'], $coachIds);
+        $content['instructor'] = array_intersect_key($content['instructor'] ?? [], $coachIds);
 
         return $content;
     }
