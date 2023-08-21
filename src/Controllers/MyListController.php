@@ -74,7 +74,7 @@ class MyListController extends Controller
                     auth()->id(),
                     'primary-playlist',
                     $request->get('brand') ?? config('railcontent.brand')
-                );
+                )->toArray();
             if (empty($userPrimaryPlaylist)) {
                 $userPrimaryPlaylist =
                     $this->userPlaylistsService->getUserPlaylist(
