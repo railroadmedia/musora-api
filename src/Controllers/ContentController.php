@@ -169,6 +169,8 @@ class ContentController extends Controller
 
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
+        array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
+
         $content = $this->contentService->getById($contentId);
         throw_if(!$content, new NotFoundException('Content not exists.'));
 
