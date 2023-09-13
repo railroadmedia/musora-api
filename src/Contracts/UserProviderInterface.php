@@ -81,5 +81,5 @@ interface UserProviderInterface
 
     public function getAuthKey();
 
-    public function getUserAfterRevenuecatPurchase($email, $password);
+    public function getUserAfterRevenuecatPurchase($email, $password, $revenuecatOriginalAppUserId);
 }

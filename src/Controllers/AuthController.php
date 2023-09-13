@@ -136,7 +136,8 @@ class AuthController extends Controller
     {
         $email = $request->get('email');
         $pass = $request->get('password');
-        $user = $this->userProvider->getUserAfterRevenuecatPurchase($email, $pass);
+        $revenuecatOriginalAppUserId = $request->get('original_app_user_id');
+        $user = $this->userProvider->getUserAfterRevenuecatPurchase($email, $pass, $revenuecatOriginalAppUserId);
         if (!$user) {
             return ResponseService::array(['error' => 'User not found']);
         }
