@@ -628,6 +628,9 @@ Route::group([
         ->name('homepage.banner');
 
     Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
+
+    //update user profile
+    Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class.'@updateUser');
 });
 
 Route::group([
