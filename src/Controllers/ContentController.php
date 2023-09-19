@@ -2041,6 +2041,14 @@ class ContentController extends Controller
                 $pageType = 'Lesson';
                 $pageParams['id'] = $lastSegment;
             }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.live') {
+                $pageType = 'Schedule';
+                $pageParams['showLiveEvents'] = true;
+            }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.schedule') {
+                $pageType = 'Schedule';
+                $pageParams['showLiveEvents'] = false;
+            }
             if ((isset($routeAction['as']) && $routeAction['as'] == 'platform.home.create-playlist-window') && (config('musora-api.api.version') == 'v4')) {
                 $pageType = 'PlaylistCRUD';
                 $pageParams['mode'] = 'Create';
