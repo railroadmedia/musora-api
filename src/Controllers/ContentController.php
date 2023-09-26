@@ -2041,6 +2041,10 @@ class ContentController extends Controller
                 $pageType = 'Lesson';
                 $pageParams['id'] = $lastSegment;
             }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.user.playlist') {
+                $pageType = 'Playlist';
+                $pageParams['playlistId'] = $lastSegment;
+            }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.live') {
                 $pageType = 'Schedule';
                 $pageParams['showLiveEvents'] = true;
