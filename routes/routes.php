@@ -614,6 +614,9 @@ Route::group([
 
     Route::put('/playlist/report/{id}', \Railroad\MusoraApi\Controllers\MyListController::class.'@reportPlaylist')
         ->name('mobile.musora-api.v1.playlist.report');
+
+    Route::post('/content/report', ContentController::class.'@report')
+        ->name('mobile.musora-api.v1.content.report');
 });
 
 Route::group([

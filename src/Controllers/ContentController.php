@@ -2247,4 +2247,37 @@ class ContentController extends Controller
         return $this->getPlaylistItem($request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     */
+    public function report(Request $request)
+    {
+        $currentUser = $this->userProvider->getCurrentUser();
+        $brand = $request->get('brand', config('railcontent.brand', ''));
+        $contentId = $request->get('content_id');
+        $content = $this->contentService->getById($contentId);
+        $issue = $request->get('issue');
+
+        $lines = [
+            '<strong>Lesson:</strong> <a href="'.$content['url'].'">'.$content['title'].'</a>'
+        ];
+        $lines[] = '<strong>' . 'User' . ':</strong> ' . $currentUser->getDisplayName() . ' (' . $currentUser->getEmail() . ')';
+        $lines[] = '<strong>' . 'Issue' . ':</strong> ' . $issue;
+
+        $input['subject'] =
+        $input['alert'] =
+            'Lesson Error Report';
+
+        $input['lines'] = $lines;
+        $input['logo'] = config('musora-api.brand_logo_path_for_email.' . $brand);
+        $input['type'] = 'layouts/inline/alert';
+        $input['recipient'] = "support@musora.com";
+        $input['success'] = 'Your issue has been reported. A mentor will review your issue soon.';
+        $input['sender'] = $currentUser->getEmail();
+
+        return $this->sendSecure($input);
+    }
+
 }
