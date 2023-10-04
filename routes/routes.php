@@ -260,6 +260,11 @@ Route::group([
         // 'uses' => \Railroad\Usora\Controllers\ApiController::class . '@login',
     ]);
 
+    Route::get(
+        '/revenuecat-user',
+        \Railroad\MusoraApi\Controllers\AuthController::class.'@getUserAfterRevenuecatPurchase'
+    )
+        ->name('mobile.musora-api.v1.auth.revenuecat-user');
     //forgot password
     //  Route::put('/forgot', \Railroad\Usora\Controllers\ApiController::class . '@forgotPassword');
 

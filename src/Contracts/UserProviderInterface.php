@@ -80,4 +80,6 @@ interface UserProviderInterface
     public function deleteAccount();
 
     public function getAuthKey();
+
+    public function getUserAfterRevenuecatPurchase($email, $password, $revenuecatOriginalAppUserId);
 }
