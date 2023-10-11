@@ -172,7 +172,22 @@ class ContentController extends Controller
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
 
         $content = $this->contentService->getById($contentId);
-        throw_if(!$content, new NotFoundException('Content not exists.'));
+        if (!$content) {
+            $userId = user()?->id;
+            Log::warning("No content with id $contentId exists. (userId:$userId)");
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors' => [
+                        [
+                            'title' => 'Entity not found.',
+                            'detail' => 'No content with id ' . $contentId . ' exists.',
+                        ],
+                    ],
+                ],
+                404
+            );
+        }
 
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
         Decorator::$typeDecoratorsEnabled = false;
