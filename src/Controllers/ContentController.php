@@ -1658,7 +1658,7 @@ class ContentController extends Controller
         foreach ($content["$childrenName"] ?? [] as $index => $course) {
             if ($course['type'] == 'assignment') {
                 unset($content["$childrenName"][$index]);
-                break;
+                continue;
             }
             $duration += $course->fetch('fields.video.fields.length_in_seconds', 0);
             $totalXp += $course->fetch('fields.xp', 0);
