@@ -246,6 +246,7 @@ class ContentController extends Controller
             'song-tutorial',
             'unit',
             'play-along',
+            'challenge',
         ])) {
             $content = $this->attachChildrens($content);
 
