@@ -808,7 +808,9 @@ class ContentController extends Controller
                 $request->get('with_filters', true),
                 false,
                 $request->get('with_paginations', true),
-                $request->get('only_subscribed', false)
+                $request->get('only_subscribed', false),
+                false,
+                $request->get('group_by', false),
             );
         }
 
