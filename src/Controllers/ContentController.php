@@ -758,6 +758,10 @@ class ContentController extends Controller
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
         ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
+        if ($request->has('count_filter_items')) {
+            ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
+        }
+
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
             $types =
