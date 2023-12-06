@@ -818,14 +818,12 @@ class ContentController extends Controller
             );
         }
 
-        if (!$request->has('group_by')) {
-            $collectionForDecoration = new Collection();
-            $collectionForDecoration = $collectionForDecoration->merge($results->results());
+        $collectionForDecoration = new Collection();
+        $collectionForDecoration = $collectionForDecoration->merge($results->results());
 
-            Decorator::$typeDecoratorsEnabled = true;
-            ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
-            $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
-        }
+        Decorator::$typeDecoratorsEnabled = true;
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
+        $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
         return ResponseService::catalogue($results, $request);
     }
