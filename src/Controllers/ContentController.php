@@ -780,6 +780,10 @@ class ContentController extends Controller
             }
         }
 
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+        }
+
         $sortedBy = '-published_on';
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
