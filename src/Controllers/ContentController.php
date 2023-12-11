@@ -2063,6 +2063,11 @@ class ContentController extends Controller
                 $pageType = 'ShowOverview';
                 $pageParams['keyExtractor'] = $lastSegment;
             }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workout.challenge') {
+                $pageType = 'PackOverview';
+                $pageParams['id'] = $lastSegment;
+                $pageParams['type'] = "Lesson";
+            }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level') {
                 $pageType = 'Lesson';
                 $pageParams['id'] = $lastSegment;
