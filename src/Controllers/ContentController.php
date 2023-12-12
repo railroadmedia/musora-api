@@ -170,6 +170,8 @@ class ContentController extends Controller
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
+        $pullFutureContent = ContentRepository::$pullFutureContent;
+        ContentRepository::$pullFutureContent = $request->has('future');
 
         $content = $this->contentService->getById($contentId);
         if (!$content) {
