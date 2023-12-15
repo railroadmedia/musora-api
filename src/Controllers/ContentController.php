@@ -1963,7 +1963,7 @@ class ContentController extends Controller
     public function getHomepageBanner(Request $request)
     {
         $pageTypeMapping = config('musora-api.pageTypeMapping', []);
-        $carouselSlides = $this->productProvider->carousel();
+        $carouselSlides = $this->productProvider->carousel($request->get('is_workouts_page') ?? false);
         $response = [];
 
         if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4') {
