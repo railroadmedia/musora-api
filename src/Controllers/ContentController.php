@@ -171,7 +171,7 @@ class ContentController extends Controller
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
-        ContentRepository::$pullFutureContent = $request->has('future',$pullFutureContent);
+        ContentRepository::$pullFutureContent = $request->get('future',$pullFutureContent);
 
         $content = $this->contentService->getById($contentId);
         if (!$content) {
@@ -397,7 +397,7 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
 
         $pullFutureContent = ContentRepository::$pullFutureContent;
-        ContentRepository::$pullFutureContent = $request->has('future', $pullFutureContent);
+        ContentRepository::$pullFutureContent = $request->get('future', $pullFutureContent);
 
         $sorted = '-published_on';
         if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
@@ -844,7 +844,7 @@ class ContentController extends Controller
         $oldPullFutureContent = ContentRepository::$pullFutureContent;
         ContentRepository::$availableContentStatues =
             $request->get('statuses', $oldStatuses);
-        ContentRepository::$pullFutureContent = $request->has('future', $oldPullFutureContent);
+        ContentRepository::$pullFutureContent = $request->get('future', $oldPullFutureContent);
         ContentRepository::$catalogMetaAllowableFilters = ['type', 'instructor'];
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
