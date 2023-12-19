@@ -6,7 +6,6 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Railroad\Ecommerce\Events\AppSignupStartedEvent;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\UnauthorizedException;
@@ -75,17 +74,7 @@ class AuthController extends Controller
      */
     public function createIntercomUser(CreateIntercomUserRequest $request)
     {
-        try {
-            event(
-                new AppSignupStartedEvent(
-                    [
-                        'email' => $request->get('email'),
-                    ]
-                )
-            );
-        } catch (Exception $e) {
-            throw new MusoraAPIException('Intercom exception when create intercom user. Message:' . $e->getMessage(), 'Intercom exception.', $e->getCode());
-        }
+        //event not used - removed for ecommerce cleanup
 
         return ResponseService::array([
             'success' => true,

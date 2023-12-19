@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use Railroad\Ecommerce\Gateways\AppleStoreKitGateway;
 use Railroad\MusoraApi\Contracts\ChatProviderInterface;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
@@ -60,10 +59,6 @@ class TestCase extends BaseTestCase
      * @var UserContentProgressFactory
      */
     protected $userProgressFactory;
-    /**
-     * @var MockObject
-     */
-    protected $appleStoreKitGatewayMock;
 
     protected $ecommerceFaker;
 
@@ -123,12 +118,6 @@ class TestCase extends BaseTestCase
                         }
                     );
         }
-
-//        $this->appleStoreKitGatewayMock =
-//            $this->getMockBuilder(AppleStoreKitGateway::class)
-//                ->disableOriginalConstructor()
-//                ->getMock();
-//        $this->app->instance(AppleStoreKitGateway::class, $this->appleStoreKitGatewayMock);
 
         $chatProvider = new ChatProvider();
         $this->app->instance(ChatProviderInterface::class, $chatProvider);

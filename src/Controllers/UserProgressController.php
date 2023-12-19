@@ -12,7 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
-use Railroad\Ecommerce\Repositories\SubscriptionRepository;
 use Railroad\MusoraApi\Contracts\ProductProviderInterface;
 use Railroad\MusoraApi\Contracts\RailTrackerProviderInterface;
 use Railroad\MusoraApi\Contracts\UserProviderInterface;
@@ -51,10 +50,6 @@ class UserProgressController extends Controller
     private $userProvider;
 
     /**
-     * @var SubscriptionRepository
-     */
-    private $subscriptionRepository;
-    /**
      * @var ProductProviderInterface
      */
     private $productProvider;
@@ -64,7 +59,6 @@ class UserProgressController extends Controller
      * @param UserContentProgressService $userContentProgressService
      * @param RailTrackerProviderInterface $mediaPlaybackTracker
      * @param UserProviderInterface $userProvider
-     * @param SubscriptionRepository $subscriptionRepository
      * @param ProductProviderInterface $productProvider
      */
     public function __construct(
@@ -72,14 +66,12 @@ class UserProgressController extends Controller
         UserContentProgressService $userContentProgressService,
         RailTrackerProviderInterface $mediaPlaybackTracker,
         UserProviderInterface $userProvider,
-        SubscriptionRepository $subscriptionRepository,
         ProductProviderInterface $productProvider
     ) {
         $this->contentService = $contentService;
         $this->userContentProgressService = $userContentProgressService;
         $this->mediaTrackerProvider = $mediaPlaybackTracker;
         $this->userProvider = $userProvider;
-        $this->subscriptionRepository = $subscriptionRepository;
         $this->productProvider = $productProvider;
     }
 
@@ -146,23 +138,6 @@ class UserProgressController extends Controller
                     ->subDays(30),
                 'completed'
             );
-
-            $isPaidSubscription = false;
-
-            //TODO: Need to investigate how should I decide if the user has active and paid membership
-            $userActiveSubscription = $this->subscriptionRepository->getUserSubscriptionForProducts(
-                auth()->id(),
-                $this->productProvider->getMembershipProductIds(),
-                1
-            );
-
-            if ($userActiveSubscription) {
-                foreach ($userActiveSubscription->getPayments() as $payment) {
-                    if ($payment->getStatus() == 'paid' && $payment->getTotalPaid() > 0) {
-                        $isPaidSubscription = true;
-                    }
-                }
-            }
 
             $isPaidSubscription = true;
             $displayIosReviewModal =

@@ -254,7 +254,6 @@ Route::group([
     //login
     Route::put('/login', [
         'middleware' => [
-            \Railroad\Ecommerce\Middleware\SyncInAppPurchasedItems::class,
             \Railroad\MusoraApi\Middleware\AddMemberData::class,
         ],
         // 'uses' => \Railroad\Usora\Controllers\ApiController::class . '@login',
