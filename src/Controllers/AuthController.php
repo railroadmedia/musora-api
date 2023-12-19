@@ -127,4 +127,23 @@ class AuthController extends Controller
     {
         return $this->userProvider->getAuthKey();
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getUserAfterRevenuecatPurchase(Request $request)
+    {
+        $email = $request->get('email');
+        $pass = $request->get('password');
+        $revenuecatOriginalAppUserId = $request->get('original_app_user_id');
+        $user = $this->userProvider->getUserAfterRevenuecatPurchase($email, $pass, $revenuecatOriginalAppUserId);
+        if (!$user) {
+            return ResponseService::array(['error' => 'User not found']);
+        }
+        $token = $user->createToken('ios');
+        $user->withAccessToken($token);
+
+        return ResponseService::array(['token' => $token->plainTextToken, 'user' => $user]);
+    }
 }

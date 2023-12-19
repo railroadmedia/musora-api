@@ -260,6 +260,11 @@ Route::group([
         // 'uses' => \Railroad\Usora\Controllers\ApiController::class . '@login',
     ]);
 
+    Route::get(
+        '/revenuecat-user',
+        \Railroad\MusoraApi\Controllers\AuthController::class.'@getUserAfterRevenuecatPurchase'
+    )
+        ->name('mobile.musora-api.v1.auth.revenuecat-user');
     //forgot password
     //  Route::put('/forgot', \Railroad\Usora\Controllers\ApiController::class . '@forgotPassword');
 
@@ -614,6 +619,9 @@ Route::group([
 
     Route::put('/playlist/report/{id}', \Railroad\MusoraApi\Controllers\MyListController::class.'@reportPlaylist')
         ->name('mobile.musora-api.v1.playlist.report');
+
+    Route::post('/content/report', ContentController::class.'@report')
+        ->name('mobile.musora-api.v1.content.report');
 });
 
 Route::group([
@@ -628,6 +636,9 @@ Route::group([
         ->name('homepage.banner');
 
     Route::get('/playlist-lessons', \Railroad\MusoraApi\Controllers\MyListController::class . '@getPlaylistLessons');
+
+    //update user profile
+    Route::post('/profile/update', \Railroad\MusoraApi\Controllers\AuthController::class.'@updateUser');
 });
 
 Route::group([
