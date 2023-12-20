@@ -42,6 +42,7 @@ use Railroad\Railcontent\Repositories\ContentPermissionRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
+use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
@@ -172,11 +173,16 @@ class ContentController extends Controller
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
         ContentRepository::$pullFutureContent = $request->get('future',$pullFutureContent);
-if(user()->id == 149628){
-    Log::warning("In pullFutureContent: $pullFutureContent");
-    Log::warning(print_r(ContentRepository::$availableContentStatues,true));
-}
+
         $content = $this->contentService->getById($contentId);
+        if(user()->id == 149628){
+            Log::warning("In pullFutureContent: $pullFutureContent");
+            Log::warning(print_r(ContentRepository::$availableContentStatues,true));
+            Log::warning(print_r( array_values(Arr::wrap(ConfigService::$availableBrands)),true));
+            Log::warning(print_r(ContentRepository::$bypassPermissions ,true));
+            Log::warning(print_r($request->all(),true));
+            Log::warning(print_r($content,true));
+        }
         if (!$content) {
             $userId = user()?->id;
             Log::warning("No content with id $contentId exists. (userId:$userId)");
