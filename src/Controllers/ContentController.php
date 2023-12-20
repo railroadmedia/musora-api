@@ -175,6 +175,9 @@ class ContentController extends Controller
         if($request->has('future')){
             ContentRepository::$pullFutureContent = true;
         }
+        if(user()->id == 149628) {
+            Decorator::$typeDecoratorsEnabled = false;
+        }
 
         $content = $this->contentService->getById($contentId);
         if(user()->id == 149628){
