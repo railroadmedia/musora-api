@@ -180,6 +180,7 @@ class ContentController extends Controller
             Log::warning(print_r(ContentRepository::$availableContentStatues,true));
             Log::warning(print_r( array_values(Arr::wrap(ConfigService::$availableBrands)),true));
             Log::warning(print_r(ContentRepository::$bypassPermissions ,true));
+            Log::warning(print_r(ContentRepository::$pullFutureContent ,true));
             Log::warning(print_r($request->all(),true));
             Log::warning(print_r($content,true));
         }
