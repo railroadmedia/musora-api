@@ -172,15 +172,16 @@ class ContentController extends Controller
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
-        ContentRepository::$pullFutureContent = $request->get('future',$pullFutureContent);
+        if($request->has('future')){
+            ContentRepository::$pullFutureContent = true;
+        }
 
         $content = $this->contentService->getById($contentId);
         if(user()->id == 149628){
-            Log::warning("In pullFutureContent: $pullFutureContent");
+            Log::warning("In pullFutureContent: ".ContentRepository::$pullFutureContent);
             Log::warning(print_r(ContentRepository::$availableContentStatues,true));
             Log::warning(print_r( array_values(Arr::wrap(ConfigService::$availableBrands)),true));
             Log::warning(print_r(ContentRepository::$bypassPermissions ,true));
-            Log::warning(print_r(ContentRepository::$pullFutureContent ,true));
             Log::warning(print_r($request->all(),true));
             Log::warning(print_r($content,true));
         }
