@@ -663,5 +663,16 @@ Route::group([
     )
         ->name('homepage.banner');
 });
+Route::group([
+                 'as' => 'v5.',
+                 'prefix' => 'musora-api/v5',
+                 'middleware' => array_merge(config('musora-api.auth-middleware', []), ['api_version:v5']),
+             ], function () {
+    Route::get(
+        '/homepage-banner',
+        ContentController::class . '@getHomepageBanner'
+    )
+        ->name('homepage.banner');
+});
 
 

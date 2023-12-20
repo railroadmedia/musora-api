@@ -1966,7 +1966,7 @@ class ContentController extends Controller
         $carouselSlides = $this->productProvider->carousel($request->get('is_workouts_page') ?? false);
         $response = [];
 
-        if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4') {
+        if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4' || config('musora-api.api.version') == 'v5') {
             foreach ($carouselSlides as $index => $slide) {
                 $response['slide_' . $index] = [
                     'name' => $slide['title'],
@@ -1981,6 +1981,7 @@ class ContentController extends Controller
                     'thumbnail_url' => $slide['mobile_img'] ?? $slide['img'],
                     'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
                     'draft' => $slide['draft'] ?? false,
+                    'difficulty' => $slide['skill_level'] ?? null,
 
                 ];
                 if (!empty($slide['subtitle'])) {
@@ -2069,6 +2070,7 @@ class ContentController extends Controller
                 $pageType = 'PackOverview';
                 $pageParams['id'] = $lastSegment;
                 $pageParams['type'] = "Lesson";
+                $pageParams['isChallenge'] = true;
             }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level') {
                 $pageType = 'Lesson';
