@@ -172,7 +172,10 @@ class ContentController extends Controller
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
         ContentRepository::$pullFutureContent = $request->get('future',$pullFutureContent);
-
+if(user()->id == 149628){
+    Log::warning("In pullFutureContent: $pullFutureContent");
+    Log::warning(print_r(ContentRepository::$availableContentStatues,true));
+}
         $content = $this->contentService->getById($contentId);
         if (!$content) {
             $userId = user()?->id;
