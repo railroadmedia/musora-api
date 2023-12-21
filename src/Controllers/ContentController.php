@@ -175,19 +175,7 @@ class ContentController extends Controller
         if($request->has('future')){
             ContentRepository::$pullFutureContent = true;
         }
-        if(user()->id == 149628) {
-            Decorator::$typeDecoratorsEnabled = false;
-        }
-
         $content = $this->contentService->getById($contentId);
-        if(user()->id == 149628){
-            Log::warning("In pullFutureContent: ".ContentRepository::$pullFutureContent);
-            Log::warning(print_r(ContentRepository::$availableContentStatues,true));
-            Log::warning(print_r( array_values(Arr::wrap(ConfigService::$availableBrands)),true));
-            Log::warning(print_r(ContentRepository::$bypassPermissions ,true));
-            Log::warning(print_r($request->all(),true));
-            Log::warning(print_r($content,true));
-        }
         if (!$content) {
             $userId = user()?->id;
             Log::warning("No content with id $contentId exists. (userId:$userId)");
