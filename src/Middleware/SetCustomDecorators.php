@@ -9,8 +9,6 @@ use Railroad\MusoraApi\Decorators\LiveEventDecorator;
 use Railroad\MusoraApi\Decorators\MobileAppUrlDecorator;
 use Railroad\MusoraApi\Decorators\OldPlatformLinksDecorator;
 use Railroad\MusoraApi\Decorators\StripTagDecorator;
-use Railroad\MusoraApi\Decorators\DifficultyDecorator;
-use Railroad\MusoraApi\Decorators\TimezoneDecorator;
 use Railroad\Railcontent\Services\ConfigService;
 
 class SetCustomDecorators
@@ -31,8 +29,6 @@ class SetCustomDecorators
             MobileAppUrlDecorator::class,
             LiveEventDecorator::class,
             OldPlatformLinksDecorator::class,
-            DifficultyDecorator::class,
-
         ]);
 
         $allDecoratorsForComment = array_merge(

@@ -42,6 +42,7 @@ use Railroad\Railcontent\Repositories\ContentPermissionRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
 use Railroad\Railcontent\Services\CommentService;
+use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
@@ -170,7 +171,10 @@ class ContentController extends Controller
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
-
+        $pullFutureContent = ContentRepository::$pullFutureContent;
+        if($request->has('future')){
+            ContentRepository::$pullFutureContent = true;
+        }
         $content = $this->contentService->getById($contentId);
         if (!$content) {
             $userId = user()?->id;
@@ -246,6 +250,7 @@ class ContentController extends Controller
             'song-tutorial',
             'unit',
             'play-along',
+            'challenge',
         ])) {
             $content = $this->attachChildrens($content);
 
@@ -394,7 +399,7 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues = $request->get('statuses', [ContentService::STATUS_PUBLISHED]);
 
         $pullFutureContent = ContentRepository::$pullFutureContent;
-        ContentRepository::$pullFutureContent = $request->has('future');
+        ContentRepository::$pullFutureContent = $request->get('future', $pullFutureContent);
 
         $sorted = '-published_on';
         if (array_key_exists($content['type'], config('railcontent.cataloguesMetadata'))) {
@@ -757,6 +762,10 @@ class ContentController extends Controller
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
         ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
 
+        if ($request->has('count_filter_items')) {
+            ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
+        }
+
         $types = $request->get('included_types', []);
         if (in_array('shows', $types)) {
             $types =
@@ -773,6 +782,10 @@ class ContentController extends Controller
             if ($request->get('sort') == '-score') {
                 $request->merge(['sort' => 'published_on']);
             }
+        }
+
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
         }
 
         $sortedBy = '-published_on';
@@ -807,7 +820,9 @@ class ContentController extends Controller
                 $request->get('with_filters', true),
                 false,
                 $request->get('with_paginations', true),
-                $request->get('only_subscribed', false)
+                $request->get('only_subscribed', false),
+                false,
+                $request->get('group_by', false),
             );
         }
 
@@ -831,7 +846,7 @@ class ContentController extends Controller
         $oldPullFutureContent = ContentRepository::$pullFutureContent;
         ContentRepository::$availableContentStatues =
             $request->get('statuses', $oldStatuses);
-        ContentRepository::$pullFutureContent = $request->has('future', $oldPullFutureContent);
+        ContentRepository::$pullFutureContent = $request->get('future', $oldPullFutureContent);
         ContentRepository::$catalogMetaAllowableFilters = ['type', 'instructor'];
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
 
@@ -1950,10 +1965,10 @@ class ContentController extends Controller
     public function getHomepageBanner(Request $request)
     {
         $pageTypeMapping = config('musora-api.pageTypeMapping', []);
-        $carouselSlides = $this->productProvider->carousel();
+        $carouselSlides = $this->productProvider->carousel($request->get('is_workouts_page') ?? false);
         $response = [];
 
-        if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4') {
+        if (config('musora-api.api.version') == 'v3' || config('musora-api.api.version') == 'v4' || config('musora-api.api.version') == 'v5') {
             foreach ($carouselSlides as $index => $slide) {
                 $response['slide_' . $index] = [
                     'name' => $slide['title'],
@@ -1968,6 +1983,7 @@ class ContentController extends Controller
                     'thumbnail_url' => $slide['mobile_img'] ?? $slide['img'],
                     'tablet_thumbnail_url' => $slide['tablet_img'] ?? $slide['img'],
                     'draft' => $slide['draft'] ?? false,
+                    'difficulty' => $slide['skill_level'] ?? null,
 
                 ];
                 if (!empty($slide['subtitle'])) {
@@ -2051,6 +2067,12 @@ class ContentController extends Controller
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content-type-catalog' && $lastSegment == 'drum-fest-international-2022') {
                 $pageType = 'ShowOverview';
                 $pageParams['keyExtractor'] = $lastSegment;
+            }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workout.challenge') {
+                $pageType = 'PackOverview';
+                $pageParams['id'] = $lastSegment;
+                $pageParams['type'] = "Lesson";
+                $pageParams['isChallenge'] = true;
             }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level') {
                 $pageType = 'Lesson';
