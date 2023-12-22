@@ -2106,6 +2106,10 @@ class ContentController extends Controller
                 $pageType = 'PackOverview';
                 $pageParams['id'] = $lastSegment;
                 $pageParams['type'] = "Lesson";
+            } elseif (is_numeric($lastSegment) && in_array('workouts', $segments)) {
+                $pageType = 'Workouts';
+                $pageParams['id'] = $lastSegment;
+                $pageParams['type'] = "Workouts";
             } elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
                 $pageType = 'CourseOverview';
                 $pageParams['id'] = $lastSegment;
