@@ -1688,7 +1688,7 @@ class ContentController extends Controller
         }
 
         $content['length_in_seconds'] = $content->fetch('fields.video.fields.length_in_seconds', $duration);
-        if (!$content['lesson_count']) {
+        if (!isset($content['lesson_count'])) {
             $content['lesson_count'] = $content['child_count'] = $chilrenCount;
         }
         $content['total_xp'] = $totalXp;
