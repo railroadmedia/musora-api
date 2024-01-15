@@ -108,7 +108,12 @@ class PacksController extends Controller
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
 
-        $packs = $this->productProvider->getPacks()->keyBy('slug');
+        $requiredFields = $request->get('required_fields', []);
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+        }
+
+        $packs = $this->productProvider->getPacks($requiredFields)->keyBy('slug');
 
         ContentRepository::$bypassPermissions = true;
 
