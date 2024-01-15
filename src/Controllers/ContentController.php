@@ -785,7 +785,11 @@ class ContentController extends Controller
         }
 
         if ($request->has('title')) {
-            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+            if (in_array('instructor', $types)){
+                $requiredFields = array_merge($requiredFields, ['name,%' . $request->get('title') . '%,string,like']);
+            } else{
+                $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+            }
         }
 
         $sortedBy = '-published_on';
