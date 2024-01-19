@@ -45,4 +45,6 @@ interface ProductProviderInterface
     public function getPlaybackItemId($playlistId);
 
     public function getVimeoEndpoints($vimeoId);
+
+    public function getLearningPaths();
 }

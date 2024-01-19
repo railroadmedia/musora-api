@@ -622,6 +622,11 @@ Route::group([
 
     Route::post('/content/report', ContentController::class.'@report')
         ->name('mobile.musora-api.v1.content.report');
+
+    Route::get('/homepage-learning-paths',
+        \Railroad\MusoraApi\Controllers\LearningPathsSectionController::class . '@getLearningPaths'
+    )
+        ->name('mobile.musora-api.homepage.learning-paths');
 });
 
 Route::group([
