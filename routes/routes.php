@@ -622,6 +622,11 @@ Route::group([
 
     Route::post('/content/report', ContentController::class.'@report')
         ->name('mobile.musora-api.v1.content.report');
+
+    Route::get('/style', [
+        'as' => 'mobile.musora-api.contents.collection.page',
+        'uses' => ContentController::class.'@genreCollectionPage',
+    ]);
 });
 
 Route::group([

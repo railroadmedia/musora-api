@@ -33,6 +33,7 @@ use Railroad\Railcontent\Decorators\Decorator;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
+use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
 use Railroad\Railcontent\Events\PlaylistItemLoaded;
 use Railroad\Railcontent\Helpers\ContentHelper;
@@ -2327,5 +2328,29 @@ class ContentController extends Controller
 
         return $this->sendSecure($input);
     }
+
+    public function genreCollectionPage(Request $request)
+    {
+        $types = $request->get('included_types');
+        $genre = $request->get('style');
+        $lessons = $this->contentService->getFiltered( $request->get('page', 1),
+                                                              $request->get('limit', 12),
+                                                              $request->get('sort', '-popularity'),
+                                                              $types,
+                                                              $request->get('slug_hierarchy', []),
+                                                              $request->get('required_parent_ids', []),
+                                                              ['style,'.$genre],
+                                                              $request->get('included_fields', []),
+                                                              $request->get('required_user_states', []),
+                                                              $request->get('included_user_states', []),false);
+        $content = new ContentEntity();
+        $content['name'] = $genre;
+        $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
+        $content['lessons'] = $lessons['results'];
+        $content['lesson_count'] = $lessons['total_results'];
+
+        return ResponseService::content($content);
+    }
+
 
 }
