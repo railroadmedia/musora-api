@@ -2345,6 +2345,7 @@ class ContentController extends Controller
                                                               $request->get('included_user_states', []),false);
         $content = new ContentEntity();
         $content['name'] = $genre;
+        $content['type'] = 'style';
         $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
         $content['lessons'] = $lessons['results'];
         $content['lesson_count'] = $lessons['total_results'];
