@@ -48,6 +48,7 @@ use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
 use Railroad\Railcontent\Services\MethodService;
+use Railroad\Railcontent\Services\UserContentProgressService;
 use Railroad\Railcontent\Services\UserPlaylistsService;
 use Railroad\Railcontent\Support\Collection;
 use ReflectionException;
@@ -120,6 +121,7 @@ class ContentController extends Controller
     private $methodService;
 
     private ContentPermissionRepository $contentPermissionRepository;
+    private UserContentProgressService $userContentProgressService;
 
     /**
      * @param ContentService $contentService
@@ -151,7 +153,8 @@ class ContentController extends Controller
         UserPlaylistsService $userPlaylistsService,
         ProductProviderInterface $productProvider,
         MethodService $methodService,
-        ContentPermissionRepository $contentPermissionRepository
+        ContentPermissionRepository $contentPermissionRepository,
+        UserContentProgressService $userContentProgressService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -167,6 +170,7 @@ class ContentController extends Controller
         $this->productProvider = $productProvider;
         $this->methodService = $methodService;
         $this->contentPermissionRepository = $contentPermissionRepository;
+        $this->userContentProgressService = $userContentProgressService;
     }
 
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
@@ -2347,6 +2351,36 @@ class ContentController extends Controller
         $content['name'] = $genre;
         $content['type'] = 'style';
         $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
+        $content['lessons'] = $lessons['results'];
+        $content['lesson_count'] = $lessons['total_results'];
+
+        return ResponseService::content($content);
+    }
+
+    public function artistCollectionPage(Request $request)
+    {
+        $types = $request->get('included_types');
+        $artist = $request->get('artist');
+        $lessons = $this->contentService->getFiltered( $request->get('page', 1),
+                                                       $request->get('limit', 12),
+                                                       $request->get('sort', '-popularity'),
+                                                       $types,
+                                                       $request->get('slug_hierarchy', []),
+                                                       $request->get('required_parent_ids', []),
+                                                       ['artist,'.$artist],
+                                                       $request->get('included_fields', []),
+                                                       $request->get('required_user_states', []),
+                                                       $request->get('included_user_states', []),false);
+        $totalPlays = $this->userContentProgressService->countByArtistTypesUserProgress(
+            ['song'],
+            $artist
+        );
+
+        $content = new ContentEntity();
+        $content['name'] = $artist;
+        $content['type'] = 'artist';
+        $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
+        $content['plays'] = $totalPlays;
         $content['lessons'] = $lessons['results'];
         $content['lesson_count'] = $lessons['total_results'];
 
