@@ -2338,6 +2338,9 @@ class ContentController extends Controller
         $types = $request->get('included_types');
         $genre = $request->get('style');
         $brand = $request->get('brand', config('railcontent.brand', ''));
+        if ($request->has('count_filter_items')) {
+            ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
+        }
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
@@ -2376,6 +2379,9 @@ class ContentController extends Controller
         $types = $request->get('included_types');
         $artist = $request->get('artist');
         $brand = $request->get('brand', config('railcontent.brand', ''));
+        if ($request->has('count_filter_items')) {
+            ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
+        }
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
