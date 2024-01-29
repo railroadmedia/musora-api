@@ -2352,16 +2352,21 @@ class ContentController extends Controller
             $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
+
+        $requiredFields = $request->get('required_fields', []);
+        $requiredFields = array_merge($requiredFields, ['style,' . $genre]);
+
         $lessons = $this->contentService->getFiltered( $request->get('page', 1),
                                                               $request->get('limit', 12),
                                                               $request->get('sort', '-popularity'),
                                                               $types,
                                                               $request->get('slug_hierarchy', []),
                                                               $request->get('required_parent_ids', []),
-                                                              ['style,'.$genre],
+                                                              $requiredFields,
                                                               $request->get('included_fields', []),
                                                               $request->get('required_user_states', []),
-                                                              $request->get('included_user_states', []),true);
+                                                              $request->get('included_user_states', []),
+                                                              $request->get('with_filters', true));
 
         $content = new ContentEntity();
         $content['name'] = $genre;
@@ -2369,7 +2374,10 @@ class ContentController extends Controller
         $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
         $content['lessons'] = $lessons['results'];
         $content['lessons_filter_options'] = $lessons['filter_options'];
-        $content['lesson_count'] = $lessons['total_results'];
+        if($request->get('with_filters', true)) {
+            $content['lesson_count'] = $lessons['total_results'];
+        }
+        $content['total_results'] = $lessons['total_results'];
 
         return ResponseService::content($content);
     }
@@ -2393,16 +2401,20 @@ class ContentController extends Controller
             $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
+
+        $requiredFields = $request->get('required_fields', []);
+        $requiredFields = array_merge($requiredFields, ['artist,' . $artist]);
         $lessons = $this->contentService->getFiltered( $request->get('page', 1),
                                                        $request->get('limit', 12),
                                                        $request->get('sort', '-popularity'),
                                                        $types,
                                                        $request->get('slug_hierarchy', []),
                                                        $request->get('required_parent_ids', []),
-                                                       ['artist,'.$artist],
+                                                       $requiredFields,
                                                        $request->get('included_fields', []),
                                                        $request->get('required_user_states', []),
-                                                       $request->get('included_user_states', []),true);
+                                                       $request->get('included_user_states', []),
+                                                       $request->get('with_filters', true));
         $totalPlays = $this->userContentProgressService->countByArtistTypesUserProgress(
             ['song'],
             $artist
@@ -2414,8 +2426,11 @@ class ContentController extends Controller
         $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
         $content['plays'] = $totalPlays;
         $content['lessons'] = $lessons['results'];
-        $content['lesson_count'] = $lessons['total_results'];
         $content['lessons_filter_options'] = $lessons['filter_options'];
+        if($request->get('with_filters', true)) {
+            $content['lesson_count'] = $lessons['total_results'];
+        }
+        $content['total_results'] = $lessons['total_results'];
 
         return ResponseService::content($content);
     }
