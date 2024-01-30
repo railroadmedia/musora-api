@@ -40,6 +40,14 @@ class ButtonDataHelper
                 $pageType = 'Lesson';
                 $pageParams['id'] = $lastSegment;
             }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content.fourth-level') {
+                $pageType = 'Lesson';
+                $pageParams['id'] = $lastSegment;
+            }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workout.challenge.workout') {
+                $pageType = 'Lesson';
+                $pageParams['id'] = $lastSegment;
+            }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.user.playlist') {
                 $pageType = 'Playlist';
                 $pageParams['playlistId'] = $lastSegment;
