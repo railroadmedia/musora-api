@@ -124,6 +124,11 @@ class PacksController extends Controller
 
         $topPack = $this->getTopHeaderPack($packs['results'], $newProducts);
 
+        foreach ($packs['results'] as $index=>$pack){
+            $packs['results'][$index]['thumbnail'] = $pack->fetch('data.header_image_url');
+            $packs['results'][$index]['pack_logo'] = $pack->fetch('data.logo_image_url');
+        }
+        
         $results = [
             'myPacks' => $packs['results'],
             'filterOptions' => $packs['filter_options'],
