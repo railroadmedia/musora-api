@@ -790,11 +790,16 @@ class ContentController extends Controller
             }
         }
 
+        $group_by = $request->get('group_by', false);
         if ($request->has('title')) {
             if (in_array('instructor', $types)){
                 $requiredFields = array_merge($requiredFields, ['name,%' . $request->get('title') . '%,string,like']);
-            } else{
-                $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+            }elseif ($group_by == 'artist') {
+                $requiredFields = array_merge($requiredFields, ['artist,%' . $request->get('title') . '%,string,like']);
+            }elseif ($group_by == 'style') {
+                $requiredFields = array_merge($requiredFields, ['style,%'.$request->get('title').'%,string,like']);
+            }else{
+                $requiredFields = array_merge($requiredFields, [ 'title,%'.$request->get('title').'%,string,like']);
             }
         }
 
