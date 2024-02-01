@@ -1550,16 +1550,26 @@ class ContentController extends Controller
         }
 
         $includedFields = [];
-        $includedFields[] = 'instructor,' . $content['id'];
+        $includedFields[] = 'instructor,'.$content['id'];
 
         $requiredFields = $request->get('required_fields', []);
         $includedFields = array_merge($request->get('included_fields', []), $includedFields);
         $requiredUserState = $request->get('required_user_states', []);
         $includedUserState = $request->get('included_user_states', []);
 
+        if($request->has('title')){
+            $requiredFields = array_merge($requiredFields, ['title,%'.$request->get('title').'%,string,like']);
+        }
+
+        if ($request->has('count_filter_items')) {
+            ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
+        }
+
         ContentRepository::$availableContentStatues =
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
+        ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.coaches.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+
 
         $lessons = $this->contentService->getFiltered(
             $request->get('page', 1),
