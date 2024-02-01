@@ -790,6 +790,7 @@ class ContentController extends Controller
             }
         }
 
+        $included_fields = $request->get('included_fields', []);
         $group_by = $request->get('group_by', false);
         if ($request->has('title')) {
             if (in_array('instructor', $types)){
@@ -798,6 +799,11 @@ class ContentController extends Controller
                 $requiredFields = array_merge($requiredFields, ['artist,%' . $request->get('title') . '%,string,like']);
             }elseif ($group_by == 'style') {
                 $requiredFields = array_merge($requiredFields, ['style,%'.$request->get('title').'%,string,like']);
+            }elseif ($group_by == 'instructor') {
+                $instructors = $this->contentService->getWhereTypeInAndStatusAndField(['instructor'], ['published'], 'name', '%'.$request->get('title').'%','string', 'LIKE');
+                foreach($instructors->pluck('id') ?? [] as $instructor){
+                    $included_fields[] = 'instructor,'.$instructor.',integer,=';
+                }
             }else{
                 $requiredFields = array_merge($requiredFields, [ 'title,%'.$request->get('title').'%,string,like']);
             }
@@ -829,7 +835,7 @@ class ContentController extends Controller
                 [],
                 [],
                 $requiredFields,
-                $request->get('included_fields', []),
+                $included_fields,
                 $request->get('required_user_states', []),
                 $request->get('included_user_states', []),
                 $request->get('with_filters', true),
