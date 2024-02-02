@@ -22,6 +22,7 @@ use Railroad\MusoraApi\Decorators\StripTagDecorator;
 use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Exceptions\PlaylistException;
+use Railroad\MusoraApi\Helpers\ButtonDataHelper;
 use Railroad\MusoraApi\Requests\ContentMetaRequest;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
@@ -1968,7 +1969,6 @@ class ContentController extends Controller
      */
     public function getHomepageBanner(Request $request)
     {
-        $pageTypeMapping = config('musora-api.pageTypeMapping', []);
         $carouselSlides = $this->productProvider->carousel($request->get('is_workouts_page') ?? false);
         $response = [];
 
@@ -2000,20 +2000,13 @@ class ContentController extends Controller
                     $response['slide_' . $index]['trailer_button_1'] = $slide['trailer_button_1'];
                 }
                 if ($slide['primary_cta_url']) {
-                    $response['slide_' . $index]['first_button'] =
-                        $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                    $response['slide_' . $index]['first_button'] =  ButtonDataHelper::getButtonData($slide['primary_cta_url'], $slide['primary_cta_text']);
                 }
                 if ($slide['cta_url'] && !($slide['primary_cta_url'])) {
-                    $response['slide_' . $index]['first_button'] =
-                        $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                    $response['slide_' . $index]['first_button'] = ButtonDataHelper::getButtonData($slide['cta_url'], $slide['cta_text']);
                 }
                 if ($slide['secondary_cta_url'] || $slide['secondary_cta_text']) {
-                    $response['slide_' . $index]['second_button'] =
-                        $this->getButtonData(
-                            $slide['secondary_cta_url'],
-                            $pageTypeMapping,
-                            $slide['secondary_cta_text']
-                        );
+                    $response['slide_' . $index]['second_button'] = ButtonDataHelper::getButtonData($slide['secondary_cta_url'], $slide['secondary_cta_text']);
                 }
             }
 
@@ -2034,109 +2027,17 @@ class ContentController extends Controller
             }
 
             if ($slide['primary_cta_url']) {
-                $firstButton =
-                    $this->getButtonData($slide['primary_cta_url'], $pageTypeMapping, $slide['primary_cta_text']);
+                $firstButton = ButtonDataHelper::getButtonData($slide['primary_cta_url'], $slide['primary_cta_text']);
                 $response['slide_' . $index] = array_merge($response['slide_' . $index], $firstButton);
             }
 
             if ($slide['cta_url']) {
-                $firstButton =
-                    $this->getButtonData($slide['cta_url'], $pageTypeMapping, $slide['cta_text']);
+                $firstButton = ButtonDataHelper::getButtonData($slide['cta_url'], $slide['cta_text']);
                 $response['slide_' . $index] = array_merge($response['slide_' . $index], $firstButton);
             }
         }
 
         return ResponseService::array($response);
-    }
-
-    /**
-     * @param $primaryCtaUrl
-     * @param mixed $pageTypeMapping
-     * @param $text
-     * @return array
-     */
-    private function getButtonData($primaryCtaUrl, mixed $pageTypeMapping, $text): array
-    {
-        $pageType = null;
-        $pageParams = [];
-        $buttonData = [];
-
-        if (filter_var($primaryCtaUrl, FILTER_VALIDATE_URL)) {
-            $ctaRequest = \Request::create($primaryCtaUrl);
-            $segments = $ctaRequest->segments();
-
-            $lastSegment = last($ctaRequest->segments());
-            $routeAction = app('router')->getRoutes()->match(app('request')->create($primaryCtaUrl))->getAction();
-
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content-type-catalog' && $lastSegment == 'drum-fest-international-2022') {
-                $pageType = 'ShowOverview';
-                $pageParams['keyExtractor'] = $lastSegment;
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workout.challenge') {
-                $pageType = 'PackOverview';
-                $pageParams['id'] = $lastSegment;
-                $pageParams['type'] = "Lesson";
-                $pageParams['isChallenge'] = true;
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workouts') {
-                $pageType = 'Workouts';
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.content.first-level') {
-                $pageType = 'Lesson';
-                $pageParams['id'] = $lastSegment;
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.user.playlist') {
-                $pageType = 'Playlist';
-                $pageParams['playlistId'] = $lastSegment;
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.live') {
-                $pageType = 'Schedule';
-                $pageParams['showLiveEvents'] = true;
-            }
-            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.schedule') {
-                $pageType = 'Schedule';
-                $pageParams['showLiveEvents'] = false;
-            }
-            if ((isset($routeAction['as']) && $routeAction['as'] == 'platform.home.create-playlist-window') && (config('musora-api.api.version') == 'v4')) {
-                $pageType = 'PlaylistCRUD';
-                $pageParams['mode'] = 'Create';
-            }
-            if (isset($pageTypeMapping[$lastSegment])) {
-                $pageType = $pageTypeMapping[$lastSegment];
-            } elseif (in_array('enrollment', $segments)) {
-                $pageType = 'CohortLandingPage';
-                $pageParams['slug'] = $lastSegment;
-            } elseif (is_numeric($lastSegment) && in_array('coaches', $segments)) {
-                $pageType = 'CoachOverview';
-                $pageParams['id'] = $lastSegment;
-            } elseif (is_numeric($lastSegment) && in_array('packs', $segments)) {
-                $pageType = 'PackOverview';
-                $pageParams['id'] = $lastSegment;
-                $pageParams['type'] = "Lesson";
-            } elseif (is_numeric($lastSegment) && in_array('courses', $segments)) {
-                $pageType = 'CourseOverview';
-                $pageParams['id'] = $lastSegment;
-            } elseif (is_numeric($lastSegment) &&
-                in_array('forums', $segments) &&
-                in_array('jump-to-post', $segments)) {
-                $pageType = 'Forum';
-                $pageParams['postId'] = $lastSegment;
-            } elseif (is_numeric($lastSegment) && in_array('forums', $segments)) {
-                $pageType = 'Forum';
-                $pageParams['threadId'] = $lastSegment;
-            }
-        }
-
-        $buttonData['url'] = $primaryCtaUrl;
-        $buttonData['link'] = $text;
-        if ($pageType) {
-            $buttonData['page_type'] = $pageType;
-        }
-        if (!empty($pageParams)) {
-            $buttonData['page_params'] = $pageParams;
-        }
-
-        return $buttonData;
     }
 
     private function getContentTypeForMetaData($type)
