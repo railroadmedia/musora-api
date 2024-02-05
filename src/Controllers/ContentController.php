@@ -2376,6 +2376,9 @@ class ContentController extends Controller
 
         $requiredFields = $request->get('required_fields', []);
         $requiredFields = array_merge($requiredFields, ['style,' . $genre]);
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%'.$request->get('title').'%,string,like']);
+        }
 
         $lessons = $this->contentService->getFiltered( $request->get('page', 1),
                                                               $request->get('limit', 12),
@@ -2425,6 +2428,10 @@ class ContentController extends Controller
 
         $requiredFields = $request->get('required_fields', []);
         $requiredFields = array_merge($requiredFields, ['artist,' . $artist]);
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%'.$request->get('title').'%,string,like']);
+        }
+
         $lessons = $this->contentService->getFiltered( $request->get('page', 1),
                                                        $request->get('limit', 12),
                                                        $request->get('sort', '-popularity'),
