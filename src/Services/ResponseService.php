@@ -38,7 +38,7 @@ class ResponseService
         $filters = $data->filterOptions();
 
         foreach ($filters as $key => $filterOptions) {
-            if (is_array($filterOptions)) {
+            if (is_array($filterOptions) && !$request->has('count_filter_items')) {
                 if (($key != 'content_type') && ($key != 'instructor')) {
                     $filters[$key] = array_diff($filterOptions, ['All']);
                     array_unshift($filters[$key], 'All');
