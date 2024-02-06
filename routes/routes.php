@@ -485,6 +485,12 @@ Route::group([
         ->name('mobile.musora-api.followed.content');
 
     Route::get(
+        '/recommended',
+        ContentController::class.'@getRecommended'
+    )
+        ->name('mobile.musora-api.recommended');
+
+    Route::get(
         '/followed-lessons',
         ContentController::class.'@getLessonsForFollowedCoaches'
     )

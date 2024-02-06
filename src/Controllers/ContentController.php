@@ -4,6 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
+use App\Maps\ContentTypes;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -167,6 +168,30 @@ class ContentController extends Controller
         $this->productProvider = $productProvider;
         $this->methodService = $methodService;
         $this->contentPermissionRepository = $contentPermissionRepository;
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getRecommended(Request $request)
+    {
+        $userID = user()->id;
+        $brand = $request->get('brand');
+        $limit = $request->get('limit', 100);
+        $randomize = $request->get('randomize', 0);
+        $recommendedContent = $this->contentService->getRecommendedContent(
+            $userID,
+            $brand,
+            ContentTypes::newContentTypes(),
+            limit: $limit,
+            randomize:$randomize
+        );
+
+        return ResponseService::catalogue(
+            $recommendedContent,
+            $request
+        );
     }
 
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
