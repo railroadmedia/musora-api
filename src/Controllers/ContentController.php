@@ -182,9 +182,9 @@ class ContentController extends Controller
         $randomize = $request->get('randomize', 0);
         $filter = $request->get('filter', '');
         $sections = match(strtolower($filter)) {
-            'song' => [RecommenderSection::Song],
+            'songs' => [RecommenderSection::Song],
             // everything but songs
-            'lesson' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
+            'lessons' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
             default => [],
         };
         $recommendedContent = $this->contentService->getRecommendedContent(
