@@ -97,6 +97,12 @@ Route::group([
         'uses' => ContentController::class.'@getLiveSchedule',
     ]);
 
+    Route::get(
+        '/recommended',
+        ContentController::class.'@getRecommended'
+    )
+        ->name('mobile.musora-api.recommended');
+
     Route::get('/schedule', [
         'as' => 'mobile.musora-api.content-schedule',
         'uses' => ContentController::class.'@getAllSchedule',
@@ -483,12 +489,6 @@ Route::group([
         ContentController::class.'@getFollowedContent'
     )
         ->name('mobile.musora-api.followed.content');
-
-    Route::get(
-        '/recommended',
-        ContentController::class.'@getRecommended'
-    )
-        ->name('mobile.musora-api.recommended');
 
     Route::get(
         '/followed-lessons',
