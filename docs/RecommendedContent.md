@@ -1,10 +1,11 @@
 ## Recommended Content
 Get an array with the user's subscribed coaches latest content or all coaches latest content if the user is not subscribed to any coaches
 The results are paginated and respect the response structure defined in musora-api config file.
-
+<!---
 <a href="https://www.postman.com/red-shadow-611407/workspace/staging-drumeo-with-musora-api/request/9725390-06a04692-d63f-4678-a0a6-293b5ae8df5d"  target="_blank" style="float:right;">
 <img width="120px" src="https://images.ctfassets.net/1wryd5vd9xez/1sHuHRROdF7ifCjy4QKVXk/a44e85c6138dbe13126c4ede8650cf29/https___cdn-images-1.medium.com_max_2000_1_O0OZO4m6nbwwnYAtkSQO0g.png"/>
 </a>
+--->
 
 ### HTTP Request
 `GET musora-api/recommended?brand={brand}&limit={limit}&page={page}`
