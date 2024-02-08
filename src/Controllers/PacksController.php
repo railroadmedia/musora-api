@@ -107,6 +107,7 @@ class PacksController extends Controller
 
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
+        ContentRepository::$getEnrollmentContent = false;
 
         $requiredFields = $request->get('required_fields', []);
         if ($request->has('title')) {
@@ -128,7 +129,7 @@ class PacksController extends Controller
             $packs['results'][$index]['thumbnail'] = $pack->fetch('data.header_image_url');
             $packs['results'][$index]['pack_logo'] = $pack->fetch('data.logo_image_url');
         }
-        
+
         $results = [
             'myPacks' => $packs['results'],
             'filterOptions' => $packs['filter_options'],
