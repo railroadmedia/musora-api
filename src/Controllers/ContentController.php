@@ -192,7 +192,7 @@ class ContentController extends Controller
             $userID,
             $brand,
             $sections,
-            limit: $limit,
+            pageSize: $limit,
             page: $page,
             randomize:$randomize
         );
