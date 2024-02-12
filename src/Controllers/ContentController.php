@@ -181,10 +181,11 @@ class ContentController extends Controller
         $limit = $request->get('limit', 100);
         $randomize = $request->get('randomize', 0);
         $filter = $request->get('filter', '');
+        $page = $request->get('page', 1);
         $sections = match(strtolower($filter)) {
-            'songs' => [RecommenderSection::Song],
+            'songs', 'song' => [RecommenderSection::Song],
             // everything but songs
-            'lessons' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
+            'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
             default => [],
         };
         $recommendedContent = $this->contentService->getRecommendedContent(
@@ -192,6 +193,7 @@ class ContentController extends Controller
             $brand,
             $sections,
             limit: $limit,
+            page: $page,
             randomize:$randomize
         );
 
