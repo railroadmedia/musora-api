@@ -107,57 +107,28 @@ class PacksController extends Controller
 
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         ContentRepository::$pullFutureContent = false;
+        ContentRepository::$getEnrollmentContent = false;
 
-        $packs = $this->productProvider->getPacks()->keyBy('slug');
+        $packs = $this->productProvider->getPacks([]);
 
         ContentRepository::$bypassPermissions = true;
 
-        $allPacks = $this->contentService->getFiltered(
-            1,
-            -1,
-            '-published_on',
-            ['pack', 'semester-pack'],
-            [],
-            [],
-            [],
-            [],
-            [],
-            [],
-            false
-        )
-            ->results()
-            ->keyBy('slug');
+        $allPacks = collect($packs['results']);
 
         $newProducts =
             $allPacks->where('is_new', true)
                 ->toArray();
 
-        $myPacks = [];
+        $topPack = $this->getTopHeaderPack($packs['results'], $newProducts);
 
-        $allMyPacks = $packs->toArray();
-
-        foreach ($allMyPacks as $slug => $pack) {
-            $myPacks[$slug] = $pack;
-            $myPacks[$slug]['is_owned'] = true;
-            $myPacks[$slug]['is_locked'] = false;
-            $myPacks[$slug]['thumbnail'] = $pack->fetch('data.header_image_url');
-            $myPacks[$slug]['pack_logo'] = $pack->fetch('data.logo_image_url');
-
-            $packPrice = $this->productProvider->getPackPrice($slug);
-
-            if (!empty($packPrice)) {
-                $myPacks[$slug]['full_price'] = $packPrice['full_price'];
-                $myPacks[$slug]['price'] = $packPrice['price'];
-            }
+        foreach ($packs['results'] as $index=>$pack){
+            $packs['results'][$index]['thumbnail'] = $pack->fetch('data.header_image_url');
+            $packs['results'][$index]['pack_logo'] = $pack->fetch('data.logo_image_url');
         }
 
-        $moreProducts = $this->getMorePacks($myPacks, $allPacks->toArray());
-
-        $topPack = $this->getTopHeaderPack($myPacks, $newProducts);
-
         $results = [
-            'myPacks' => array_values($myPacks) ?? [],
-            'morePacks' => array_values($moreProducts) ?? [],
+            'myPacks' => $packs['results'] ?? [],
+            'morePacks' => [],
             'topHeaderPack' => $topPack,
         ];
 
