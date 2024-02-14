@@ -128,6 +128,8 @@ class PacksController extends Controller
         foreach ($packs['results'] as $index=>$pack){
             $packs['results'][$index]['thumbnail'] = $pack->fetch('data.header_image_url');
             $packs['results'][$index]['pack_logo'] = $pack->fetch('data.logo_image_url');
+            $packs['results'][$index]['dark_mode_logo_url'] = $pack->fetch('data.dark_mode_logo_url');
+            $packs['results'][$index]['light_mode_logo_url'] = $pack->fetch('data.light_mode_logo_url');
         }
 
         $results = [
