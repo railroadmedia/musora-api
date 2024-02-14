@@ -35,7 +35,7 @@ $.ajax({
         'brand=drumeo' + '&' +
         'limit=6' + '&' +
         'randomize=1' + '&' +
-        'section=song', 
+        'filter=song', 
     type: 'get',
     dataType: 'json',
     success: function(response) {
