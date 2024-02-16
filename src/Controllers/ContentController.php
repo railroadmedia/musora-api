@@ -176,6 +176,10 @@ class ContentController extends Controller
         if($request->has('future')){
             ContentRepository::$pullFutureContent = true;
         }
+        if($request->has('get_enrollment_content')){
+            ContentRepository::$getEnrollmentContent = $request->get('get_enrollment_content');
+        }
+
         $content = $this->contentService->getById($contentId);
         if (!$content) {
             $userId = user()?->id;
