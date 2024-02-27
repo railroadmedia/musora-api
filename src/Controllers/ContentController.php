@@ -2296,7 +2296,7 @@ class ContentController extends Controller
         $content = new ContentEntity();
         $content['name'] = $genre;
         $content['type'] = 'style';
-        $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
+        $content['thumbnail_url'] = config('railcontent.avatar_style')[$genre] ?? config('railcontent.default_avatar_style')[config('railcontent.brand', 'drumeo')];
         $content['lessons'] = $lessons['results'];
         $content['lessons_filter_options'] = $lessons['filter_options'];
         if($request->get('with_filters', true)) {
