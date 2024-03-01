@@ -114,7 +114,7 @@ class PacksController extends Controller
             $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
         }
 
-        $packs = $this->productProvider->getPacks($requiredFields);
+        $packs = $this->productProvider->getPacks($requiredFields, $request->get('sort', '-progress'));
 
         ContentRepository::$bypassPermissions = true;
         $allPacks = collect($packs['results']);
