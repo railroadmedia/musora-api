@@ -1575,8 +1575,7 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
-        ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.coaches.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
-
+        ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.coach-lessons.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
 
         $lessons = $this->contentService->getFiltered(
             $request->get('page', 1),
