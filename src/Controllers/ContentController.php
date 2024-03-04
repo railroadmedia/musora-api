@@ -2263,6 +2263,10 @@ class ContentController extends Controller
             ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
         }
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
+        if (in_array('shows', $types)) {
+            $types =
+                array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+        }
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . $brand))) {
@@ -2315,6 +2319,10 @@ class ContentController extends Controller
             ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
         }
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
+        if (in_array('shows', $types)) {
+            $types =
+                array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
+        }
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . $brand))) {
