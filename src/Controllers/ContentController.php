@@ -855,6 +855,10 @@ class ContentController extends Controller
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
+        if($request->get('group_by', false)){
+            $collectionForDecoration =  Decorator::decorate($collectionForDecoration, 'group');
+        }
+
         return ResponseService::catalogue($results, $request);
     }
 
