@@ -23,7 +23,9 @@ use Railroad\MusoraApi\Exceptions\MusoraAPIException;
 use Railroad\MusoraApi\Exceptions\NotFoundException;
 use Railroad\MusoraApi\Exceptions\PlaylistException;
 use Railroad\MusoraApi\Helpers\ButtonDataHelper;
+use Railroad\MusoraApi\Requests\ArtistCollectionRequest;
 use Railroad\MusoraApi\Requests\ContentMetaRequest;
+use Railroad\MusoraApi\Requests\GenreCollectionRequest;
 use Railroad\MusoraApi\Requests\SubmitQuestionRequest;
 use Railroad\MusoraApi\Requests\SubmitStudentFocusFormRequest;
 use Railroad\MusoraApi\Requests\SubmitVideoRequest;
@@ -2261,7 +2263,7 @@ class ContentController extends Controller
         return $this->sendSecure($input);
     }
 
-    public function genreCollectionPage(Request $request)
+    public function genreCollectionPage(GenreCollectionRequest $request)
     {
         $types = $request->get('included_types');
         $genre = $request->get('style');
@@ -2318,7 +2320,7 @@ class ContentController extends Controller
         return ResponseService::content($content);
     }
 
-    public function artistCollectionPage(Request $request)
+    public function artistCollectionPage(ArtistCollectionRequest $request)
     {
         $types = $request->get('included_types');
         $artist = $request->get('artist');
