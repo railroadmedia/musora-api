@@ -857,7 +857,7 @@ class ContentController extends Controller
         $collectionForDecoration = Decorator::decorate($collectionForDecoration, 'content');
 
         if($request->get('group_by', false)){
-            $collectionForDecoration =  Decorator::decorate($collectionForDecoration, 'group');
+            Decorator::decorate($collectionForDecoration, 'group');
         }
 
         return ResponseService::catalogue($results, $request);
@@ -1570,7 +1570,7 @@ class ContentController extends Controller
         $requiredUserState = $request->get('required_user_states', []);
         $includedUserState = $request->get('included_user_states', []);
 
-        if($request->has('title')){
+        if($request->filled('title')){
             $requiredFields = array_merge($requiredFields, ['title,%'.$request->get('title').'%,string,like']);
         }
 
@@ -2368,7 +2368,7 @@ class ContentController extends Controller
         $content = new ContentEntity();
         $content['name'] = $artist;
         $content['type'] = 'artist';
-        $content['thumbnail_url'] = 'https://dpwjbsxqtam5n.cloudfront.net/shows/challenges.jpg';
+        $content['thumbnail_url'] = config('railcontent.default_avatar_style')[config('railcontent.brand', 'drumeo')];
         $content['plays'] = $totalPlays;
         $content['lessons'] = $lessons['results'];
         $content['lessons_filter_options'] = $lessons['filter_options'];
