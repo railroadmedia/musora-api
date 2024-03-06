@@ -812,15 +812,16 @@ class ContentController extends Controller
 
         $sortedBy = '-published_on';
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . config('railcontent.brand')))) {
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
-                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.' . $type . '.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.' . $type . '.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
             }
         }
         if (count($types) > 1) {
-            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.all.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
@@ -881,8 +882,9 @@ class ContentController extends Controller
             $types =
                 array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
         if (count($types) == 1) {
-            ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.in-progress.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+            ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.in-progress.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -1579,7 +1581,8 @@ class ContentController extends Controller
         ContentRepository::$availableContentStatues =
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
-        ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.coach-lessons.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
+        ContentRepository::$catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . config('railcontent.brand') . '.coach-lessons.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
 
         $lessons = $this->contentService->getFiltered(
             $request->get('page', 1),
@@ -2267,6 +2270,7 @@ class ContentController extends Controller
             ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
         }
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
         if (in_array('shows', $types)) {
             $types =
                 array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
@@ -2274,11 +2278,11 @@ class ContentController extends Controller
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . $brand))) {
-                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.' . $type . '.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.' . $type . '.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
             }
         }
         if (count($types) > 1) {
-            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
@@ -2327,14 +2331,15 @@ class ContentController extends Controller
             $types =
                 array_merge($types, array_values(config('railcontent.showTypes')[config('railcontent.brand')] ?? []));
         }
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . $brand))) {
-                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.' . $type . '.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+                $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.' . $type . '.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
             }
         }
         if (count($types) > 1) {
-            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile', ContentRepository::$catalogMetaAllowableFilters);
+            $catalogMetaAllowableFilters = config('railcontent.cataloguesMetadata.' . $brand . '.all.allowableFiltersMobile'.$filterVersion, ContentRepository::$catalogMetaAllowableFilters);
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
