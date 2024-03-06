@@ -73,6 +73,7 @@ class PacksTransformer extends TransformerAbstract
             'myPacks' => $myPacks,
             'morePacks' => $morePacks,
             'topHeaderPack' => $top,
+            'filters' => $packs['filterOptions'] ?? [],
         ];
     }
 }

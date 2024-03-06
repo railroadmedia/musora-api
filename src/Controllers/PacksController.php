@@ -109,10 +109,14 @@ class PacksController extends Controller
         ContentRepository::$pullFutureContent = false;
         ContentRepository::$getEnrollmentContent = false;
 
-        $packs = $this->productProvider->getPacks([]);
+        $requiredFields = $request->get('required_fields', []);
+        if ($request->has('title')) {
+            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
+        }
+
+        $packs = $this->productProvider->getPacks($requiredFields, $request->get('sort', '-progress'));
 
         ContentRepository::$bypassPermissions = true;
-
         $allPacks = collect($packs['results']);
 
         $newProducts =
@@ -129,8 +133,9 @@ class PacksController extends Controller
         }
 
         $results = [
-            'myPacks' => $packs['results'] ?? [],
-            'morePacks' => [],
+            'myPacks' => $packs['results'],
+            'filterOptions' => $packs['filter_options'],
+            'morePacks' =>  [],
             'topHeaderPack' => $topPack,
         ];
 
