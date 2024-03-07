@@ -831,6 +831,10 @@ class ContentController extends Controller
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
+        if($request->has('isAllNew')){
+            $requiredFields[] = 'published_on,'.Carbon::now()->subMonth(3)->toDateTimeString().',date,>=';
+        }
+
         $sorted = $request->get('sort', $sortedBy);
         $results = new ContentFilterResultsEntity(['results' => []]);
 
