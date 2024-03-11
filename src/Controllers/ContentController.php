@@ -1695,7 +1695,7 @@ class ContentController extends Controller
         }
         //add parent's instructors and resources to content
         $content['resources'] = array_merge($content['resources'] ?? [], $parent['resources'] ?? []);
-        $content['instructors'] = array_unique(array_merge($content['instructors'] ?? [], $parent['instructors'] ?? []));
+        $content['instructors'] = array_values(array_unique(array_merge($content['instructors'] ?? [], $parent['instructors'] ?? [])));
 
         $content['parent'] = $parent;
 
