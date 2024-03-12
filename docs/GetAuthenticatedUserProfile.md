@@ -61,7 +61,9 @@ $.ajax({
   "edgeExpirationDate": null,
   "isPackOlyOwner": true,
   "isAppleAppSubscriber": false,
-  "isGoogleAppSubscriber": false
+  "isGoogleAppSubscriber": false,
+  "branches": "{\"experimentA\":\"X\",\"experimentB\":\"B-B\"}",
+  "features": "featureA,featureB,featureC"
 }
 ```
 

@@ -104,8 +104,11 @@ class AuthController extends Controller
         $membershipData = $this->userProvider->getCurrentUserMembershipData($request->get('app'));
         $profileData = $this->userProvider->getCurrentUserProfileData($request->get('app'));
         $experienceData = $this->userProvider->getCurrentUserExperienceData();
+        $branchData = $this->userProvider->getAllBranchInformationAsJSON();
+        $featureData = $this->userProvider->getAccessibleFeaturesAsString();
+        $featureArray = ['branches' => $branchData, 'features' => $featureData];
 
-        return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData));
+        return ResponseService::userData(array_merge($profileData, $experienceData, $membershipData, $featureArray));
     }
 
     /**
