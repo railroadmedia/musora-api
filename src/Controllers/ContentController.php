@@ -774,6 +774,7 @@ class ContentController extends Controller
         Decorator::$typeDecoratorsEnabled = false;
         ContentRepository::$pullFilterResultsOptionsAndCount = false;
         ContentRepository::$catalogMetaAllowableFilters = ['instructor', 'topic', 'style', 'artist'];
+        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
 
         if ($request->has('count_filter_items')) {
             ContentRepository::$countFilterOptionItems = $request->has('count_filter_items');
@@ -812,13 +813,28 @@ class ContentController extends Controller
                     $included_fields[] = 'instructor,'.$instructor.',integer,=';
                 }
             }else{
-                $requiredFields = array_merge($requiredFields, [ 'title,%'.$request->get('title').'%,string,like']);
+                if(!empty($filterVersion)) {
+                    $instructors =
+                        $this->contentService->getWhereTypeInAndStatusAndField(
+                            ['instructor'],
+                            'published',
+                            'name',
+                            '%'.$request->get('title').'%',
+                            'string',
+                            'LIKE'
+                        );
+
+                    $instructorIds = implode('-',$instructors->pluck('id')->toArray());
+                    $included_fields[] = 'title|artist|album|genre|instructor,%'.$request->get('title').'%,string,like,'.$instructorIds;
+                }else{
+                    $included_fields[] = 'title,%'.$request->get('title').'%,string,like';
+                }
             }
         }
 
         $sortedBy = '-published_on';
         $catalogMetaAllowableFilters = ContentRepository::$catalogMetaAllowableFilters;
-        $filterVersion = (config('railcontent.filter_version') == 'V2')?'V2':'';
+
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.' . config('railcontent.brand')))) {
