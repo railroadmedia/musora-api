@@ -1316,6 +1316,8 @@ return [
             'isPackOlyOwner',
             'isAppleAppSubscriber',
             'isGoogleAppSubscriber',
+            'branches',
+            'features',
         ],
     ],
     'brand_logo_path_for_email' => [
