@@ -83,7 +83,7 @@ interface UserProviderInterface
 
     public function getUserAfterRevenuecatPurchase($email, $password, $revenuecatOriginalAppUserId);
 
-    public function getAllBranchInformationAsJSON(): string;
+    public function getAllBranchInformation();
 
-    public function getAccessibleFeaturesAsString(): string;
+    public function getAccessibleFeatures();
 }

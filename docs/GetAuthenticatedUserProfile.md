@@ -62,8 +62,14 @@ $.ajax({
   "isPackOlyOwner": true,
   "isAppleAppSubscriber": false,
   "isGoogleAppSubscriber": false,
-  "branches": "{\"experimentA\":\"X\",\"experimentB\":\"B-B\"}",
-  "features": "featureA,featureB,featureC"
+  "branches": {
+    "experimentA": "X",
+    "experimentB": "B-B"
+  },
+  "features": [
+    "featureA",
+    "featureB"
+  ]
 }
 ```
 
