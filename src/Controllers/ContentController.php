@@ -809,6 +809,9 @@ class ContentController extends Controller
                 $requiredFields = array_merge($requiredFields, ['style,%'.$request->get('title').'%,string,like']);
             }elseif ($group_by == 'instructor') {
                 $instructors = $this->contentService->getWhereTypeInAndStatusAndField(['instructor'], ['published'], 'name', '%'.$request->get('title').'%','string', 'LIKE');
+                if ($instructors->isEmpty()) {
+                    $included_fields[] = 'instructor,0,integer,=';
+                }
                 foreach($instructors->pluck('id') ?? [] as $instructor){
                     $included_fields[] = 'instructor,'.$instructor.',integer,=';
                 }
