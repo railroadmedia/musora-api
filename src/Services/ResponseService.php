@@ -72,7 +72,7 @@ class ResponseService
             [
                 'results' => $result,
                 'filter_options' => $filters,
-                'total_results' => $data->totalResults(),
+                'total_results' => (config('railcontent.filter_version','') == 'V2') ? $data->totalLessons() : $data->totalResults(),
             ]
         ))->toJsonResponse();
     }
