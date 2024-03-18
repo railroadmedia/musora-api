@@ -636,6 +636,11 @@ Route::group([
         'as' => 'mobile.musora-api.artist.collection.page',
         'uses' => ContentController::class.'@artistCollectionPage',
     ]);
+
+    Route::get('/artists', [
+        'as' => 'mobile.musora-api.artists.page',
+        'uses' => ContentController::class.'@artistsPage',
+    ]);
 });
 
 Route::group([
