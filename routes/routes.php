@@ -633,6 +633,15 @@ Route::group([
         \Railroad\MusoraApi\Controllers\LearningPathsSectionController::class . '@getLearningPaths'
     )
         ->name('mobile.musora-api.homepage.learning-paths');
+    Route::get('/style', [
+        'as' => 'mobile.musora-api.genre.collection.page',
+        'uses' => ContentController::class.'@genreCollectionPage',
+    ]);
+
+    Route::get('/artist', [
+        'as' => 'mobile.musora-api.artist.collection.page',
+        'uses' => ContentController::class.'@artistCollectionPage',
+    ]);
 });
 
 Route::group([

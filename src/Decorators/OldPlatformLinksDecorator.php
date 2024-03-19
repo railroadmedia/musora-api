@@ -29,6 +29,10 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
         $initialDecorationMode = self::$decorationMode;
         self::$decorationMode = self::DECORATION_MODE_MINIMUM;
         foreach ($entities as $entityIndex => $entity) {
+            $showTypes = [];
+            if  (isset($entity['brand'])){
+                $showTypes = config('railcontent.showTypes')[$entity['brand']] ?? [];
+            }
             if ($entity instanceof ContentEntity) {
                 $contentData = $entity['data'] ?? [];
                 foreach ($contentData as $index => $data) {
@@ -36,7 +40,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                         $entity['type'],
                         array_merge(
                             config('railcontent.singularContentTypes', []),
-                            config('railcontent.showTypes')[$entity['brand']] ?? [],
+                            $showTypes,
                             ['assignment']
                         )
                     );
