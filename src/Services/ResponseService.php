@@ -44,15 +44,18 @@ class ResponseService
                     array_unshift($filters[$key], 'All');
                 }
             }
-            if(!in_array($key, ContentRepository::$catalogMetaAllowableFilters ?? ['instructor', 'topic', 'style', 'artist'])){
+            if (!in_array(
+                $key,
+                ContentRepository::$catalogMetaAllowableFilters ?? ['instructor', 'topic', 'style', 'artist']
+            )) {
                 unset($filters[$key]);
             }
-            if(in_array('progress', ContentRepository::$catalogMetaAllowableFilters ?? [])){
-                $filters['progress'] = ['All','In Progress', 'Completed'];
+            if (in_array('progress', ContentRepository::$catalogMetaAllowableFilters ?? [])) {
+                $filters['progress'] = ['All', 'In Progress', 'Completed'];
             }
         }
 
-        if(in_array('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])){
+        if (in_array('difficulty', ContentRepository::$catalogMetaAllowableFilters ?? [])) {
             $filters['showSkillLevel'] = true;
         }
 
@@ -60,7 +63,7 @@ class ResponseService
             $filters = ['content_type' => ['coach-stream']];
         }
 
-        if($request->has('old_style')){
+        if ($request->has('old_style')) {
             $result = $data->results();
         } else {
             $result = (new CatalogueTransformer())->transform($data->results());
@@ -68,13 +71,13 @@ class ResponseService
             $filters = (new FilterOptionsTransformer())->transform($filters);
         }
 
-        return (new ContentFilterResultsEntity(
-            [
-                'results' => $result,
-                'filter_options' => $filters,
-                'total_results' => $data->totalResults(),
-            ]
-        ))->toJsonResponse();
+        return (new ContentFilterResultsEntity([
+                                                   'results' => $result,
+                                                   'filter_options' => $filters,
+                                                   'total_results' => (config('railcontent.filter_version', '') ==
+                                                       'V2') ? $data->totalLessons() :
+                                                       $data->totalResults(),
+                                               ]))->toJsonResponse();
     }
 
     public static function content($data)
@@ -88,7 +91,7 @@ class ResponseService
 
     public static function scheduleContent($data)
     {
-        if(!config('musora-api.api.version')) {
+        if (!config('musora-api.api.version')) {
             return Fractal::create()
                 ->collection($data)
                 ->transformWith(ScheduledContentTransformer::class)
@@ -96,14 +99,11 @@ class ResponseService
                 ->toArray();
         }
 
-        return (new ContentFilterResultsEntity(
-            [
-                'results' => $data,
-                'filter_options' => [],
-                'total_results' => count($data),
-            ]
-        ))->toJsonResponse();
-
+        return (new ContentFilterResultsEntity([
+                                                   'results' => $data,
+                                                   'filter_options' => [],
+                                                   'total_results' => count($data),
+                                               ]))->toJsonResponse();
     }
 
     public static function live($data)
@@ -147,21 +147,18 @@ class ResponseService
             }
         }
 
-        if($request->has('old_style')){
+        if ($request->has('old_style')) {
             $result = $data->results();
         } else {
             $result = (new PlaylistsItemTransformer())->transform($data->results());
-
             //$filters = (new FilterOptionsTransformer())->transform($filters);
         }
 
-        return (new ContentFilterResultsEntity(
-            [
-                'results' => $result,
-                'filter_options' => $filters,
-                'total_results' => $data->totalResults(),
-            ]
-        ))->toJsonResponse();
+        return (new ContentFilterResultsEntity([
+                                                   'results' => $result,
+                                                   'filter_options' => $filters,
+                                                   'total_results' => $data->totalResults(),
+                                               ]))->toJsonResponse();
     }
 
     /**
@@ -172,7 +169,7 @@ class ResponseService
     {
         return Fractal::create()
             ->item($data)
-           ->transformWith(UserDataTransformer::class)
+            ->transformWith(UserDataTransformer::class)
             ->serializeWith(DataSerializer::class)
             ->toArray();
     }
