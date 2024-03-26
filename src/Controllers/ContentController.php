@@ -2115,7 +2115,6 @@ class ContentController extends Controller
      */
     public function getHomepageBanner(Request $request)
     {
-        $pageTypeMapping = config('musora-api.pageTypeMapping', []);
         $carouselSlides = $this->productProvider->carousel($request->get('is_workouts_page') ?? false);
         $response = [];
 
