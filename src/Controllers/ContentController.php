@@ -4,6 +4,7 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
+use App\Maps\ContentTypes;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -38,6 +39,7 @@ use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Decorators\Video\ContentVimeoVideoDecorator;
 use Railroad\Railcontent\Entities\ContentEntity;
 use Railroad\Railcontent\Entities\ContentFilterResultsEntity;
+use Railroad\Railcontent\Enums\RecommenderSection;
 use Railroad\Railcontent\Events\PlaylistItemLoaded;
 use Railroad\Railcontent\Helpers\ContentHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
@@ -174,6 +176,39 @@ class ContentController extends Controller
         $this->methodService = $methodService;
         $this->contentPermissionRepository = $contentPermissionRepository;
         $this->userContentProgressService = $userContentProgressService;
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getRecommended(Request $request)
+    {
+        $userID = user()->id;
+        $brand = $request->get('brand');
+        $limit = $request->get('limit', 100);
+        $randomize = $request->get('randomize', 0);
+        $filter = $request->get('filter', '');
+        $page = $request->get('page', 1);
+        $sections = match(strtolower($filter)) {
+            'songs', 'song' => [RecommenderSection::Song],
+            // everything but songs
+            'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
+            default => [],
+        };
+        $recommendedContent = $this->contentService->getRecommendedContent(
+            $userID,
+            $brand,
+            $sections,
+            pageSize: $limit,
+            page: $page,
+            randomize:$randomize
+        );
+
+        return ResponseService::catalogue(
+            $recommendedContent,
+            $request
+        );
     }
 
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
