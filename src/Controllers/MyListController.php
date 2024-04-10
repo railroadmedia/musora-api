@@ -254,11 +254,12 @@ class MyListController extends Controller
 
     /**
      * @param $playlistId
+     * @param Request $request
      * @return JsonResponse
      */
-    public function reportPlaylist($playlistId)
+    public function reportPlaylist($playlistId, Request $request)
     {
-        $this->userPlaylistsService->reportPlaylist($playlistId);
+        $this->userPlaylistsService->reportPlaylist($playlistId, $request->get('issue'));
 
         return ResponseService::array(['success' => true,  "message" => "This playlist has been reported."]);
     }
