@@ -23,7 +23,6 @@ The results are paginated and respect the response structure defined in musora-a
 | query or body     | filter    | no       | ''                   | High level filter. Supported non-default values are: songs, lessons                                                                                                                                                                                                                                  |
 | query or body     | limit     | no       | 10                   | The max amount of contents that can be returned. (Page size)                                                                                                                                                                                                                                         |
 | query or body     | page      | no       | 1                    | Page of results to return. This parameter is overwritten by the randomize flag                                                                                                                                                                                                                       |
-| query or body     | randomize | no       | 0                    | Passing a truthsy value will randomize the elements returned from the full list (but not the order). The current implementation of this updates the randomized content every hour (ie: calling it repeatedly within the hour will return the same results). This value overrides the page parameter. |
 
 
 ### Request Example:
@@ -34,7 +33,6 @@ $.ajax({
         '/musora-api/recommended?' +
         'brand=drumeo' + '&' +
         'limit=6' + '&' +
-        'randomize=1' + '&' +
         'filter=song', 
     type: 'get',
     dataType: 'json',

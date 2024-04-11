@@ -196,7 +196,6 @@ class ContentController extends Controller
         $userID = user()->id;
         $brand = $request->get('brand');
         $limit = $request->get('limit', 100);
-        $randomize = $request->get('randomize', 0);
         $filter = $request->get('filter', '');
         $page = $request->get('page', 1);
         $sections = match (strtolower($filter)) {
@@ -213,7 +212,6 @@ class ContentController extends Controller
                        $sections,
             pageSize:  $limit,
             page:      $page,
-            randomize: $randomize
         );
 
         return ResponseService::catalogue(
