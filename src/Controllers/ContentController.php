@@ -4,7 +4,6 @@ namespace Railroad\MusoraApi\Controllers;
 
 use App\Decorators\Content\PackBundleDecorator;
 use App\Decorators\Content\PackDecorator;
-use App\Maps\ContentTypes;
 use Carbon\Carbon;
 use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\NonUniqueResultException;
@@ -47,11 +46,12 @@ use Railroad\Railcontent\Repositories\ContentHierarchyRepository;
 use Railroad\Railcontent\Repositories\ContentPermissionRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Requests\ContentFollowRequest;
+use Railroad\Railcontent\Services\ArtistService;
 use Railroad\Railcontent\Services\CommentService;
-use Railroad\Railcontent\Services\ConfigService;
 use Railroad\Railcontent\Services\ContentFollowsService;
 use Railroad\Railcontent\Services\ContentService;
 use Railroad\Railcontent\Services\FullTextSearchService;
+use Railroad\Railcontent\Services\GenreService;
 use Railroad\Railcontent\Services\MethodService;
 use Railroad\Railcontent\Services\UserContentProgressService;
 use Railroad\Railcontent\Services\UserPlaylistsService;
@@ -127,6 +127,8 @@ class ContentController extends Controller
 
     private ContentPermissionRepository $contentPermissionRepository;
     private UserContentProgressService $userContentProgressService;
+    private ArtistService $artistService;
+    private GenreService $genreService;
 
     /**
      * @param ContentService $contentService
@@ -143,6 +145,9 @@ class ContentController extends Controller
      * @param ProductProviderInterface $productProvider
      * @param MethodService $methodService
      * @param ContentPermissionRepository $contentPermissionRepository
+     * @param UserContentProgressService $userContentProgressService
+     * @param ArtistService $artistService
+     * @param GenreService $genreService
      */
     public function __construct(
         ContentService $contentService,
@@ -159,7 +164,9 @@ class ContentController extends Controller
         ProductProviderInterface $productProvider,
         MethodService $methodService,
         ContentPermissionRepository $contentPermissionRepository,
-        UserContentProgressService $userContentProgressService
+        UserContentProgressService $userContentProgressService,
+        ArtistService $artistService,
+        GenreService $genreService
     ) {
         $this->contentService = $contentService;
         $this->commentService = $commentService;
@@ -176,6 +183,8 @@ class ContentController extends Controller
         $this->methodService = $methodService;
         $this->contentPermissionRepository = $contentPermissionRepository;
         $this->userContentProgressService = $userContentProgressService;
+        $this->artistService = $artistService;
+        $this->genreService = $genreService;
     }
 
     /**
@@ -189,18 +198,20 @@ class ContentController extends Controller
         $limit = $request->get('limit', 100);
         $filter = $request->get('filter', '');
         $page = $request->get('page', 1);
-        $sections = match(strtolower($filter)) {
+        $sections = match (strtolower($filter)) {
             'songs', 'song' => [RecommenderSection::Song],
             // everything but songs
-            'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function($section) { return $section != RecommenderSection::Song;}),
+            'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function ($section) {
+                return $section != RecommenderSection::Song;
+            }),
             default => [],
         };
         $recommendedContent = $this->contentService->getRecommendedContent(
-            $userID,
-            $brand,
-            $sections,
-            pageSize: $limit,
-            page: $page
+                       $userID,
+                       $brand,
+                       $sections,
+            pageSize:  $limit,
+            page:      $page,
         );
 
         return ResponseService::catalogue(
@@ -845,15 +856,14 @@ class ContentController extends Controller
             } elseif ($group_by == 'style') {
                 $requiredFields = array_merge($requiredFields, ['style,%'.$request->get('title').'%,string,like']);
             } elseif ($group_by == 'instructor') {
-                $instructors =
-                    $this->contentService->getWhereTypeInAndStatusAndField(
-                        ['instructor'],
-                        ['published'],
-                        'name',
-                        '%'.$request->get('title').'%',
-                        'string',
-                        'LIKE'
-                    );
+                $instructors = $this->contentService->getWhereTypeInAndStatusAndField(
+                    ['instructor'],
+                    ['published'],
+                    'name',
+                    '%'.$request->get('title').'%',
+                    'string',
+                    'LIKE'
+                );
                 if ($instructors->isEmpty()) {
                     $included_fields[] = 'instructor,0,integer,=';
                 }
@@ -871,12 +881,11 @@ class ContentController extends Controller
                         'LIKE'
                     );
 
-                    $instructorIds =
-                        implode(
-                            '-',
-                            $instructors->pluck('id')
-                                ->toArray()
-                        );
+                    $instructorIds = implode(
+                        '-',
+                        $instructors->pluck('id')
+                            ->toArray()
+                    );
                     $included_fields[] =
                         'title|artist|album|genre|instructor,%'.$request->get('title').'%,string,like,'.$instructorIds;
                 } else {
@@ -892,27 +901,25 @@ class ContentController extends Controller
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.config('railcontent.brand')))) {
                 $sortedBy = config('railcontent.cataloguesMetadata')[$type]['sortBy'] ?? $sortedBy;
-                $catalogMetaAllowableFilters =
-                    config(
-                        'railcontent.cataloguesMetadata.'.
-                        config('railcontent.brand').
-                        '.'.
-                        $type.
-                        '.allowableFiltersMobile'.
-                        $filterVersion,
-                        ContentRepository::$catalogMetaAllowableFilters
-                    );
-            }
-        }
-        if (count($types) > 1) {
-            $catalogMetaAllowableFilters =
-                config(
+                $catalogMetaAllowableFilters = config(
                     'railcontent.cataloguesMetadata.'.
                     config('railcontent.brand').
-                    '.all.allowableFiltersMobile'.
+                    '.'.
+                    $type.
+                    '.allowableFiltersMobile'.
                     $filterVersion,
                     ContentRepository::$catalogMetaAllowableFilters
                 );
+            }
+        }
+        if (count($types) > 1) {
+            $catalogMetaAllowableFilters = config(
+                'railcontent.cataloguesMetadata.'.
+                config('railcontent.brand').
+                '.all.allowableFiltersMobile'.
+                $filterVersion,
+                ContentRepository::$catalogMetaAllowableFilters
+            );
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
@@ -983,14 +990,13 @@ class ContentController extends Controller
         }
         $filterVersion = (config('railcontent.filter_version') == 'V2') ? 'V2' : '';
         if (count($types) == 1) {
-            ContentRepository::$catalogMetaAllowableFilters =
-                config(
-                    'railcontent.cataloguesMetadata.'.
-                    config('railcontent.brand').
-                    '.in-progress.allowableFiltersMobile'.
-                    $filterVersion,
-                    ContentRepository::$catalogMetaAllowableFilters
-                );
+            ContentRepository::$catalogMetaAllowableFilters = config(
+                'railcontent.cataloguesMetadata.'.
+                config('railcontent.brand').
+                '.in-progress.allowableFiltersMobile'.
+                $filterVersion,
+                ContentRepository::$catalogMetaAllowableFilters
+            );
         }
 
         $results = new ContentFilterResultsEntity(['results' => []]);
@@ -1688,14 +1694,13 @@ class ContentController extends Controller
             $request->get('statuses', [ContentService::STATUS_PUBLISHED, ContentService::STATUS_SCHEDULED]);
         ContentRepository::$pullFutureContent = $request->has('future');
         $filterVersion = (config('railcontent.filter_version') == 'V2') ? 'V2' : '';
-        ContentRepository::$catalogMetaAllowableFilters =
-            config(
-                'railcontent.cataloguesMetadata.'.
-                config('railcontent.brand').
-                '.coach-lessons.allowableFiltersMobile'.
-                $filterVersion,
-                ContentRepository::$catalogMetaAllowableFilters
-            );
+        ContentRepository::$catalogMetaAllowableFilters = config(
+            'railcontent.cataloguesMetadata.'.
+            config('railcontent.brand').
+            '.coach-lessons.allowableFiltersMobile'.
+            $filterVersion,
+            ContentRepository::$catalogMetaAllowableFilters
+        );
 
         $lessons = $this->contentService->getFiltered(
             $request->get('page', 1),
@@ -2323,9 +2328,7 @@ class ContentController extends Controller
 
         event(
             new PlaylistItemLoaded(
-                $playlistContent['user_playlist_id'],
-                $playlistContent['id'],
-                $playlistContent['position']
+                $playlistContent['user_playlist_id'], $playlistContent['id'], $playlistContent['position']
             )
         );
 
@@ -2398,19 +2401,17 @@ class ContentController extends Controller
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.$brand))) {
-                $catalogMetaAllowableFilters =
-                    config(
-                        'railcontent.cataloguesMetadata.'.$brand.'.'.$type.'.allowableFiltersMobile'.$filterVersion,
-                        ContentRepository::$catalogMetaAllowableFilters
-                    );
+                $catalogMetaAllowableFilters = config(
+                    'railcontent.cataloguesMetadata.'.$brand.'.'.$type.'.allowableFiltersMobile'.$filterVersion,
+                    ContentRepository::$catalogMetaAllowableFilters
+                );
             }
         }
         if (count($types) > 1) {
-            $catalogMetaAllowableFilters =
-                config(
-                    'railcontent.cataloguesMetadata.'.$brand.'.all.allowableFiltersMobile'.$filterVersion,
-                    ContentRepository::$catalogMetaAllowableFilters
-                );
+            $catalogMetaAllowableFilters = config(
+                'railcontent.cataloguesMetadata.'.$brand.'.all.allowableFiltersMobile'.$filterVersion,
+                ContentRepository::$catalogMetaAllowableFilters
+            );
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
@@ -2433,12 +2434,13 @@ class ContentController extends Controller
             $request->get('included_user_states', []),
             $request->get('with_filters', true)
         );
+        $genreData = $this->genreService->getByName($genre);
 
         $content = new ContentEntity();
         $content['name'] = $genre;
         $content['type'] = 'style';
         $content['thumbnail_url'] =
-            config('railcontent.avatar_style')[$genre]
+            $genreData['head_shot_picture_url']
             ??
             config('railcontent.default_avatar_style')[config('railcontent.brand', 'drumeo')];
         $content['lessons'] = $lessons['results'];
@@ -2468,19 +2470,17 @@ class ContentController extends Controller
         foreach ($types as $type) {
             $type = $this->getContentTypeForMetaData($type);
             if (array_key_exists($type, config('railcontent.cataloguesMetadata.'.$brand))) {
-                $catalogMetaAllowableFilters =
-                    config(
-                        'railcontent.cataloguesMetadata.'.$brand.'.'.$type.'.allowableFiltersMobile'.$filterVersion,
-                        ContentRepository::$catalogMetaAllowableFilters
-                    );
+                $catalogMetaAllowableFilters = config(
+                    'railcontent.cataloguesMetadata.'.$brand.'.'.$type.'.allowableFiltersMobile'.$filterVersion,
+                    ContentRepository::$catalogMetaAllowableFilters
+                );
             }
         }
         if (count($types) > 1) {
-            $catalogMetaAllowableFilters =
-                config(
-                    'railcontent.cataloguesMetadata.'.$brand.'.all.allowableFiltersMobile'.$filterVersion,
-                    ContentRepository::$catalogMetaAllowableFilters
-                );
+            $catalogMetaAllowableFilters = config(
+                'railcontent.cataloguesMetadata.'.$brand.'.all.allowableFiltersMobile'.$filterVersion,
+                ContentRepository::$catalogMetaAllowableFilters
+            );
         }
         ContentRepository::$catalogMetaAllowableFilters = $catalogMetaAllowableFilters;
 
@@ -2507,11 +2507,15 @@ class ContentController extends Controller
             ['song'],
             $artist
         );
+        $artistData = $this->artistService->getByName($artist);
 
         $content = new ContentEntity();
         $content['name'] = $artist;
         $content['type'] = 'artist';
-        $content['thumbnail_url'] = config('railcontent.default_avatar_style')[config('railcontent.brand', 'drumeo')];
+        $content['thumbnail_url'] =
+            $artistData['head_shot_picture_url']
+            ??
+            config('railcontent.default_avatar_style')[config('railcontent.brand', 'drumeo')];
         $content['plays'] = $totalPlays;
         $content['lessons'] = $lessons['results'];
         $content['lessons_filter_options'] = $lessons['filter_options'];
