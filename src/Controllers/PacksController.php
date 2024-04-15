@@ -17,6 +17,7 @@ use Railroad\MusoraApi\Transformers\CommentTransformer;
 use Railroad\Railcontent\Decorators\DecoratorInterface;
 use Railroad\Railcontent\Decorators\ModeDecoratorBase;
 use Railroad\Railcontent\Helpers\ContentHelper;
+use Railroad\Railcontent\Helpers\FiltersHelper;
 use Railroad\Railcontent\Repositories\CommentRepository;
 use Railroad\Railcontent\Repositories\ContentRepository;
 use Railroad\Railcontent\Services\CommentService;
@@ -109,12 +110,8 @@ class PacksController extends Controller
         ContentRepository::$pullFutureContent = false;
         ContentRepository::$getEnrollmentContent = false;
 
-        $requiredFields = $request->get('required_fields', []);
-        if ($request->has('title')) {
-            $requiredFields = array_merge($requiredFields, ['title,%' . $request->get('title') . '%,string,like']);
-        }
-
-        $packs = $this->productProvider->getPacks($requiredFields, $request->get('sort', '-progress'));
+        FiltersHelper::prepareFiltersFields();
+        $packs = $this->productProvider->getPacks(FiltersHelper::$includedFields, $request->get('sort', '-progress'));
 
         ContentRepository::$bypassPermissions = true;
         $allPacks = collect($packs['results']);
