@@ -233,7 +233,7 @@ class ContentController extends Controller
 
         $content = $this->contentService->getById($contentId);
 
-        if(($content['type'] == 'pack-bundle') && (user()?->isEnrolledIntoCohort(\Arr::pluck($content['permissions'], 'permission_id')))){
+        if(($content['type'] == 'pack-bundle' || $content['type'] == 'pack') && (user()?->isEnrolledIntoCohort(\Arr::pluck($content['permissions'], 'permission_id')))){
             ContentRepository::$pullFutureContent = true;
         }
         if (!$content) {
