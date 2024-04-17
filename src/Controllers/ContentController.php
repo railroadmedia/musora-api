@@ -232,6 +232,10 @@ class ContentController extends Controller
         }
 
         $content = $this->contentService->getById($contentId);
+
+        if(($content['type'] == 'pack-bundle') && (user()?->isEnrolledIntoCohort(\Arr::pluck($content['permissions'], 'permission_id')))){
+            ContentRepository::$pullFutureContent = true;
+        }
         if (!$content) {
             $userId = user()?->id;
             Log::warning("No content with id $contentId exists. (userId:$userId)");
