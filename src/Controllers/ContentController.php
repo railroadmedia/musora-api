@@ -2007,7 +2007,7 @@ class ContentController extends Controller
             }
         }
 
-        if(!\user()->hasSongsAccess($brand)) {
+        if(!\user()->hasSongsAccess($brand) && isset($contentMetaData['tabs'])) {
             $contentMetaData['tabs'] = array_values(
                 array_filter($contentMetaData['tabs'], function ($tab) {
                     return $tab['name'] != 'Songs';
