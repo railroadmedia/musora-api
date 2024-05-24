@@ -232,10 +232,6 @@ class ContentController extends Controller
         }
 
         $content = $this->contentService->getById($contentId);
-
-        if(($content['type'] == 'pack-bundle' || $content['type'] == 'pack') && (user()?->isEnrolledIntoCohort(\Arr::pluck($content['permissions'], 'permission_id')))){
-            ContentRepository::$pullFutureContent = true;
-        }
         if (!$content) {
             $userId = user()?->id;
             Log::warning("No content with id $contentId exists. (userId:$userId)");
@@ -252,6 +248,11 @@ class ContentController extends Controller
                 ],
                 404
             );
+        }
+
+        //Display all cohort lessons(including lessons that haven't been released) on the apps too
+        if(($content['type'] == 'pack-bundle' || $content['type'] == 'pack') && (user()?->isEnrolledIntoCohort(\Arr::pluck($content['permissions'], 'permission_id')))){
+            ContentRepository::$pullFutureContent = true;
         }
 
         $decoratorsEnabled = Decorator::$typeDecoratorsEnabled;
