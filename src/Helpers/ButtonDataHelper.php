@@ -27,6 +27,10 @@ class ButtonDataHelper
                 $pageType = 'ShowOverview';
                 $pageParams['keyExtractor'] = $lastSegment;
             }
+            if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workouts.challenges') {
+                $pageType = 'SeeAll2';
+                $pageParams['title'] = 'All Challenges';
+            }
             if (isset($routeAction['as']) && $routeAction['as'] == 'platform.workout.challenge') {
                 $pageType = 'PackOverview';
                 $pageParams['id'] = $lastSegment;
