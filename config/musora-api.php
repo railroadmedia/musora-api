@@ -1316,6 +1316,7 @@ return [
             'isPackOlyOwner',
             'isAppleAppSubscriber',
             'isGoogleAppSubscriber',
+            'subscriptionIntervalType',
             'branches',
             'features',
         ],
