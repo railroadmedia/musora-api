@@ -62,7 +62,8 @@ $.ajax({
   "isPackOlyOwner": true,
   "isAppleAppSubscriber": false,
   "isGoogleAppSubscriber": false,
-  "subscriptionIntervalType": "monthly",
+  "subscriptionIntervalType": "month",
+  "membership_level": "plus",
   "branches": {
     "experimentA": "X",
     "experimentB": "B-B"
