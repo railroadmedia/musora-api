@@ -223,6 +223,7 @@ class ContentController extends Controller
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
+        array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_UNLISTED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
         if ($request->has('future')) {
             ContentRepository::$pullFutureContent = true;
@@ -1518,6 +1519,7 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
+        ContentRepository::$availableContentStatues = array_diff(ContentRepository::$availableContentStatues, [ContentService::STATUS_UNLISTED]);
         $parentChildren = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
