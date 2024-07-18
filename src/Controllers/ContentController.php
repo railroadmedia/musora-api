@@ -223,6 +223,8 @@ class ContentController extends Controller
     public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
+        $originalStatuses = ContentRepository::$availableContentStatues;
+        array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_UNLISTED);
         $pullFutureContent = ContentRepository::$pullFutureContent;
         if ($request->has('future')) {
             ContentRepository::$pullFutureContent = true;
@@ -232,6 +234,7 @@ class ContentController extends Controller
         }
 
         $content = $this->contentService->getById($contentId);
+        ContentRepository::$availableContentStatues = $originalStatuses;
         if (!$content) {
             $userId = user()?->id;
             Log::warning("No content with id $contentId exists. (userId:$userId)");
@@ -1518,6 +1521,7 @@ class ContentController extends Controller
             $sort = 'sort';
         }
 
+        ContentRepository::$availableContentStatues = array_diff(ContentRepository::$availableContentStatues, [ContentService::STATUS_UNLISTED]);
         $parentChildren = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
