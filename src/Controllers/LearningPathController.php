@@ -91,8 +91,9 @@ class LearningPathController extends Controller
     {
         ContentRepository::$bypassPermissions = true;
         ContentRepository::$pullFutureContent = true;
+        $originalStatuses = ContentRepository::$availableContentStatues;
         ContentRepository::$availableContentStatues =
-            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
+            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED, ContentService::STATUS_UNLISTED];
 
         ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MAXIMUM;
 
@@ -103,7 +104,7 @@ class LearningPathController extends Controller
         throw_if(!($learningPath), new NotFoundException('Learning path not found.'));
 
         $this->vimeoVideoDecorator->decorate(new Collection([$learningPath]));
-
+        ContentRepository::$availableContentStatues = $originalStatuses;
         $learningPath['xp'] = $learningPath->fetch('total_xp', $learningPath->fetch('xp', 0));
         $learningPath['banner_button_url'] = null;
 
