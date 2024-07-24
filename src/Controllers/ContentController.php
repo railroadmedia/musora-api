@@ -220,7 +220,7 @@ class ContentController extends Controller
         );
     }
 
-    public function getContentOptimised($contentId, Request $request, $playlistItemId = null)
+    public function getContentOptimised($contentId, Request $request, $playlistItemId = null, $withException = false)
     {
         array_push(ContentRepository::$availableContentStatues, ContentService::STATUS_ARCHIVED);
         $originalStatuses = ContentRepository::$availableContentStatues;
@@ -234,6 +234,10 @@ class ContentController extends Controller
         }
 
         $content = $this->contentService->getById($contentId);
+        if($withException) {
+            throw_if(!$content, new NotFoundException('Content not exists.'));
+        }
+
         ContentRepository::$availableContentStatues = $originalStatuses;
         if (!$content) {
             $userId = user()?->id;
@@ -2262,7 +2266,7 @@ class ContentController extends Controller
         throw_if(!$playlist, new PlaylistException("Playlist doesn't exist.", "Playlist doesn't exist."));
 
         try {
-            $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id']);
+            $content = $this->getContentOptimised($playlistContent['content_id'], $request, $playlistContent['id'], withException: true);
         } catch (\Exception $e) {
             $playlistLessons =
                 $this->userPlaylistsService->getUserPlaylistContents($playlistContent['user_playlist_id']);
