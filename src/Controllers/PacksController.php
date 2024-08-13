@@ -104,9 +104,11 @@ class PacksController extends Controller
      */
     public function showAllPacks(Request $request)
     {
-        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        $adminUser = $request->user()?->isAdmin() ?? false;
+        $extraContentStatus = $adminUser ? [ContentService::STATUS_DRAFT] : [];
 
-        ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
+        ModeDecoratorBase::$decorationMode = DecoratorInterface::DECORATION_MODE_MINIMUM;
+        ContentRepository::$availableContentStatues = array_merge([ContentService::STATUS_PUBLISHED], $extraContentStatus);
         ContentRepository::$pullFutureContent = false;
         ContentRepository::$getEnrollmentContent = false;
 
