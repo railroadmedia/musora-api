@@ -1517,6 +1517,7 @@ class ContentController extends Controller
      */
     private function attachSiblingRelatedLessons(mixed $content, Request $request)
     : mixed {
+        $originalStatuses = ContentRepository::$availableContentStatues;
         $sort = 'published_on';
 
         if ($content['type'] == 'rhythmic-adventures-of-captain-carson' ||
@@ -1563,8 +1564,7 @@ class ContentController extends Controller
         );
 
         // Revert to previous state
-        ContentRepository::$availableContentStatues =
-            [ContentService::STATUS_PUBLISHED, ContentService::STATUS_ARCHIVED];
+        ContentRepository::$availableContentStatues = $originalStatuses;
 
         $content['next_lesson'] = $neighbourSiblings['before']->first();
         $content['previous_lesson'] = $neighbourSiblings['after']->first();
