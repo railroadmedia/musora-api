@@ -1,9 +1,9 @@
-## Pull content
+## Leaving
 
 Get content to be removed in the next quarter (set to unlisted)
 
 ### HTTP Request
-`GET musora-api/v1/content-updates/removed`
+`GET musora-api/v1/content-updates/leaving`
 
 
 ### Permissions
@@ -20,7 +20,7 @@ Get content to be removed in the next quarter (set to unlisted)
 ```js
 $.ajax({
     url: 'https://www.musora.com' +
-        '/musora-api/v1/content-updates/removed',
+        '/musora-api/v1/content-updates/leaving',
     type: 'get',
     dataType: 'json',
     success: function(response) {

@@ -1112,7 +1112,7 @@ class ContentController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function getRemoved(Request $request)
+    public function getLeaving(Request $request)
     {
         $removed = $this->contentService->getNextQuarterRemoved(
             $request->get('page', 1),

@@ -1,4 +1,4 @@
-## New Releases
+## Coming Soon
 
 Get the next N Songs that will be released. Content that is marked as published in the future
 
