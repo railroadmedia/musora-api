@@ -392,7 +392,7 @@ Route::group([
         'uses' => ContentController::class.'@getRemoved',
     ]);
 
-    Route::get('/content-updates/new-release', [
+    Route::get('/content-updates/new-releases', [
         'as' => 'mobile.musora-api.content-updates.new-releases',
         'uses' => ContentController::class.'@getNewReleases',
     ]);

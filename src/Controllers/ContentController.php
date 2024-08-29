@@ -1124,11 +1124,10 @@ class ContentController extends Controller
         ContentRepository::$getFutureContentOnly = true;
         ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
         $newSongs = $this->contentService->getFiltered(
-            page: 1,
-            limit: 5,
+            $request->get('page', 1),
+            $request->get('limit', 10),
             includedTypes: ['song']
         );
-        // TODO how to decorate
         return ResponseService::catalogue($newSongs, $request);
     }
 
