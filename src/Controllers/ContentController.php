@@ -1121,35 +1121,14 @@ class ContentController extends Controller
 
     public function getNewReleases(Request $request)
     {
-        ContentRepository::$getFutureContentOnly = true;
-        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         $newSongs = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
-            includedTypes: ['song']
+            "published_on",
+            includedTypes: ['song'],
+            getFutureContentOnly: true,
         );
-        return ResponseService::catalogue($newSongs, $request);
-    }
-
-    public function getAllContentUpdates(Request $request)
-    {
-        $removed = $this->contentService->getPreviousQuarterRemoved(
-            $request->get('page', 1),
-            $request->get('limit', 10),
-        );
-        $comingSoon = $this->contentService->getNextQuarterComingSoon(
-            $request->get('page', 1),
-            $request->get('limit', 10),
-        );
-        ContentRepository::$getFutureContentOnly = true;
-        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
-        $newSongs = $this->contentService->getFiltered(
-            page: 1,
-            limit: 5,
-            includedTypes: ['song']
-        );
-        //TODO how to decorate?
-
         return ResponseService::catalogue($newSongs, $request);
     }
 

@@ -377,11 +377,6 @@ Route::group([
         'uses' => ContentController::class.'@getLiveScheduleOptimised',
     ]);
 
-    Route::get('/content-updates', [
-        'as' => 'mobile.musora-api.content-updates',
-        'uses' => ContentController::class.'@getAllContentUpdates',
-    ]);
-
     Route::get('/content-updates/coming-soon', [
         'as' => 'mobile.musora-api.content-updates.coming-soon',
         'uses' => ContentController::class.'@getComingSoon',
