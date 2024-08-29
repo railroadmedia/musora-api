@@ -1140,7 +1140,7 @@ class ContentController extends Controller
         );
         $comingSoon = $this->contentService->getNextQuarterComingSoon(
             $request->get('page', 1),
-            $request->get('limit'),
+            $request->get('limit', 10),
         );
         ContentRepository::$getFutureContentOnly = true;
         ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
@@ -1150,8 +1150,8 @@ class ContentController extends Controller
             includedTypes: ['song']
         );
         //TODO how to decorate?
-        raise new NotFoundException('yea, we haven"t done this yet');
-        return ResponseService::catalogue($scheduleEvents, $request);
+
+        return ResponseService::catalogue($newSongs, $request);
     }
 
     public function getLiveScheduleOptimised(Request $request)
