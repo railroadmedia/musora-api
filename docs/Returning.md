@@ -1,9 +1,9 @@
 ## Coming Soon
 
-Get content that will be returned/republished 
+Get content that will be returned/republished in the coming quarter 
 
 ### HTTP Request
-`GET musora-api/v1/content-updates/coming-soon`
+`GET musora-api/v1/content-updates/returning`
 
 
 ### Permissions
@@ -20,7 +20,7 @@ Get content that will be returned/republished
 ```js
 $.ajax({
     url: 'https://www.musora.com' +
-        '/musora-api/v1/content-updates/coming-soon',
+        '/musora-api/v1/content-updates/returning',
     type: 'get',
     dataType: 'json',
     success: function(response) {
@@ -46,7 +46,7 @@ $.ajax({
       "slug": "the-hardest-part-easy-version",
       "instrumentless": 0,
       "published_on": "2024/08/30 09:15:00",
-      "status": "published",
+      "status": "unlisted",
       "title": "The Hardest Part (Easy Version)",
       "completed": false,
       "started": false,

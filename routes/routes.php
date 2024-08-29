@@ -387,9 +387,9 @@ Route::group([
         'uses' => ContentController::class.'@getRemoved',
     ]);
 
-    Route::get('/content-updates/new-releases', [
-        'as' => 'mobile.musora-api.content-updates.new-releases',
-        'uses' => ContentController::class.'@getNewReleases',
+    Route::get('/content-updates/returning', [
+        'as' => 'mobile.musora-api.content-updates.returning',
+        'uses' => ContentController::class.'@getReturning',
     ]);
 
     Route::get('/schedule', [

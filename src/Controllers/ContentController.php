@@ -1097,30 +1097,6 @@ class ContentController extends Controller
      */
     public function getComingSoon(Request $request)
     {
-        $comingSoon = $this->contentService->getNextQuarterComingSoon(
-            $request->get('page', 1),
-            $request->get('limit', 10),
-        );
-
-        return ResponseService::catalogue($comingSoon, $request);
-    }
-
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function getRemoved(Request $request)
-    {
-        $removed = $this->contentService->getPreviousQuarterRemoved(
-            $request->get('page', 1),
-            $request->get('limit', 10),
-        );
-        //TODO how to decorate?
-        return ResponseService::catalogue($removed, $request);
-    }
-
-    public function getNewReleases(Request $request)
-    {
         ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
         $newSongs = $this->contentService->getFiltered(
             $request->get('page', 1),
@@ -1130,6 +1106,30 @@ class ContentController extends Controller
             getFutureContentOnly: true,
         );
         return ResponseService::catalogue($newSongs, $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getRemoved(Request $request)
+    {
+        $removed = $this->contentService->getNextQuarterRemoved(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+        //TODO how to decorate?
+        return ResponseService::catalogue($removed, $request);
+    }
+
+    public function getReturning(Request $request)
+    {
+        $comingSoon = $this->contentService->getNextQuarterReturning(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+
+        return ResponseService::catalogue($comingSoon, $request);
     }
 
     public function getLiveScheduleOptimised(Request $request)

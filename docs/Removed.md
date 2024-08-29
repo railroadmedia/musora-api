@@ -1,6 +1,6 @@
 ## Pull content
 
-Get content removed in the last quarter (set to unlisted)
+Get content to be removed in the next quarter (set to unlisted)
 
 ### HTTP Request
 `GET musora-api/v1/content-updates/removed`
