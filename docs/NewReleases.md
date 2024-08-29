@@ -1,6 +1,6 @@
 ## New Releases
 
-Get the next N Songs that will be releases
+Get the next N Songs that will be released. Content that is marked as published in the future
 
 ### HTTP Request
 `GET musora-api/v1/content-updates/coming-soon`
@@ -71,56 +71,30 @@ $.ajax({
       "published_on_in_timezone": "2024/08/30 02:15:00",
       "guitar_chord_image_url": null,
       "need_access": false
-    },
-    {
-      "id": 412282,
-      "thumbnail_url": "https://d1923uyy6spedc.cloudfront.net/coldplay-parachutes-1724688598.jpg",
-      "sheet_music_thumbnail_url": null,
-      "difficulty_string": "Intermediate",
-      "difficulty": "5",
-      "type": "song",
-      "slug": "don-t-panic-solo",
-      "instrumentless": 1,
-      "published_on": "2024/08/29 15:00:00",
-      "status": "unlisted",
-      "title": "Don't Panic (Solo)",
-      "completed": false,
-      "started": false,
-      "progress_percent": 0,
-      "is_added_to_primary_playlist": false,
-      "instructors": [],
-      "artist": "Coldplay",
-      "style": [
-        "Pop"
-      ],
-      "topic": [],
-      "length_in_seconds": null,
-      "name": null,
-      "head_shot_picture_url": null,
-      "is_liked_by_current_user": false,
-      "like_count": 0,
-      "description": null,
-      "high_soundslice_slug": null,
-      "low_soundslice_slug": null,
-      "live_event_start_time": null,
-      "live_event_end_time": null,
-      "published_on_in_timezone": "2024/08/29 08:00:00",
-      "guitar_chord_image_url": null,
-      "need_access": false
     }
   ],
   "meta": {
-    "totalResults": 2,
+    "totalResults": 550,
     "page": 1,
-    "limit": 10,
+    "limit": 2,
     "filterOptions": {
-      "style": [
-        "All",
-        "Pop"
-      ],
-      "topic": [
+      "lifestyle": [
         "All"
-      ]
+      ],
+      "difficulty": [
+        "All",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "showSkillLevel": true
     }
   }
 }
