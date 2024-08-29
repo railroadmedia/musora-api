@@ -377,6 +377,26 @@ Route::group([
         'uses' => ContentController::class.'@getLiveScheduleOptimised',
     ]);
 
+    Route::get('/content-updates', [
+        'as' => 'mobile.musora-api.content-updates',
+        'uses' => ContentController::class.'@getAllContentUpdates',
+    ]);
+
+    Route::get('/content-updates/coming-soon', [
+        'as' => 'mobile.musora-api.content-updates.coming-soon',
+        'uses' => ContentController::class.'@getComingSoon',
+    ]);
+
+    Route::get('/content-updates/removed', [
+        'as' => 'mobile.musora-api.content-updates.removed',
+        'uses' => ContentController::class.'@getRemoved',
+    ]);
+
+    Route::get('/content-updates/new-release', [
+        'as' => 'mobile.musora-api.content-updates.new-releases',
+        'uses' => ContentController::class.'@getNewReleases',
+    ]);
+
     Route::get('/schedule', [
         'as' => 'mobile.musora-api.content-schedule',
         'uses' => ContentController::class.'@getAllScheduleOptimised',

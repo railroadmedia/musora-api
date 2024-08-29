@@ -1091,6 +1091,69 @@ class ContentController extends Controller
         return ResponseService::catalogue($scheduleEvents, $request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getComingSoon(Request $request)
+    {
+        $comingSoon = $this->contentService->getNextQuarterComingSoon(
+            $request->get('page', 1),
+            $request->get('limit'),
+        );
+
+        return ResponseService::catalogue($comingSoon, $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getRemoved(Request $request)
+    {
+        $removed = $this->contentService->getPreviousQuarterRemoved(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+        //TODO how to decorate?
+        return ResponseService::catalogue($removed, $request);
+    }
+
+    public function getNewReleases(Request $request)
+    {
+        ContentRepository::$getFutureContentOnly = true;
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
+        $newSongs = $this->contentService->getFiltered(
+            page: 1,
+            limit: 5,
+            includedTypes: ['song']
+        );
+        // TODO how to decorate
+        return ResponseService::catalogue($newSongs, $request);
+    }
+
+    public function getAllContentUpdates(Request $request)
+    {
+        $removed = $this->contentService->getPreviousQuarterRemoved(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+        $comingSoon = $this->contentService->getNextQuarterComingSoon(
+            $request->get('page', 1),
+            $request->get('limit'),
+        );
+        ContentRepository::$getFutureContentOnly = true;
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
+        $newSongs = $this->contentService->getFiltered(
+            page: 1,
+            limit: 5,
+            includedTypes: ['song']
+        );
+        //TODO how to decorate?
+        raise new NotFoundException('yea, we haven"t done this yet');
+        return ResponseService::catalogue($scheduleEvents, $request);
+    }
+
     public function getLiveScheduleOptimised(Request $request)
     {
         ContentRepository::$availableContentStatues = [
