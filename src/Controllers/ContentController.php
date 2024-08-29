@@ -1099,7 +1099,7 @@ class ContentController extends Controller
     {
         $comingSoon = $this->contentService->getNextQuarterComingSoon(
             $request->get('page', 1),
-            $request->get('limit'),
+            $request->get('limit', 10),
         );
 
         return ResponseService::catalogue($comingSoon, $request);
