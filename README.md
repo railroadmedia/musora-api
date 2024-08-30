@@ -123,7 +123,7 @@ API Endpoints
 | [Get next incomplete lesson for course/pack/method](docs/NextLesson.md) | `/musora-api/v1/jump-to-continue-content/{contentId}` |
 | [Get Guitar Quest data](docs/GuitarQuestData.md)                        | `/musora-api/v1/guitar-quest-map`                     |
 | [Get Homepage banner data](docs/HomepageBannerData.md)                  | `/musora-api/v1/homepage-banner`                      |
-| [Get Returning Content](docs/Returning.md)                              | `/musora-api/v1/content-schedule/returing`            |
+| [Get Leaving Content](docs/Leaving.md)                                  | `/musora-api/v1/content-schedule/leaving`             |
 | [Get Coming Soon Content](docs/ComingSoon.md)                           | `/musora-api/v1/content-schedule/coming-soon`         |
-| [Get Removed Content](docs/Removed.md)                                  | `/musora-api/v1/content-schedule/removed`             |
+| [Get Returing Content](docs/Returning.md)                               | `/musora-api/v1/content-schedule/returning`           |
 

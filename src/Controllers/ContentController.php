@@ -1118,10 +1118,13 @@ class ContentController extends Controller
             $request->get('page', 1),
             $request->get('limit', 10),
         );
-        //TODO how to decorate?
         return ResponseService::catalogue($removed, $request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getReturning(Request $request)
     {
         $comingSoon = $this->contentService->getNextQuarterReturning(
