@@ -542,6 +542,12 @@ Route::group([
         ContentController::class.'@getRoutinesTrailer'
     )
         ->name('singeo.routine.trailer');
+
+    Route::get('/vimeo-data/{vimeoId}', [
+                'as' => 'mobile.musora-api.get-vimeo-data',
+                'uses' => ContentController::class.'@getVimeoData',
+            ]);
+    
     Route::get(
         '/homepage-banner',
         ContentController::class.'@getHomepageBanner'

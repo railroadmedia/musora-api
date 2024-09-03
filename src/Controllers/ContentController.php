@@ -2177,6 +2177,18 @@ class ContentController extends Controller
         return ResponseService::array($response);
     }
 
+    public function getVimeoData(Request $request, $vimeoId)
+    {
+        $content = $this->productProvider->getVimeoEndpoints($vimeoId);
+        $response = [
+            'vimeo_video_id' => $content['vimeo_video_id'] ?? null,
+            'video_playback_endpoints' => $content['video_playback_endpoints'] ?? [],
+            'length_in_seconds' => $content['length_in_seconds'] ?? 0,
+        ];
+
+        return ResponseService::array($response);
+    }
+
     /**
      * @param Request $request
      * @return JsonResponse
