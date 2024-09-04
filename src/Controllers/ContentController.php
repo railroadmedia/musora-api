@@ -1097,7 +1097,9 @@ class ContentController extends Controller
      */
     public function getComingSoon(Request $request)
     {
-        ContentRepository::$availableContentStatues = [ContentService::STATUS_PUBLISHED];
+        ContentRepository::$getFutureContentOnly = true;
+        ContentRepository::$pullFutureContent = true;
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
         $newSongs = $this->contentService->getFiltered(
             $request->get('page', 1),
             $request->get('limit', 10),
