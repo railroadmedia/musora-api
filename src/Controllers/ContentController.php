@@ -1091,6 +1091,52 @@ class ContentController extends Controller
         return ResponseService::catalogue($scheduleEvents, $request);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getComingSoon(Request $request)
+    {
+        ContentRepository::$getFutureContentOnly = true;
+        ContentRepository::$pullFutureContent = true;
+        ContentRepository::$availableContentStatues = [ContentService::STATUS_UNLISTED, ContentService::STATUS_PUBLISHED];
+        $newSongs = $this->contentService->getFiltered(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+            "published_on",
+            includedTypes: ['song'],
+            getFutureContentOnly: true,
+        );
+        return ResponseService::catalogue($newSongs, $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getLeaving(Request $request)
+    {
+        $removed = $this->contentService->getNextQuarterRemoved(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+        return ResponseService::catalogue($removed, $request);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getReturning(Request $request)
+    {
+        $comingSoon = $this->contentService->getNextQuarterReturning(
+            $request->get('page', 1),
+            $request->get('limit', 10),
+        );
+
+        return ResponseService::catalogue($comingSoon, $request);
+    }
+
     public function getLiveScheduleOptimised(Request $request)
     {
         ContentRepository::$availableContentStatues = [
@@ -2124,6 +2170,18 @@ class ContentController extends Controller
         //  $content = $this->getContentOptimised(config('musora-api.routine_trailer'), $request);
         $content = $this->productProvider->getVimeoEndpoints(config('musora-api.routine_trailer'));
 
+        $response = [
+            'vimeo_video_id' => $content['vimeo_video_id'] ?? null,
+            'video_playback_endpoints' => $content['video_playback_endpoints'] ?? [],
+            'length_in_seconds' => $content['length_in_seconds'] ?? 0,
+        ];
+
+        return ResponseService::array($response);
+    }
+
+    public function getVimeoData(Request $request, $vimeoId)
+    {
+        $content = $this->productProvider->getVimeoEndpoints($vimeoId);
         $response = [
             'vimeo_video_id' => $content['vimeo_video_id'] ?? null,
             'video_playback_endpoints' => $content['video_playback_endpoints'] ?? [],

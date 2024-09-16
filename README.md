@@ -116,11 +116,14 @@ API Endpoints
 | [Unsubscribe/unfollow coach](docs/UnFollowContent.md)                 | `/musora-api/unfollow`                                            |
 
 #### Endpoints available starting with v1 
-|                                                          |     Endpoints                                         |
-|:-----------------------------------------------------------------|:----------------------------------------------------------|
-| [Get Routines trailer](docs/RoutinesTrailer.md)   | `/musora-api/v1/routine-trailer`                                       |
-| [Get meta data for specific content type](docs/ContentMetaData.md)  | `/musora-api/v1/content-meta`                                       |
-| [Get next incomplete lesson for course/pack/method](docs/NextLesson.md)   | `/musora-api/v1/jump-to-continue-content/{contentId}`                                       |
-| [Get Guitar Quest data](docs/GuitarQuestData.md)  | `/musora-api/v1/guitar-quest-map`                                       |
-| [Get Homepage banner data](docs/HomepageBannerData.md)  | `/musora-api/v1/homepage-banner`                                       |
+|                                                                         | Endpoints                                             |
+|:------------------------------------------------------------------------|:------------------------------------------------------|
+| [Get Routines trailer](docs/RoutinesTrailer.md)                         | `/musora-api/v1/routine-trailer`                      |
+| [Get meta data for specific content type](docs/ContentMetaData.md)      | `/musora-api/v1/content-meta`                         |
+| [Get next incomplete lesson for course/pack/method](docs/NextLesson.md) | `/musora-api/v1/jump-to-continue-content/{contentId}` |
+| [Get Guitar Quest data](docs/GuitarQuestData.md)                        | `/musora-api/v1/guitar-quest-map`                     |
+| [Get Homepage banner data](docs/HomepageBannerData.md)                  | `/musora-api/v1/homepage-banner`                      |
+| [Get Leaving Content](docs/Leaving.md)                                  | `/musora-api/v1/content-updates/leaving`              |
+| [Get Coming Soon Content](docs/ComingSoon.md)                           | `/musora-api/v1/content-updates/coming-soon`          |
+| [Get Returing Content](docs/Returning.md)                               | `/musora-api/v1/content-updates/returning`            |
 
