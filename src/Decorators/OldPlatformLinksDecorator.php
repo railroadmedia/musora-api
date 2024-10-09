@@ -46,22 +46,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
                     );
 
                     if (in_array($data['key'], ['description']) && $isLessonOrAssignment) {
-                        $url = str_replace(
-                            [
-                                '"/members/forums',
-                                '"/members/',
-                                '"/pianote/forums',
-                                'forums.drumeo.com/index.php?',
-                            ],
-                            [
-                                '"'.route('forums.show-categories'),
-                                '"'.config('app.url').'/'.brand().'/',
-                                '"'.route('forums.show-categories'),
-                                route('forums.show-categories'),
-                            ],
-                            $data['value']
-                        );
-                        $data['value'] = $url;
+                        $data['value'] = $this->mapForumToNewUrl($data['value']);
                         if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $data['value'], $matches)) {
                             $urls = $this->getUrls($matches[1]);
                             foreach ($urls as $oldUrl => $mwpUrl) {
@@ -75,22 +60,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
 
             if ($entity instanceof CommentEntity) {
                 $comment = $entity['comment'] ?? '';
-                $url = str_replace(
-                    [
-                        '"/members/forums',
-                        '"/members/',
-                        '"/pianote/forums',
-                        'forums.drumeo.com/index.php?',
-                    ],
-                    [
-                        '"'.route('forums.show-categories'),
-                        '"'.config('app.url').'/'.brand().'/',
-                        '"'.route('forums.show-categories'),
-                        route('forums.show-categories'),
-                    ],
-                    $comment
-                );
-                $comment = $url;
+                $comment = $this->mapForumToNewUrl($comment);
                 if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $comment, $matches)) {
                     $urls = $this->getUrls($matches[1]);
                     foreach ($urls as $oldUrl => $mwpUrl) {
@@ -101,22 +71,7 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
 
                 $replies = $entity['replies'] ?? [];
                 foreach ($replies as $index => $reply) {
-                    $url = str_replace(
-                        [
-                            '"/members/forums',
-                            '"/members/',
-                            '"/pianote/forums',
-                            'forums.drumeo.com/index.php?',
-                        ],
-                        [
-                            '"'.route('forums.show-categories'),
-                            '"'.config('app.url').'/'.brand().'/',
-                            '"'.route('forums.show-categories'),
-                            route('forums.show-categories'),
-                        ],
-                        $reply['comment']
-                    );
-                    $reply['comment'] = $url;
+                    $reply['comment'] = $this->mapForumToNewUrl($reply['comment']);
                     if (preg_match_all(self::HTML_HREF_REGEX_PATTERN, $reply['comment'], $matches)) {
                         $urls = $this->getUrls($matches[1]);
                         foreach ($urls as $oldUrl => $mwpUrl) {
@@ -322,6 +277,25 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
         return $unifiedUrl;
     }
 
+    private function mapForumToNewUrl(string $source): string
+    {
+        return str_replace(
+            [
+                '"/members/forums',
+                '"/members/',
+                '"/pianote/forums',
+                'forums.drumeo.com/index.php?',
+            ],
+            [
+                '"'.route('forums.show-categories'),
+                '"'.config('app.url').'/'.brand().'/',
+                '"'.route('forums.show-categories'),
+                route('forums.show-categories'),
+            ],
+            $source
+        );
+    }
+
     /**
      * @param $matches
      * @return array
@@ -334,15 +308,17 @@ class OldPlatformLinksDecorator extends \Railroad\Railcontent\Decorators\ModeDec
             if(!filter_var($url, FILTER_VALIDATE_URL)){
                 continue;
             }
-            $initialRequest = \Request::create($url);
-            if (!in_array($initialRequest->getHttpHost(), [
-                'www.drumeo.com',
-                'www.pianote.com',
-                'www.singeo.com',
-                'www.guitareo.com',
-                'forums.drumeo.com',
-                'http://forums.drumeo.com/'
-            ])) {
+
+            // we only need to format the URL if it's one of our domains
+            $parsedUrl = parse_url($url);
+            $host = $parsedUrl['host'] ?? null;
+            if (!in_array($host, [
+                    'www.drumeo.com',
+                    'www.pianote.com',
+                    'www.singeo.com',
+                    'www.guitareo.com',
+                    'forums.drumeo.com',
+                ])) {
                 continue;
             }
 
