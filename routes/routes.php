@@ -377,6 +377,21 @@ Route::group([
         'uses' => ContentController::class.'@getLiveScheduleOptimised',
     ]);
 
+    Route::get('/content-updates/leaving', [
+        'as' => 'mobile.musora-api.content-updates.leaving',
+        'uses' => ContentController::class.'@getLeaving',
+    ]);
+
+    Route::get('/content-updates/coming-soon', [
+        'as' => 'mobile.musora-api.content-updates.coming-soon',
+        'uses' => ContentController::class.'@getComingSoon',
+    ]);
+
+    Route::get('/content-updates/returning', [
+        'as' => 'mobile.musora-api.content-updates.returning',
+        'uses' => ContentController::class.'@getReturning',
+    ]);
+
     Route::get('/schedule', [
         'as' => 'mobile.musora-api.content-schedule',
         'uses' => ContentController::class.'@getAllScheduleOptimised',
@@ -527,6 +542,12 @@ Route::group([
         ContentController::class.'@getRoutinesTrailer'
     )
         ->name('singeo.routine.trailer');
+
+    Route::get('/vimeo-data/{vimeoId}', [
+                'as' => 'mobile.musora-api.get-vimeo-data',
+                'uses' => ContentController::class.'@getVimeoData',
+            ]);
+    
     Route::get(
         '/homepage-banner',
         ContentController::class.'@getHomepageBanner'
