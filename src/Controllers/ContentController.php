@@ -200,6 +200,7 @@ class ContentController extends Controller
         $page = $request->get('page', 1);
         $sections = match (strtolower($filter)) {
             'songs', 'song' => [RecommenderSection::Song],
+            'workout', 'workouts' => [RecommenderSection::Workout],
             // everything but songs
             'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function ($section) {
                 return $section != RecommenderSection::Song;
