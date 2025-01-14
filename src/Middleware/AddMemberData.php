@@ -49,8 +49,8 @@ class AddMemberData
         //sync user firebase token if exists on the request
         if ($this->userProvider->getCurrentUser() && ($request->has('firebase_token') && ($request->has('platform') || $request->has('device_name')))) {
             $this->userProvider->setCurrentUserFirebaseTokens(
-                ($request->get('platform', $request->has('device_name')) == 'ios') ? $request->get('firebase_token') : null,
-                ($request->get('platform', $request->has('device_name')) == 'android') ? $request->get('firebase_token') : null
+                ($request->get('platform', $request->get('device_name')) == 'ios') ? $request->get('firebase_token') : null,
+                ($request->get('platform', $request->get('device_name')) == 'android') ? $request->get('firebase_token') : null
             );
         }
     }
