@@ -193,25 +193,16 @@ class ContentController extends Controller
      */
     public function getRecommended(Request $request)
     {
-        $userID = user()->id;
         $brand = $request->get('brand');
         $limit = $request->get('limit', 100);
         $filter = $request->get('filter', '');
         $page = $request->get('page', 1);
-        $sections = match (strtolower($filter)) {
-            'songs', 'song' => [RecommenderSection::Song],
-            // everything but songs
-            'lessons', 'lesson' => array_filter(RecommenderSection::cases(), function ($section) {
-                return $section != RecommenderSection::Song;
-            }),
-            default => [],
-        };
         $recommendedContent = $this->contentService->getRecommendedContent(
-                       $userID,
                        $brand,
-                       $sections,
+                       $filter,
             pageSize:  $limit,
             page:      $page,
+            groupByForLessonsPage: false
         );
 
         return ResponseService::catalogue(
