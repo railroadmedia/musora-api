@@ -198,7 +198,6 @@ class ContentController extends Controller
         $filter = $request->get('filter', '');
         $page = $request->get('page', 1);
         $recommendedContent = $this->contentService->getRecommendedContent(
-                       user(),
                        $brand,
                        $filter,
             pageSize:  $limit,
