@@ -7,7 +7,7 @@
   "require": {
     "php": "^8.2",
     "laravel/framework": "^11.9",
-    "railroad/railcontent": "3.0.*",
+    "railroad/railcontent": "dev-fix/MU2-185-songs-basic-membership",
     "railroad/ecommerce": "6.0.*",
     "railroad/permissions": "3.0.*",
     "railroad/response": "3.0.*",
